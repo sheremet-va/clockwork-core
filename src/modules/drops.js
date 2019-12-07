@@ -28,7 +28,7 @@ module.exports = core => {
         }, {});
     };
 
-    const get = ( request, reply ) => {
+    const get = async request => {
         const lang = request.settings.language;
         const description = core.translate( 'drops/description' );
 
@@ -59,12 +59,12 @@ module.exports = core => {
             });
 
         if( drops.length === 0 ) {
-            return reply.error( 'NO_DROPS_INFO' );
+            throw new core.Error( 'NO_DROPS_INFO' );
         }
 
         const translations = core.translate( 'commands/drops' );
 
-        return reply.with({ translations, data: drops });
+        return { translations, data: drops };
     };
 
     const send = async () => {

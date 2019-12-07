@@ -8,7 +8,7 @@ const GET_LIMIT = 10;
 module.exports = core => {
     const projects = core.config.projects;
 
-    class CoreError extends Error {
+    core.Error = class extends Error {
         constructor( message, render = {}) {
             super( message );
 
@@ -18,9 +18,7 @@ module.exports = core => {
             this.name = 'CoreError';
             this.render = render;
         }
-    }
-
-    core.Error = CoreError;
+    };
 
     core.post = async ( project, options, limit = 1 ) => {
         if( limit > REPEAT_NOTIFY_LIMIT ) {
@@ -92,7 +90,7 @@ module.exports = core => {
 
     core.get = async ( options, tries = 1 ) => {
         if( tries > GET_LIMIT ) {
-            throw new CoreError( 'Number of attempts exceeded' );
+            throw new Error( 'Number of attempts exceeded' );
         }
 
         return axios.get( options )
@@ -118,13 +116,6 @@ module.exports = core => {
         }
 
         return false;
-    };
-
-    core.sendOk = ( reply, options ) => {
-        return reply.send({
-            result: 'ok',
-            ...options
-        });
     };
 
     core.getSettings = async ( project, id ) => {
