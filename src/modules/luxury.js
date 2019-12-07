@@ -26,7 +26,7 @@ const getItems = body => {
         }
 
         const name = fullName.match( /([^\d]+)/ )[0].trim();
-        const price = fullName.match( /([^A-Za-z]+\w*$)/ )[0].trim();
+        const price = fullName.match( /([\d,g\s]{3,})/ )[0].trim();
         const isNew = fullName.search( /NEW/i ) !== -1;
         const icon = furnitureIcons[name]
             ? furnitureIcons[name].replace( '/esoui/art/icons/', '' )
