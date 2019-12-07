@@ -40,6 +40,15 @@ const init = async () => {
     app.register( router );
     require( './services/subscriptions' )( core, modules );
 
+    app.setErrorHandler( ( err, request, reply ) => {
+        core.logger.error( `Error from ${request.ip}: \n${err.stack}`
+            + `\n\nPARAMS: ${JSON.stringify( request.params )},`
+            + `\nQUERY: ${JSON.stringify( request.query )},`
+            + `\nBODY: ${JSON.stringify( request.body )}.` );
+
+        return reply.error( err.message, err.render );
+    });
+
     app.listen( core.config.PORT, () => core.logger.log( `Listening ${core.config.PORT} port.` ) );
 };
 

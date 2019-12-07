@@ -9,17 +9,18 @@ module.exports = core => {
     const projects = core.config.projects;
 
     class CoreError extends Error {
-        constructor( message ) {
+        constructor( message, render = {}) {
             super( message );
 
             this.result = 'error';
             this.message = message;
             this.code = 500;
             this.name = 'CoreError';
+            this.render = render;
         }
     }
 
-    core.error = CoreError;
+    core.Error = CoreError;
 
     core.post = async ( project, options, limit = 1 ) => {
         if( limit > REPEAT_NOTIFY_LIMIT ) {
