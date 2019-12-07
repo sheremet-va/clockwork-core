@@ -1,8 +1,8 @@
 node_modules/
 logs/
-data/
+migrations/
 
-services/middleware.js
+src/services/middleware.js
 
 config.js
 
