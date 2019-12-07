@@ -164,19 +164,18 @@ module.exports = core => {
         }, {});
     };
 
-    const get = ( request, reply ) => {
+    const get = async request => {
         const lang = request.settings.language;
 
         const days = parseInt( request.params.days );
         const pledges = getPledges( days );
 
         if( !pledges ) {
-            return reply.error( 'INCORRECT_PLEDGES_DATE' );
+            throw new core.Error( 'INCORRECT_PLEDGES_DATE' );
         }
 
         const masks = pledges.map( pledge => getTranslations(
-            'masks', getMask( Object.keys( pledge )[0])
-        ) );
+            'masks', getMask( Object.keys( pledge )[0]) ) );
 
         const translations = core.translate( 'commands/pledges', {
             after_days: {
@@ -201,7 +200,7 @@ module.exports = core => {
             delete options.translations.after_days;
         }
 
-        return reply.with( options );
+        return options;
     };
 
     const send = () => {
@@ -210,7 +209,7 @@ module.exports = core => {
         const today = getPledges();
         const tomorrow = getPledges( TOMORROW );
 
-        return core.notify( 'pledges', { today, tomorrow });
+        return core.notify( 'pledges', { data: { today, tomorrow } });
     };
 
     return { get, send };

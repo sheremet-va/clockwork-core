@@ -36,43 +36,48 @@ const getNewStatus = response => {
 
 module.exports = core => {
     const getMaintenceTime = async () => {
-        const res = await core.get( 'https://forums.elderscrollsonline.com/en/' );
+        try {
+            const res = await core.get( 'https://forums.elderscrollsonline.com/en/' );
 
-        const $ = cheerio.load( res.data, { normalizeWhitespace: true });
+            const $ = cheerio.load( res.data, { normalizeWhitespace: true });
 
-        const message = $( '.DismissMessage' ).text().split( '\n' );
+            const message = $( '.DismissMessage' ).text().split( '\n' );
 
-        const infoNames = [
-            {
-                name: 'PC/Mac',
-                key: 'pc'
-            },
-            {
-                name: 'Xbox One',
-                key: 'xbox'
-            },
-            {
-                name: 'PlayStation',
-                key: 'ps'
-            }
-        ];
+            const infoNames = [
+                {
+                    name: 'PC/Mac',
+                    key: 'pc'
+                },
+                {
+                    name: 'Xbox One',
+                    key: 'xbox'
+                },
+                {
+                    name: 'PlayStation',
+                    key: 'ps'
+                }
+            ];
 
-        return message.reduce( ( acc, mes ) => {
-            const matchName = infoNames.find( inf => mes.search( inf.name ) !== -1 );
+            return message.reduce( ( acc, mes ) => {
+                const matchName = infoNames.find( inf => mes.search( inf.name ) !== -1 );
 
-            if( matchName ) {
-                acc[matchName.key] = core.translations.getRFCDate( mes );
-            }
+                if( matchName ) {
+                    acc[matchName.key] = core.translations.getRFCDate( mes );
+                }
 
-            return acc;
-        }, {});
+                return acc;
+            }, {});
+        } catch( err ) {
+            return false;
+        }
     };
 
-    const get = async ( request, reply ) => {
+    const get = async () => {
         const translations = core.translate( 'commands/status' );
+
         const status = await core.info.get( 'status' );
 
-        return reply.with({ translations, data: status });
+        return { translations, data: status };
     };
 
     const send = async () => {

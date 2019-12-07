@@ -1,9 +1,9 @@
 module.exports = core => {
-    const get = ( request, reply ) => {
-        return reply.with({ data: request.settings });
+    const get = async request => {
+        return { data: request.settings };
     };
 
-    const set = ( request, reply ) => {
+    const set = async request => {
         const settings = request.settings;
 
         const { project, id } = request.info;
@@ -16,8 +16,29 @@ module.exports = core => {
         const languageSettings = [ 'pledgesLang', 'merchantsLang', 'language' ];
         const translateType = languageSettings.includes( type ) ? 'language' : type;
 
-        const translations = core.translations.translate( lang, `settings/${translateType}` );
+        const valid = validate( type, value, settings, lang );
 
+        if( valid.error ) {
+            throw new core.Error( valid.error, valid.render );
+        }
+
+        const langRender = type === 'pledgesLang' || type === 'merchantsLang'
+            ? translateLang( value.split( '+' ) )
+            : core.translations.translate( lang, `settings/languages/${lang}` );
+
+        const translations = core.translations.translate( lang, `settings/${translateType}`, {
+            success: {
+                lang: langRender,
+                prefix: value
+            }
+        });
+
+        core.setSettings( project, { id, type, value });
+
+        return { translations };
+    };
+
+    const validate = ( type, value, settings, lang ) => {
         const available = Object.keys( core.config.defaultSettings );
         const availableLangs = {
             ru: [ 'ru+en', 'ru', 'en+ru', 'en' ],
@@ -25,57 +46,46 @@ module.exports = core => {
         };
 
         if( !available.includes( type ) ) {
-            return reply.error( 'CANT_SHANGE_THIS_SETTING' );
+            return { error: 'CANT_SHANGE_THIS_SETTING' };
         }
 
         if( !value ) {
-            return reply.error( 'EMPTY_SETTINGS', { setting: type });
+            return { error: 'EMPTY_SETTINGS', render: { setting: type } };
         }
 
         if( settings[type] === value ) {
-            return reply.error( 'SAME_SETTINGS' );
+            return { error: 'SAME_SETTINGS' };
         }
 
-        if( type === 'language' ) {
-            translations.success = buildKey( reply, value, lang );
-
-            if( !translations.success ) {
-                return;
+        const compare = {
+            language: {
+                condition: !core.config.languages.includes( value ),
+                error: 'CANT_CHANGE_LANGUAGE',
+                render: translateLang( core.config.languages, lang )
+            },
+            prefix: {
+                condition: value.length > 1,
+                error: 'PREFIX_TOO_LONG',
+                render: {}
+            },
+            comboLang: {
+                condition: !availableLangs[lang].includes( value ),
+                error: 'CANT_CHANGE_COMBO_LANG',
+                render: availableLangs[lang].join( ', ' )
             }
-        } else if( type === 'prefix' ) {
-            if( value.length > 1 ) {
-                return reply.error( 'PREFIX_TOO_LONG' );
-            }
+        };
 
-            translations.success = translations.success.render({ prefix: value });
-        } else if( type === 'pledgesLang' || type === 'merchantsLang' ) {
-            if( !availableLangs[lang].includes( value ) ) {
-                const langs = availableLangs[lang].join( ', ' );
+        const compareType = type === 'pledgesLang' || type === 'merchantsLang'
+            ? 'comboLang'
+            : type;
 
-                return reply.error( 'CANT_CHANGE_COMBO_LANG', { langs });
-            }
+        const { error, render, condition } = compare[compareType];
 
-            translations.success = translations.success
-                .render({ lang: translateLang( value.split( '+' ) ) });
+        if( condition ) {
+            return { error, render };
         }
 
-        core.setSettings( project, { id, type, value });
-
-        return reply.with({ translations });
-    };
-
-    const buildKey = ( reply, setting, lang ) => {
-        const translations = core.translations.translate( lang, 'settings/language' );
-
-        if( !setting || !core.config.languages.includes( setting ) ) {
-            return core.sendError( reply, lang, 'CANT_CHANGE_LANGUAGE', {
-                langs: translateLang( core.config.languages, lang )
-            });
-        }
-
-        return translations.success.render({
-            lang: core.translations.translate( setting, `settings/languages/${setting}` )
-        });
+        return true;
     };
 
     const translateLang = ( languages, lang ) => {

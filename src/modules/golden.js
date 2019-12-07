@@ -47,24 +47,26 @@ module.exports = core => {
         return core.notify( 'golden', { translations, data: translatedItems });
     };
 
-    const get = ( request, reply )  => {
+    const get = async request => {
         const lang = request.settings.language;
         const NOW = moment().utc();
 
-        const golden = core.info.get( 'golden' );
+        const golden = await core.info.get( 'golden' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            return reply.error( 'UNEXPECTED_GOLDEN_DATE' );
+            throw new core.Error( 'UNEXPECTED_GOLDEN_DATE' );
         } else if( !moment( golden.date ).isSame( NOW, 'day' )
             && !moment( golden.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            return reply.error( 'DONT_HAVE_ITEMS_YET' );
+            throw new core.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = core.translate( 'commands/golden' );
+        const translations = core.translate( 'commands/golden', {
+            title: {
+                date: core.translations.getDates()[lang]
+            }
+        });
 
-        translations.title = translations.title.render({ date: core.translations.getDates()[lang] });
-
-        return reply.with({ translations, data: golden });
+        return { translations, data: golden };
     };
 
     return { send, get };

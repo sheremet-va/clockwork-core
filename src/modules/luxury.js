@@ -153,17 +153,17 @@ module.exports = core => {
         return core.notify( 'luxury', { translations, data: { ...translated, image }, });
     };
 
-    const get = ( request, reply )  => {
+    const get = async request => {
         const lang = request.settings.language;
         const NOW = moment().utc();
 
-        const luxury = core.info.get( 'golden' );
+        const luxury = await core.info.get( 'luxury' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            return reply.error( 'UNEXPECTED_LUXURY_DATE' );
+            throw new core.Error( 'UNEXPECTED_LUXURY_DATE' );
         } else if( !moment( luxury.date ).isSame( NOW, 'day' )
             && !moment( luxury.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            return reply.error( 'DONT_HAVE_ITEMS_YET' );
+            throw new core.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
         const translations = core.translate( 'commands/luxury', {
@@ -172,7 +172,7 @@ module.exports = core => {
             }
         });
 
-        return reply.with({ translations, data: luxury });
+        return { translations, data: luxury };
     };
 
     return { send, get };

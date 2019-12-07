@@ -64,12 +64,12 @@ module.exports = core => {
         return core.notify( 'patch', { translations, data: description });
     };
 
-    const get = ( request, reply ) => {
-        const patch = core.info.get( 'patch' );
+    const get = async () => {
+        const patch = await core.info.get( 'patch' );
 
         const translations = core.translate( 'commands/patch' );
 
-        return reply.with({ translations, data: patch });
+        return { translations, data: patch };
     };
 
     return { send, get };

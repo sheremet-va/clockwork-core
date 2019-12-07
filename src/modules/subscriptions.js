@@ -1,11 +1,11 @@
 module.exports = core => {
-    const verify = ( toSub, request, reply ) => {
+    const getInfo = ( toSub, request ) => {
         const { name, channelId, subject } = request.body;
 
         const subs = request.subs;
 
         if( channelId === '0' ) {
-            return reply.error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE' );
+            throw new core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE' );
         }
 
         const defaultAliases = core.config.subsAliases;
@@ -22,7 +22,7 @@ module.exports = core => {
         const subName = Object.keys( aliases ).find( sub => aliases[sub].includes( name ) );
 
         if( !subName ) {
-            return reply.error( 'INCORRECT_SUBSCRIPTION_NAME', { sub: name });
+            throw new core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE', { sub: name });
         }
 
         const nameAlias = core.translate( `subscriptions/aliases/${subName}` );
@@ -30,19 +30,23 @@ module.exports = core => {
         const render = { sub: nameAlias, subject };
 
         if( toSub && subs[subName] && subs[subName].includes( channelId ) ) {
-            return subject === 'user'
-                ? reply.error( 'USER_ALREADY_SUBSCRIBED' )
-                : reply.error( 'CHANNEL_ALREADY_SUBSCRIBED', render );
+            if( subject === 'user' ) {
+                throw new core.Error( 'USER_ALREADY_SUBSCRIBED' );
+            }
+
+            throw new core.Error( 'CHANNEL_ALREADY_SUBSCRIBED', render );
         } else if( !toSub && ( !subs[subName] || !subs[subName].includes( channelId ) ) ) {
-            return subject === 'user'
-                ? reply.error( 'USER_NOT_SUBSCRIBED' )
-                : reply.error( 'CHANNEL_NOT_SUBSCRIBED', render );
+            if( subject === 'user' ) {
+                throw new core.Error( 'USER_NOT_SUBSCRIBED' );
+            }
+
+            throw new core.Error( 'CHANNEL_NOT_SUBSCRIBED', render );
         }
 
         return { subs, channelId, name: subName, subject, nameAlias };
     };
 
-    const get = ( request, reply ) => {
+    const get = async request => {
         const settings = request.settings;
 
         const translated = {
@@ -64,29 +68,23 @@ module.exports = core => {
                 if( availableSubs.includes( name ) || defaultSubs.includes( name ) ) {
                     const defaultAliases = aliases[name]['en'];
 
-                    const alias = lang === 'en'
-                        ? defaultAliases
-                        : [ ...defaultAliases, ...aliases[name][lang] ];
+                    const title = lang === 'en'
+                        ? defaultAliases[0]
+                        : aliases[name][lang][0];
 
                     obj.subscriptions[name] = {
-                        aliases: alias,
+                        title,
                         description: descriptions[name]
                     };
                 }
                 return obj;
             }, translated );
 
-        return reply.with({ data: request.subs, translations });
+        return { data: request.subs, translations };
     };
 
-    const sub = ( request, reply ) => {
-        const verified = verify( true, request, reply );
-
-        if( !verified ) {
-            return;
-        }
-
-        const { subs, name, subject, channelId, nameAlias } = verified;
+    const sub = request => {
+        const { subs, name, subject, channelId, nameAlias } = getInfo( true, request );
         const { project, id } = request.info;
 
         const channels = subs[name] ? [ ...subs[name], channelId ] : [ channelId ];
@@ -98,17 +96,11 @@ module.exports = core => {
 
         core.setSubscriptions( project, { id, name, channels });
 
-        return reply.with({ translations });
+        return { translations };
     };
 
-    const unsub = ( request, reply ) => {
-        const verified = verify( false, request, reply );
-
-        if( !verified ) {
-            return;
-        }
-
-        const { subs, name, subject, channelId, nameAlias } = verified;
+    const unsub = async request => {
+        const { subs, name, subject, channelId, nameAlias } = getInfo( false, request );
         const { project, id } = request.info;
 
         const channels = subs[name].filter( id => id !== channelId );
@@ -120,7 +112,7 @@ module.exports = core => {
 
         core.setSubscriptions( project, { id, name, channels });
 
-        return reply.with({ translations });
+        return { translations };
     };
 
     return { get, sub, unsub };

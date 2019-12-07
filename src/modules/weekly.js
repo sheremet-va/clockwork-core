@@ -1,9 +1,9 @@
 const cheerio = require( 'cheerio' );
 
 module.exports = core => {
-    const get = ( request, reply ) => {
+    const get = async request => {
         const lang = request.settings.language;
-        const weekly = core.info.get( 'weekly' );
+        const weekly = await core.info.get( 'weekly' );
 
         const translations = core.translate( 'commands/weekly' );
 
@@ -14,7 +14,7 @@ module.exports = core => {
                 return final;
             }, {});
 
-        return reply.with({ translations, data: rendered });
+        return { translations, data: rendered };
     };
 
     const send = async () => {
