@@ -8,7 +8,6 @@ const fastify = require( 'fastify' );
 
 const core = {
     translations: require( './translation/translation' ),
-    translate: require( './translation/translation' ).translate,
     logger: require( './services/logger' ),
     config: require( './config' ),
 
@@ -24,7 +23,7 @@ const init = async () => {
     app.register( checkAccess );
     app.register( prepare );
 
-    const moduleFiles = await readdir( './modules/' );
+    const moduleFiles = await readdir( './src/modules/' );
 
     const modules = moduleFiles.reduce( ( modules, file ) => {
         if( !file.endsWith( '.js' ) ) {
@@ -59,6 +58,7 @@ MongoClient
         core.info.drops = require( './controllers/drops' )( core, db );
 
         require( './services/util' )( core );
+        require( './migrations/migration' )( core );
 
         init();
     })

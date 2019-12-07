@@ -1,25 +1,41 @@
 {
     "commands": {
       "subscriptions": {
-        "to_subscribe": {
-          "en": "To subscribe, use the command `{{ prefix }}subscribe subscription-name` in channel. You can type several subscriptions at once devided by space.",
-          "ru": "Чтобы подписаться на рассылку, введите в соответствующем канале `{{ prefix }}подписаться название-рассылки`. Можно вводить несколько рассылок через пробел."
-        },
-        "available_subs": {
+        "title": {
           "en": "Available Subscriptions",
           "ru": "Доступные рассылки"
         },
-        "sub_success": {
-          "en": "You successfully subscribed to {{ subs }}.",
-          "ru": "Вы успешно подписались на {{ subs }}."
+        "to_subscribe": {
+          "en": "To subscribe, use the command `{{ prefix }}subscribe subscription-name` in channel.",
+          "ru": "Чтобы подписаться на рассылку, введите в соответствующем канале `{{ prefix }}подписаться название-рассылки`."
+        }
+      },
+      "subscribe": {
+        "title": {
+          "en": "Successfully subscribed",
+          "ru": "Подписка оформлена"
         },
-        "subs_error": {
-          "en": "An error occured while executing this command",
-          "ru": "Во время выполнения команды возникла ошибка"
+        "success_channel": {
+          "en": "{{ subject }} channel now subscribed to '{{ sub }}'.",
+          "ru": "Канал {{ subject }} подписан на рассылку «{{ sub }}»."
         },
-        "subs_errors": {
-          "en": "Several errors occured while executing this command",
-          "ru": "Во время выполнения команды возникли {{ errors }}"
+        "success_user": {
+          "en": "You are now subscribed to '{{ sub }}'.",
+          "ru": "Теперь вы подписаны на рассылку «{{ sub }}»."
+        }
+      },
+      "unsubscribe": {
+        "title": {
+          "en": "Subscription is cancelled",
+          "ru": "Подписка отменена"
+        },
+        "success_channel": {
+          "en": "{{ subject }} channel now unsubscribed from '{{ sub }}'.",
+          "ru": "Канал «{{ subject }}» отписан от рассылки «{{ sub }}»."
+        },
+        "success_user": {
+          "en": "You are now unsubscribed from '{{ sub }}'.",
+          "ru": "Теперь вы отписаны от рассылки «{{ sub }}»."
         }
       },
 
@@ -68,6 +84,10 @@
         "DOWN": {
           "en": "DOWN",
           "ru": "Не работает"
+        },
+        "maintence": {
+          "en": "NA and EU megaservers for patch maintenance",
+          "ru": "Профилактика на серверах Америки и Европы"
         }
       },
 
@@ -128,12 +148,12 @@
           "ru": "Рассылки"
         },
         "description": {
-          "en": "Subscribes a channel. You can type several subscriptions devided by space.",
-          "ru": "Подписывает на рассылки. Рассылки можно перечислять через пробел."
+          "en": "Subscribes a channel.",
+          "ru": "Подписывает на рассылку."
         },
         "usage": {
-          "en": "subscribe [...subscriptions]",
-          "ru": "подписаться [...рассылки]"
+          "en": "subscribe [subscription]",
+          "ru": "подписаться [рассылка]"
         }
       }
     },
@@ -149,16 +169,6 @@
           "ru": "Язык успешно изменён на {{ lang }}."
         }
       },
-      "prefix": {
-        "title": {
-          "en": "Prefix Change",
-          "ru": "Смена префикса"
-        },
-        "success": {
-          "en": "Prefix was changed to {{ prefix }}.",
-          "ru": "Префикс успешно изменён на «{{ prefix }}»."
-        }
-      },
       "languages": {
         "ru": {
           "en": "Russian",
@@ -167,6 +177,16 @@
         "en": {
           "en": "English",
           "ru": "английский"
+        }
+      },
+      "prefix": {
+        "title": {
+          "en": "Prefix Change",
+          "ru": "Смена префикса"
+        },
+        "success": {
+          "en": "Prefix was changed to {{ prefix }}.",
+          "ru": "Префикс успешно изменён на «{{ prefix }}»."
         }
       }
     },
@@ -184,6 +204,154 @@
         "server": {
           "en": "{{ server }} server",
           "ru": "Сервер {{ server }}"
+        }
+      },
+      "aliases": {
+        "rueso": {
+          "en": "RuESO Latest Release",
+          "ru": "Новый релиз RuESO"
+        },
+        "status": {
+          "en": "Servers Status",
+          "ru": "Состояние серверов"
+        },
+        "statusEU": {
+          "en": "EU Server Status",
+          "ru": "Состояние сервера EU"
+        },
+        "statusNA": {
+          "en": "NA Server Status",
+          "ru": "Состояние сервера NA"
+        },
+        "statusPTS": {
+          "en": "PTS Server Status",
+          "ru": "Состояние сервера PTS"
+        },
+        "statusPS": {
+          "en": "PlayStation Servers Status",
+          "ru": "Состояние серверов PlayStation"
+        },
+        "statusPS_EU": {
+          "en": "PlayStation EU Server Status",
+          "ru": "Состояние сервера PlayStation EU"
+        },
+        "statusPS_NA": {
+          "en": "PlayStation NA Server Status",
+          "ru": "Состояние сервера PlayStation NA"
+        },
+        "statusXBOX": {
+          "en": "Xbox Servers Status",
+          "ru": "Состояние серверов Xbox"
+        },
+        "statusXBOX_EU": {
+          "en": "Xbox EU Server Status",
+          "ru": "Состояние сервера Xbox EU"
+        },
+        "statusXBOX_NA": {
+          "en": "Xbox NA Server Status",
+          "ru": "Состояние сервера Xbox NA"
+        },
+        "pledges": {
+          "en": "Daily Pledges",
+          "ru": "Ежедневные обеты"
+        },
+        "golden": {
+          "en": "Latest Adazabi Aba-daro Shipments",
+          "ru": "Новые поставки у Адазаби Аба-даро Золотой в Сиродиле"
+        },
+        "luxury": {
+          "en": "Latest Zanil Theran Shipments",
+          "ru": "Новые поставки у Занила Терана в Хладной Гавани"
+        },
+        "news": {
+          "en": "TESO News",
+          "ru": "Новости TESO"
+        },
+        "esn": {
+          "en": "TESO News, provided by ElderScrolls.net",
+          "ru": "Новости TESO, переведенные командой ESN"
+        },
+        "patch": {
+          "en": "Patch Notes",
+          "ru": "Описания обновлений"
+        },
+        "drops": {
+          "en": "Twitch Drops (ouroboros crates)",
+          "ru": "Twitch Drops (ящики уробороса)"
+        }
+      },
+      "descriptions": {
+        "rueso": {
+          "en": "RuESO Latest Release",
+          "ru": "Присылает сообщение с ссылкой на релиз RuESO, когда модификация обновляется."
+        },
+        "status": {
+          "en": "Servers Status",
+          "ru": "Уведомляет, если состояние каких-либо серверов обновилось."
+        },
+        "statusEU": {
+          "en": "EU Server Status",
+          "ru": "Уведомляет, если состояние сервера EU обновилось (только ПК и Mac)."
+        },
+        "statusNA": {
+          "en": "NA Server Status",
+          "ru": "Уведомляет, если состояние сервера NA обновилось (только ПК и Mac)."
+        },
+        "statusPTS": {
+          "en": "PTS Server Status",
+          "ru": "Уведомляет, если состояние сервера PTS обновилось."
+        },
+        "statusPS": {
+          "en": "PlayStation Servers Status",
+          "ru": "Уведомляет, если состояние серверов PlayStation обновились."
+        },
+        "statusPS_EU": {
+          "en": "PlayStation EU Server Status",
+          "ru": "Уведомляет, если состояние сервера PlayStation EU обновилось."
+        },
+        "statusPS_NA": {
+          "en": "PlayStation NA Server Status",
+          "ru": "Уведомляет, если состояние сервера PlayStation NA обновилось."
+        },
+        "statusXBOX": {
+          "en": "Xbox Servers Status",
+          "ru": "Уведомляет, если состояние серверов Xbox обновились."
+        },
+        "statusXBOX_EU": {
+          "en": "Xbox EU Server Status",
+          "ru": "Уведомляет, если состояние сервера Xbox EU обновилось."
+        },
+        "statusXBOX_NA": {
+          "en": "Xbox NA Server Status",
+          "ru": "Уведомляет, если состояние сервера Xbox NA обновилось."
+        },
+        "pledges": {
+          "en": "Daily Pledges",
+          "ru": "Каждый день в 9:00 присылает сообщение о текущих обетах (и соответствующих масках) на выбранных языках."
+        },
+        "golden": {
+          "en": "Latest Adazabi Aba-daro Shipments",
+          "ru": "Присылает сообщение о новых товарах у Адазаби Аба-даро Золотой в Сиродиле."
+        },
+        "luxury": {
+          "en": "Latest Zanil Theran Shipments",
+          "ru": "Присылает сообщение о новых предметах роскоши у Занила Терана в Хладной Гавани."
+        },
+        "news": {
+          "en": "TESO News",
+          "ru": "Присылает новости с официального сайта."
+        },
+        "esn": {
+          "en": "TESO News, provided by ElderScrolls.net",
+          "ru": "Присылает новости по TESO с ElderScrolls.Net (включая перевод официальных статей)."
+        },
+        "patch": {
+          "en": "Patch Notes",
+          "ru": "Присылает описание обновления с официального сайта."
+        },
+        "drops": {
+          "en": "Twitch Drops (ouroboros crates)",
+          "ru": "Уведомляет, когда можно получить Twitch Drops (ящики уробороса)."
         }
       }
     },
@@ -250,7 +418,7 @@
           "ru": "Не забудьте получить Twitch Drops с трянсляции!"
         },
         "title_soon": {
-          "en": "Stream starts in 10 minutes! Don't Miss a Twitch Drop!",
+          "en": "Stream Starts in 10 Minutes! Don't Miss a Twitch Drop!",
           "ru": "Трансляция через 10 минут! Не пропустите Twitch Drops!"
         }
       },
@@ -361,6 +529,10 @@
         "en": "You can't change this setting.",
         "ru": "Нельзя изменить данную настройку."
       },
+      "SAME_SETTINGS": {
+        "en": "This setting is already set with the same parameters.",
+        "ru": "Данная настройка уже выставлена с теми же параметрами."
+      },
       "CANT_CHANGE_COMBO_LANG": {
         "en": "Please, use one of these language set-ups: {{ langs }}.",
         "ru": "Пожалуйста, укажите язык из списка доступных: {{ langs }}."
@@ -373,9 +545,21 @@
         "en": "Subscription '{{ sub }}' doesn't exist.",
         "ru": "Рассылки «{{ sub }}» не существует."
       },
-      "ALREADY_SUBSCRIBED": {
-        "en": "{{ subject }} already subscribed to '{{ sub }}'.",
-        "ru": "{{ subject }} уже подписан на рассылку «{{ sub }}»."
+      "CHANNEL_ALREADY_SUBSCRIBED": {
+        "en": "{{ subject }} channel already subscribed to '{{ sub }}'.",
+        "ru": "Канал «{{ subject }}» уже подписан на рассылку «{{ sub }}»."
+      },
+      "CHANNEL_NOT_SUBSCRIBED": {
+        "en": "{{ subject }} channel is not subscribed to '{{ sub }}'.",
+        "ru": "Канал «{{ subject }}» не подписан на рассылку «{{ sub }}»."
+      },
+      "USER_ALREADY_SUBSCRIBED": {
+        "en": "You are already subscribed to '{{ sub }}'.",
+        "ru": "Вы уже подписаны на рассылку «{{ sub }}»."
+      },
+      "USER_NOT_SUBSCRIBED": {
+        "en": "You are not subscribed to '{{ sub }}'.",
+        "ru": "Вы не подписаны на рассылку «{{ sub }}»."
       }
     }
   }

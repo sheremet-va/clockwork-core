@@ -17,19 +17,22 @@ const getItems = body => {
     const $ = cheerio.load( body );
 
     return $( '.entry-content ul' ).first().children().map( ( i, el ) => {
-        const full_name = $( el ).text()
+        const fullName = $( el ).text()
             .replace( /’/g, '\'' )
-            .replace( /(\d+)g/g, '$1 g.' )
             .trim();
 
-        if ( full_name.search( /([^\d]+)/ ) === -1 || full_name.search( 'http' ) !== -1 ) {
+        if ( fullName.search( /([^\d]+)/ ) === -1 || fullName.search( 'http' ) !== -1 ) {
             return 'URL';
         }
 
-        const name = full_name.match( /([^\d]+)/ )[0].trim();
-        const icon = furnitureIcons[name] ? furnitureIcons[name].replace( '/esoui/art/icons/', '' ) : null;
+        const name = fullName.match( /([^\d]+)/ )[0].trim();
+        const price = fullName.match( /([^A-Za-z]+\w*$)/ )[0].trim();
+        const isNew = fullName.search( /NEW/i ) !== -1;
+        const icon = furnitureIcons[name]
+            ? furnitureIcons[name].replace( '/esoui/art/icons/', '' )
+            : null;
 
-        return { full_name, name, icon };
+        return { name, price, icon, isNew };
     }).get().filter( e => e !== 'URL' );
 };
 
@@ -42,18 +45,22 @@ const downloadIcon = async icon => {
     const path = Path.resolve( __dirname, '../temp', icon );
     const writer = fs.createWriteStream( path );
 
-    const res = await axios({
-        responseType: 'stream',
-        method: 'get',
-        url
-    });
+    try {
+        const res = await axios({
+            responseType: 'stream',
+            method: 'get',
+            url
+        });
 
-    res.data.pipe( writer );
+        res.data.pipe( writer );
 
-    return new Promise( ( resolve, reject ) => {
-        writer.on( 'finish', () => resolve( path ) );
-        writer.on( 'error', reject );
-    });
+        return new Promise( ( resolve, reject ) => {
+            writer.on( 'finish', () => resolve( path ) );
+            writer.on( 'error', reject );
+        });
+    } catch( err ) {
+        return Promise.reject( err );
+    }
 };
 
 const drawImage = async ( core, icons ) => {
@@ -63,7 +70,7 @@ const drawImage = async ( core, icons ) => {
 
     const MAX_COUNT = 7;
 
-    const file_name = Path.resolve( __dirname, '../temp', 'luxury.jpg' );
+    const fileName = Path.resolve( __dirname, '../temp', 'luxury.jpg' );
     const coordinates = {
         1: [ { x: 70, y: 70 } ],
         2: [ { x: 12, y: 87 }, { x: 87, y: 87 } ],
@@ -93,7 +100,7 @@ const drawImage = async ( core, icons ) => {
             const iconWithBg = iconBg.composite( iconWithoutBg, 4, 4 ); // Добавляет фон иконке
 
             image.composite( iconWithBg, coords.x, coords.y );
-        } catch ( err ) {
+        } catch( err ) {
             core.logger.error( `An errror occured while trying to add an icon "${icon}" on image: ${err}` );
         }
 
@@ -102,37 +109,26 @@ const drawImage = async ( core, icons ) => {
         return image;
     }, baseLuxuryImage );
 
-    await wholeImage.quality( 90 ).writeAsync( file_name );
+    await wholeImage.quality( 90 ).writeAsync( fileName );
 
-    const file = fs.readFileSync( file_name );
+    const file = fs.readFileSync( fileName );
     const data = await imgurUploader( file )
         .catch( err => ({ link: core.media.luxury, message: err }) );
 
-    fs.unlink( file_name, () => core.logger.log( `File "${file_name}" was deleted.` ) );
+    fs.unlink( fileName, () => core.logger.log( `File "${fileName}" was deleted.` ) );
 
     return data.link;
 };
 
 module.exports = core => {
-    const translations = core.translations.getCategory( 'merchants', 'luxury' );
-
-    const set = options => {
-        core.info.set( 'luxury', options );
-
-        return core.info.get( 'luxury' );
-    };
-
     const send = async data => {
-        const res = await core.get( data.url );
-
-        if( res.result !== 'ok' ) {
-            return;
-        }
+        const res = await core.get( data.link );
 
         const items = getItems( res.data );
         const translated = items.map( item => ({
-            full_name: item.full_name,
-            name: item.name // core.translations.getFurniture( icon.item )
+            name: item.name, // core.translations.getFurniture( icon.item )
+            price: item.price,
+            isNew: item.isNew
         }) );
 
         const promises = items.map( item =>
@@ -145,11 +141,14 @@ module.exports = core => {
 
         const image = await drawImage( core, icons );
 
-        set({
-            ...data,
+        await core.info.set( 'luxury', {
+            date: data.date,
+            link: data.link,
             items: translated,
             image
         });
+
+        const translations = core.translations.getCategory( 'merchants', 'luxury' );
 
         return core.notify( 'luxury', { translations, data: { ...translated, image }, });
     };
@@ -167,11 +166,14 @@ module.exports = core => {
             return reply.error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = core.translate( 'commands/luxury', lang );
-        translations.title = translations.title.render({ date: core.translations.getDates()[lang] });
+        const translations = core.translate( 'commands/luxury', {
+            title: {
+                date: core.translations.getDates()[lang]
+            }
+        });
 
-        return reply.ok({ translations, data: luxury });
+        return reply.with({ translations, data: luxury });
     };
 
-    return { send, set, get };
+    return { send, get };
 };

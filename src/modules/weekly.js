@@ -5,34 +5,29 @@ module.exports = core => {
         const lang = request.settings.language;
         const weekly = core.info.get( 'weekly' );
 
-        const translations = core.translate( 'commands/weekly', lang );
+        const translations = core.translate( 'commands/weekly' );
 
         const rendered = Object.keys( weekly )
             .reduce( ( final, region ) => {
-                final[region] = weekly[region][lang];
+                final[region] = weekly[region][lang]; // Почему хранятся обе версии?
 
                 return final;
             }, {});
 
-        return reply.ok({ translations, data: rendered });
+        return reply.with({ translations, data: rendered });
     };
 
     const send = async () => {
         const translations = core.translations.getCategory( 'commands', 'weekly' );
 
         const url = 'https://esoleaderboards.com/trial/weekly';
-        const oldTrials = core.info.get( 'weekly' );
+        const oldTrials = await core.info.get( 'weekly' );
 
         const res = await core.get( url );
 
-        if( res.result !== 'ok' ) {
-            return;
-        }
-
         const $ = cheerio.load( res.data );
 
-        const newTrials = $( 'strong', '.header' ).map( ( i, el ) => $( el ).text().trim() )
-            .get()
+        const newTrials = $( 'strong', '.header' ).map( ( i, el ) => $( el ).text().trim() ).get()
             .filter( name => name.search( 'Megaserver' ) === -1 );
 
         if( newTrials[0] === oldTrials.eu.en || newTrials[1] === oldTrials.na.en ) {
@@ -49,7 +44,7 @@ module.exports = core => {
 
         core.info.set( 'weekly', changed );
 
-        return core.notify( 'weekly', { translations, changed });
+        return core.notify( 'weekly', { translations, data: changed });
     };
 
     return { send, get };

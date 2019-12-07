@@ -1,6 +1,6 @@
 module.exports = core => {
     const get = ( request, reply ) => {
-        return reply.ok({ data: request.settings });
+        return reply.with({ data: request.settings });
     };
 
     const set = ( request, reply ) => {
@@ -16,7 +16,7 @@ module.exports = core => {
         const languageSettings = [ 'pledgesLang', 'merchantsLang', 'language' ];
         const translateType = languageSettings.includes( type ) ? 'language' : type;
 
-        const translations = core.translate( `settings/${translateType}`, lang );
+        const translations = core.translations.translate( lang, `settings/${translateType}` );
 
         const available = Object.keys( core.config.defaultSettings );
         const availableLangs = {
@@ -30,6 +30,10 @@ module.exports = core => {
 
         if( !value ) {
             return reply.error( 'EMPTY_SETTINGS', { setting: type });
+        }
+
+        if( settings[type] === value ) {
+            return reply.error( 'SAME_SETTINGS' );
         }
 
         if( type === 'language' ) {
@@ -57,24 +61,26 @@ module.exports = core => {
 
         core.setSettings( project, { id, type, value });
 
-        return reply.ok({ translations });
+        return reply.with({ translations });
     };
 
     const buildKey = ( reply, setting, lang ) => {
-        const translations = core.translate( 'settings/language', lang );
+        const translations = core.translations.translate( lang, 'settings/language' );
 
         if( !setting || !core.config.languages.includes( setting ) ) {
-            return core.error( reply, lang, 'CANT_CHANGE_LANGUAGE', { langs: translateLang( core.config.languages ) });
+            return core.sendError( reply, lang, 'CANT_CHANGE_LANGUAGE', {
+                langs: translateLang( core.config.languages, lang )
+            });
         }
 
         return translations.success.render({
-            lang: core.translations.translate( `settings/languages/${setting}`, setting )
+            lang: core.translations.translate( setting, `settings/languages/${setting}` )
         });
     };
 
     const translateLang = ( languages, lang ) => {
         return languages
-            .map( confLang => core.translations.translate( `settings/languages/${confLang}`, lang ) )
+            .map( confLang => core.translations.translate( lang, `settings/languages/${confLang}` ) )
             .join( ', ' );
     };
 

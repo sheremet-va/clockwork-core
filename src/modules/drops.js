@@ -30,7 +30,7 @@ module.exports = core => {
 
     const get = ( request, reply ) => {
         const lang = request.settings.language;
-        const description = core.translate( 'drops/description', lang );
+        const description = core.translate( 'drops/description' );
 
         const drops = dates.filter( key => {
             const [ start, end ] = key.split( ', ' );
@@ -41,7 +41,6 @@ module.exports = core => {
         })
             .map( key => {
                 const drop = drops_schedule[key];
-                const rendered = {};
 
                 const [ start, end ] = key.split( ', ' );
 
@@ -50,23 +49,22 @@ module.exports = core => {
                     date: core.translations.getDropsDay( 'day', drop.sendingDate, lang )
                 };
 
-                rendered.when = core.translations.getDropsDate( start, end )[lang];
-
-                rendered.where = description[drop.where].render({ streamer: drop.streamer });
-                rendered.info = description[drop.info].render({ streamer: drop.streamer });
-                rendered.sending = description[drop.sending].render( sending );
-                rendered.url = drop.url;
-
-                return rendered;
+                return {
+                    when: core.translations.getDropsDate( start, end )[lang],
+                    where: description[drop.where].render({ streamer: drop.streamer }),
+                    info: description[drop.info].render({ streamer: drop.streamer }),
+                    sending: description[drop.sending].render( sending ),
+                    url: drop.url
+                };
             });
 
         if( drops.length === 0 ) {
             return reply.error( 'NO_DROPS_INFO' );
         }
 
-        const translations = core.translate( 'commands/drops', lang );
+        const translations = core.translate( 'commands/drops' );
 
-        return reply.ok({ translations, data: drops });
+        return reply.with({ translations, data: drops });
     };
 
     const send = async () => {
@@ -82,7 +80,7 @@ module.exports = core => {
             }
         });
 
-        // Checks if you can get drops right now (only 19:00 MSK).
+        // Checks if you can get drops right now (only 19:00 MSK). \\ проверить чтобы 2жды одна и та же не слалась
         const dropsBetweenKey = dates.find( key => {
             const [ start, end ] = key.split( ', ' );
 
@@ -94,11 +92,11 @@ module.exports = core => {
             }
         });
 
-        if ( !dropsStartKey && !dropsBetweenKey ) {
+        const key = dropsStartKey || dropsBetweenKey;
+
+        if ( !key ) {
             return;
         }
-
-        const key = dropsStartKey || dropsBetweenKey;
 
         const foundDrops = drops_schedule[key];
         const translations = dropsStartKey
@@ -112,10 +110,9 @@ module.exports = core => {
             when: core.translations.getDropsDate( start, end ),
             where: description[foundDrops.where].render({ streamer: foundDrops.streamer }),
             info: description[foundDrops.info].render({ streamer: foundDrops.streamer }),
+            sending: getDropsSending( description[foundDrops.sending], foundDrops ),
             url: foundDrops.url
         };
-
-        drops.sending = getDropsSending( description[foundDrops.sending], foundDrops );
 
         return core.notify( 'drops', { translations, data: drops });
     };

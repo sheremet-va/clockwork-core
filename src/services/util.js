@@ -1,12 +1,25 @@
 const axios = require( 'axios' );
 
 const REPEAT_IN_SECONDS = 10000;
-const REPEAT_NOTIFY_LIMIT = 10;
+const REPEAT_NOTIFY_LIMIT = 30;
 
-const GET_LIMIT = 5;
+const GET_LIMIT = 10;
 
 module.exports = core => {
     const projects = core.config.projects;
+
+    class CoreError extends Error {
+        constructor( message ) {
+            super( message );
+
+            this.result = 'error';
+            this.message = message;
+            this.code = 500;
+            this.name = 'CoreError';
+        }
+    }
+
+    core.error = CoreError;
 
     core.post = async ( project, options, limit = 1 ) => {
         if( limit > REPEAT_NOTIFY_LIMIT ) {
@@ -25,11 +38,9 @@ module.exports = core => {
             });
 
             return { status: res.data.result, project };
-        } catch ( err ) {
+        } catch( err ) {
             core.logger.error(
-                `[${
-                    limit.declOfNumber([ 'try', 'tries' ], 'en' )
-                }] Error while attempting to post ${options.url} to ${project}: ${err}`
+                `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
             );
 
             await core.wait( REPEAT_IN_SECONDS );
@@ -40,63 +51,75 @@ module.exports = core => {
 
     core.notify = async ( name, data ) => {
         const promises = Object.keys( projects )
-            .map( project =>
-                core.post( project, {
-                    url: `/subscriptions/${name}`,
-                    data
-                })
-            );
+            .map( async project => {
+                const subscribers = await core.getSubsByName( project, name );
+
+                if( Object.keys( subscribers ).length ) {
+                    return core.post( project, {
+                        url: `/subscriptions/${name}`,
+                        subscribers,
+                        data
+                    });
+                }
+
+                return Promise.reject({
+                    message: `No one is subscribed to ${name} on "${project}" project.`,
+                    type: 'warn'
+                });
+            });
 
         Promise.allSettled( promises )
             .then( result =>
                 result.forEach( res => {
                     if( res.status === 'fulfilled' ) {
-                        core.logger.sub( name, res.value.project, res.value.status );
-                    } else {
-                        // Отправить сообщение в дискорд/телеграм, что не смог отправить
-                        core.logger.error(
-                            `Number of attempts while trying post "${name}" subscription to ${res.reason.project} exceeded.`
-                        );
+                        return res.value ? core.logger.sub( name, res.value.project, res.value.status ) : null;
                     }
+
+                    const { type, message } = res.reason;
+
+                    if( message ) {
+                        return core.logger[type || 'error']( message );
+                    }
+
+                    // Отправить сообщение в дискорд/телеграм, что не смог отправить
+                    return core.logger.error(
+                        `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
+                    );
                 })
             );
     };
 
     core.get = async ( options, tries = 1 ) => {
         if( tries > GET_LIMIT ) {
-            return {
-                result: 'error',
-                message: 'Number of attempts exceeded.',
-                statusCode: 500
-            };
+            throw new CoreError( 'Number of attempts exceeded' );
         }
 
         return axios.get( options )
             .then( res => ({ result: 'ok', data: res.data }) )
             .catch( err => {
                 core.logger.error(
-                    `Error at core.get "${options.url || options}" (${tries.declOfNumber([ 'try', 'tries' ], 'en' )}): ${err}`
+                    `[${tries} try] Error at core.get "${options.url || options}": ${err.message}`
                 );
 
                 return core.get( options, ++tries );
             });
     };
 
-    core.error = ( reply, lang, errorCode, render = {}) => {
-        if( core.translations.errors[errorCode]) {
+    core.sendError = ( reply, lang, code, render = {}) => {
+        if( core.translations.errors[code]) {
             reply.send({
                 result: 'error',
-                message: core.translations.errors[errorCode][lang].render( render ),
-                errorCode
+                message: core.translations.errors[code][lang].render( render ),
+                code
             });
         } else {
-            reply.send({ result: 'error', errorCode });
+            reply.send({ result: 'error', code });
         }
 
         return false;
     };
 
-    core.send = ( reply, options ) => {
+    core.sendOk = ( reply, options ) => {
         return reply.send({
             result: 'ok',
             ...options
@@ -118,6 +141,14 @@ module.exports = core => {
         }, {});
     };
 
+    core.getAllLanguages = async ( project ) => {
+        return await core.settings[project].getAllLanguages();
+    };
+
+    core.getSubsByName = async ( project, name ) => {
+        return await core.subscriptions[project].getByName( name );
+    };
+
     core.setSettings = ( project, options ) => {
         const { id, type, value } = options;
         const settings = { ownerId: id };
@@ -127,35 +158,44 @@ module.exports = core => {
         return core.settings[project].set( settings );
     };
 
-    core.getSubs = ( project, id ) => {
-        const defaults = core.config.defaultSubs;
+    core.getSubscriptions = async ( project, id ) => {
+        return await core.subscriptions[project].get( id ) || {};
+    };
 
-        const data = core.subs[project].get( id ) || {};
+    core.setSubscriptions = async ( project, options ) => {
+        const { id, name, channels } = options;
+        const subscriptions = { ownerId: id };
 
-        return Object.keys( defaults ).reduce( ( returnObject, key ) => {
-            returnObject[key] = data[key] ? data[key] : defaults[key];
+        subscriptions[name] = channels;
 
-            return returnObject;
-        }, {});
+        return core.subscriptions[project].set( subscriptions );
     };
 
     core.wait = require( 'util' ).promisify( setTimeout );
 
     Object.defineProperty( String.prototype, 'render', {
         value( replaces ) {
-            return Object.keys( replaces )
-                .reduce( ( final, replace ) => final
-                    .replace( new RegExp( `{{\\s+${replace}\\s+}}`, 'g' ), replaces[replace]), this );
+            if( replaces ) {
+                return Object.keys( replaces )
+                    .reduce( ( final, replace ) => final
+                        .replace( new RegExp( `{{\\s*${replace}\\s*}}`, 'g' ), replaces[replace]), this );
+            }
+
+            return this;
         }
     });
 
     Object.defineProperty( Object.prototype, 'render', {
         value( replaces ) {
-            return Object.keys( this ).reduce( ( final, lang ) => {
-                final[lang] = this[lang].render( replaces );
+            if( replaces ) {
+                return Object.keys( this ).reduce( ( final, lang ) => {
+                    final[lang] = this[lang].render( replaces );
 
-                return final;
-            }, {});
+                    return final;
+                }, {});
+            }
+
+            return this;
         }
     });
 

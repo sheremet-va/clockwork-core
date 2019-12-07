@@ -2,11 +2,10 @@ const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
 module.exports = core => {
-    const NOT_FOUND = -1;
     const MAX_LENGTH = 1990;
 
     const getDescription = property => {
-        if( property.text().search( /<br \/>([^>]+)<br \/>/ ) !== NOT_FOUND ) {
+        if( /<br \/>([^>]+)<br \/>/.test( property.text() ) ) {
             return property.text()
                 .match( /<br \/>([^>]+)<br \/>/ )[1]
                 .replace( /&rsquo;/gi, '\'' )
@@ -18,7 +17,7 @@ module.exports = core => {
     };
 
     const getImage = description => {
-        if( description.html().search( /src="([^\s]+)"/ ) !== NOT_FOUND ) {
+        if( /src="([^\s]+)"/.test( description.html() ) ) {
             return description.html()
                 .match( /src="([^\s]+)"/ )[1]
                 .replace( /-\d+x\d+/, '' );
@@ -29,13 +28,9 @@ module.exports = core => {
 
     const send = async () => {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
-        const oldPatch = core.info.get( 'patch' );
+        const oldPatch = await core.info.get( 'patch' );
 
         const res = await core.get( url );
-
-        if( res && res.result !== 'ok' ) {
-            return;
-        }
 
         const $ = cheerio.load( res.data, { normalizeWhitespace: true, xmlMode: true });
 
@@ -66,16 +61,15 @@ module.exports = core => {
 
         const translations = core.translations.getCategory( 'commands', 'patch' );
 
-        return core.notify( 'patch', { translations, description });
+        return core.notify( 'patch', { translations, data: description });
     };
 
     const get = ( request, reply ) => {
-        const lang = request.settings.language;
         const patch = core.info.get( 'patch' );
 
-        const translations = core.translate( 'commands/patch', lang );
+        const translations = core.translate( 'commands/patch' );
 
-        return reply.ok({ translations, data: patch });
+        return reply.with({ translations, data: patch });
     };
 
     return { send, get };

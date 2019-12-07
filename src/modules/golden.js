@@ -1,8 +1,6 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-// const items = require('../info/golden.json')
-
 const getItems = body => {
     const $ = cheerio.load( body.replace( /’/g, '\'' ) );
 
@@ -11,7 +9,7 @@ const getItems = body => {
             return 'URL';
         }
 
-        const full_name = $( el ).text().match( /(^[^\d]+)/ )[0].trim();
+        const full_name = $( el ).text().match( /(^[^\d]+)/ )[0].trim().replace( /\*$/i, '' );
         const name = full_name.match( /(^[^–]+)/ )[0].trim().replace( '’', '\'' );
         const trait = full_name.match( /([^–]+$)/ )[0].trim();
         const price = $( el ).text().replace( full_name, '' ).trim();
@@ -27,27 +25,15 @@ const getItems = body => {
 };
 
 module.exports = core => {
-    const set = options => {
-        core.info.set( 'golden', options.date, 'date' )
-            .set( 'golden', options.url, 'url' )
-            .set( 'golden', options.items, 'items' );
-
-        return core.info.get( 'golden' );
-    };
-
     const send = async data => {
-        const url = data.url;
-        const res = await core.get( url );
-
-        if( res.result !== 'ok' ) {
-            return;
-        }
+        const link = data.link;
+        const res = await core.get( link );
 
         const items = getItems( res.data );
 
-        set({
+        await core.info.set( 'golden', {
             date: data.date,
-            url: data.url,
+            link: data.link,
             items
         });
 
@@ -74,11 +60,12 @@ module.exports = core => {
             return reply.error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = core.translate( 'commands/golden', lang );
+        const translations = core.translate( 'commands/golden' );
+
         translations.title = translations.title.render({ date: core.translations.getDates()[lang] });
 
-        return reply.ok({ translations, data: golden });
+        return reply.with({ translations, data: golden });
     };
 
-    return { send, set, get };
+    return { send, get };
 };

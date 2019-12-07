@@ -1,15 +1,21 @@
 const translations = require( './translation.json' );
 const moment = require( 'moment' );
 
-const formats = {
+const LLY_formats = {
     en: 'MMMM D',
     ru: 'D MMMM'
 };
 
-Object.keys( formats )
+const LLLT_formats = {
+    en: 'MMMM D, LT',
+    ru: 'D MMMM с LT'
+};
+
+Object.keys( LLY_formats )
     .forEach( key => moment.updateLocale( key, {
         longDateFormat: {
-            '[LL-Y]': formats[key]
+            '[LL-Y]': LLY_formats[key],
+            '[LLLT]': LLLT_formats[key]
         }
     }) );
 
@@ -124,7 +130,7 @@ const getDates = ( days = 0 ) => {
     };
 };
 
-const translate = ( path, lang ) => {
+const translate = ( lang, path, render = {}) => {
     const [ type, category, tag ] = path.split( '/' );
 
     const translatedType = getType( type );
@@ -138,7 +144,8 @@ const translate = ( path, lang ) => {
             .reduce( ( str, translatedCategory ) => {
                 str[translatedCategory] = Object.keys( translatedType[translatedCategory])
                     .reduce( ( strCat, translatedTag ) => {
-                        strCat[translatedTag] = getTranslation( type, translatedCategory, translatedTag )[lang];
+                        strCat[translatedTag] = getTranslation( type, translatedCategory, translatedTag )[lang]
+                            .render( render[translatedTag]);
 
                         return strCat;
                     }, {});
@@ -155,7 +162,8 @@ const translate = ( path, lang ) => {
     if( !tag ) {
         return Object.keys( translatedCategory )
             .reduce( ( strCat, translatedTag ) => {
-                strCat[translatedTag] = getTranslation( type, category, translatedTag )[lang];
+                strCat[translatedTag] = getTranslation( type, category, translatedTag )[lang]
+                    .render( render[translatedTag]);
 
                 return strCat;
             }, {});
@@ -173,10 +181,51 @@ const translateDays = ( day, lang ) => {
     return day.declOfNumber( days[lang], lang );
 };
 
+const getTime = time => {
+    return time.match( /\(([0-9:]+) UTC\)/ )[1];
+};
+
+const buildDay = day => {
+    const date = day.match( /\d+/ )[0];
+    const month = day.match( /\w+/ )[0].slice( 0, 3 );
+
+    return `${date} ${month}`;
+};
+
+const getRFCDate = string => {
+    const date = string.split( ' – ' )[1];
+
+    const [ startDate, end ] = date.split( ' - ' );
+    const [ day, start ] = startDate.split( ', ' );
+
+    const startTime = getTime( start );
+    const endTime = getTime( end );
+    const startDay = buildDay( day );
+    const curYear = new Date().getFullYear();
+
+    const [ startResult, endResult ] = [
+        `${startDay} ${curYear} ${startTime} GMT`,
+        `${startDay} ${curYear} ${endTime} GMT`
+    ];
+
+    return {
+        en: `${getMoment( 'en', startResult ).format( '[LLLT]' )} - ${getMoment( 'en', endResult ).format( 'LT' )}`,
+        ru: `${getMoment( 'ru', startResult ).format( '[LLLT]' )} до ${getMoment( 'ru', endResult ).format( 'LT' )}`
+    };
+};
+
+const getMoment = ( lang, time ) => {
+    return {
+        en: moment( time ).utc().locale( 'en' ),
+        ru: moment( time ).locale( 'ru' ),
+    }[lang];
+};
+
 module.exports = {
     getAll,
     getType,
     getDates,
+    getRFCDate,
     getCategory,
     getDropsDay,
     getDropsDate,

@@ -178,7 +178,11 @@ module.exports = core => {
             'masks', getMask( Object.keys( pledge )[0])
         ) );
 
-        const translations = core.translate( 'commands/pledges', lang );
+        const translations = core.translate( 'commands/pledges', {
+            after_days: {
+                days: core.translations.translateDays( days, lang )
+            }
+        });
 
         const options = {
             translations,
@@ -193,15 +197,11 @@ module.exports = core => {
                 ...options.translations,
                 ...core.translations.getPledgesDate( days, lang )
             };
-
-            options.translations.after_days = translations.after_days.render({
-                days: core.translations.translateDays( days, lang )
-            });
         } else {
             delete options.translations.after_days;
         }
 
-        return reply.ok( options );
+        return reply.with( options );
     };
 
     const send = () => {

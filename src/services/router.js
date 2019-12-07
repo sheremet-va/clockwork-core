@@ -11,8 +11,9 @@ module.exports = modules => {
         app.get( '/weekly', modules.weekly.get );
 
         app.get( '/subscriptions', modules.subscriptions.get );
-        app.get( '/subscriptions/:name/:id/sub', modules.subscriptions.sub );
-        app.get( '/subscriptions/:name/:id/unsub', modules.subscriptions.unsub );
+
+        app.post( '/subscriptions/sub', modules.subscriptions.sub );
+        app.post( '/subscriptions/unsub', modules.subscriptions.unsub );
 
         app.post( '/settings/:type/:value', modules.settings.set );
 

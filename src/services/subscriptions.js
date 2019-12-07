@@ -9,10 +9,10 @@ module.exports = ( core, modules ) => {
     new CronJob( '15 */2 * * * *', modules.news.send ).start(); // NEWS subscription
     new CronJob( '20 */2 * * * *', modules.patch.send ).start(); // PATCH subscription
     new CronJob( '25 00 9 * * *', modules.pledges.send ).start(); // PLEDGES subscription
-    new CronJob( '30 */2 * * * *', modules.status.send ).start(); // STATUS subscription and setting
-    new CronJob( '35 */10 * * * 1-2', modules.weekly.send ).start(); // WEEKLY subscription and setting
+    new CronJob( '30 */3 * * * *', modules.status.send ).start(); // STATUS subscription
+    new CronJob( '35 */10 * * * 1-2', modules.weekly.send ).start(); // WEEKLY subscription
 
     // TESTS
     // new CronJob( '*/5 * * * * *', drops.send ).start(); // DROPS subscription
-    // new CronJob( '*/15 * * * * *', modules.status.send ).start(); // STATUS subscription and setting
+    // new CronJob( '*/15 * * * * *', modules.status.send ).start(); // STATUS subscription
 };

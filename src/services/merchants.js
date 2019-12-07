@@ -19,7 +19,7 @@ module.exports = ( core, golden, luxury ) => {
 
             const type = isLuxury ? 'luxury' : 'golden';
 
-            const url = $( item ).find( 'link' ).text();
+            const link = $( item ).find( 'link' ).text();
             const date = $( item ).find( 'pubDate' ).text();
 
             const publishedToday = moment( date ).isSame( moment(), 'day' );
@@ -30,14 +30,14 @@ module.exports = ( core, golden, luxury ) => {
                 return NOT_ELIGIBLE;
             }
 
-            return { url, date, type };
+            return { link, date, type };
         }).get().filter( e => e !== NOT_ELIGIBLE );
     };
 
     const start = async () => {
         const info = {
-            golden: core.info.get( 'golden' ), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
-            luxury: core.info.get( 'luxury' ) // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
+            golden: await core.info.get( 'golden' ), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
+            luxury: await core.info.get( 'luxury' ) // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
         };
 
         if( moment( info.golden.date ).isSame( moment(), 'day' )
@@ -48,10 +48,6 @@ module.exports = ( core, golden, luxury ) => {
         const benevolent_rss = 'http://benevolentbowd.ca/feed/';
 
         const res = await core.get( benevolent_rss );
-
-        if( res.result !== 'ok' ) {
-            return;
-        }
 
         published( res.data, info ).forEach( post => {
             if( post.type === 'luxury' ) {
