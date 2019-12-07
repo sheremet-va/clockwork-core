@@ -40,7 +40,7 @@ module.exports = core => {
             const link = $( news ).find( 'link' ).text();
 
             if( title.startsWith( 'PC/Mac Patch Notes' )
-                && moment().isSame( date )
+                && moment().isSame( date, 'day' )
                 && oldPatch.link !== link ) {
                 return true;
             }
