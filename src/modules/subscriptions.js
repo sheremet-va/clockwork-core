@@ -4,7 +4,7 @@ module.exports = Core => {
 
         const subs = request.subs;
 
-        if( channelId === '0' ) {
+        if( channelId === 0 ) {
             throw new Core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE' );
         }
 
@@ -22,7 +22,7 @@ module.exports = Core => {
         const subName = Object.keys( aliases ).find( sub => aliases[sub].includes( name ) );
 
         if( !subName ) {
-            throw new Core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE', { sub: name });
+            throw new Core.Error( 'INCORRECT_SUBSCRIPTION_NAME', { sub: name });
         }
 
         const nameAlias = Core.translate( `subscriptions/aliases/${subName}` );
