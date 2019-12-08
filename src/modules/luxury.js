@@ -63,9 +63,9 @@ const downloadIcon = async icon => {
     }
 };
 
-const drawImage = async ( core, icons ) => {
+const drawImage = async ( Core, icons ) => {
     if ( icons.length === 0 ) {
-        return core.media.luxury;
+        return Core.media.luxury;
     }
 
     const MAX_COUNT = 7;
@@ -101,10 +101,10 @@ const drawImage = async ( core, icons ) => {
 
             image.composite( iconWithBg, coords.x, coords.y );
         } catch( err ) {
-            core.logger.error( `An errror occured while trying to add an icon "${icon}" on image: ${err}` );
+            Core.logger.error( `An errror occured while trying to add an icon "${icon}" on image: ${err}` );
         }
 
-        fs.unlink( icon, () => core.logger.log( `File "${icon}" was deleted.` ) );
+        fs.unlink( icon, () => Core.logger.log( `File "${icon}" was deleted.` ) );
 
         return image;
     }, baseLuxuryImage );
@@ -113,16 +113,16 @@ const drawImage = async ( core, icons ) => {
 
     const file = fs.readFileSync( fileName );
     const data = await imgurUploader( file )
-        .catch( err => ({ link: core.media.luxury, message: err }) );
+        .catch( err => ({ link: Core.media.luxury, message: err }) );
 
-    fs.unlink( fileName, () => core.logger.log( `File "${fileName}" was deleted.` ) );
+    fs.unlink( fileName, () => Core.logger.log( `File "${fileName}" was deleted.` ) );
 
     return data.link;
 };
 
-module.exports = core => {
+module.exports = Core => {
     const send = async data => {
-        const res = await core.get( data.link );
+        const res = await Core.get( data.link );
 
         const items = getItems( res.data );
         const translated = items.map( item => ({
@@ -139,36 +139,36 @@ module.exports = core => {
                 result.filter( icon => icon.status === 'fulfilled' )
                     .map( icon => icon.value ) );
 
-        const image = await drawImage( core, icons );
+        const image = await drawImage( Core, icons );
 
-        await core.info.set( 'luxury', {
+        await Core.info.set( 'luxury', {
             date: data.date,
             link: data.link,
             items: translated,
             image
         });
 
-        const translations = core.translations.getCategory( 'merchants', 'luxury' );
+        const translations = Core.translations.getCategory( 'merchants', 'luxury' );
 
-        return core.notify( 'luxury', { translations, data: { ...translated, image }, });
+        return Core.notify( 'luxury', { translations, data: { ...translated, image }, });
     };
 
     const get = async request => {
         const lang = request.settings.language;
         const NOW = moment().utc();
 
-        const luxury = await core.info.get( 'luxury' );
+        const luxury = await Core.info.get( 'luxury' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            throw new core.Error( 'UNEXPECTED_LUXURY_DATE' );
+            throw new Core.Error( 'UNEXPECTED_LUXURY_DATE' );
         } else if( !moment( luxury.date ).isSame( NOW, 'day' )
             && !moment( luxury.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            throw new core.Error( 'DONT_HAVE_ITEMS_YET' );
+            throw new Core.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = core.translate( 'commands/luxury', {
+        const translations = Core.translate( 'commands/luxury', {
             title: {
-                date: core.translations.getDates()[lang]
+                date: Core.translations.getDates()[lang]
             }
         });
 

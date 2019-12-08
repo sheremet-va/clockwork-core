@@ -24,14 +24,14 @@ const getItems = body => {
     }).get().filter( e => e !== 'URL' );
 };
 
-module.exports = core => {
+module.exports = Core => {
     const send = async data => {
         const link = data.link;
-        const res = await core.get( link );
+        const res = await Core.get( link );
 
         const items = getItems( res.data );
 
-        await core.info.set( 'golden', {
+        await Core.info.set( 'golden', {
             date: data.date,
             link: data.link,
             items
@@ -39,30 +39,30 @@ module.exports = core => {
 
         const translatedItems = items.map( item => Object.assign( item, {
             // items.getItem( name )
-            trait: core.translations.getTranslation( 'merchants', 'traits', item.trait )
+            trait: Core.translations.getTranslation( 'merchants', 'traits', item.trait )
         }) );
 
-        const translations = core.translations.getCategory( 'merchants', 'golden' );
+        const translations = Core.translations.getCategory( 'merchants', 'golden' );
 
-        return core.notify( 'golden', { translations, data: translatedItems });
+        return Core.notify( 'golden', { translations, data: translatedItems });
     };
 
     const get = async request => {
         const lang = request.settings.language;
         const NOW = moment().utc();
 
-        const golden = await core.info.get( 'golden' );
+        const golden = await Core.info.get( 'golden' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            throw new core.Error( 'UNEXPECTED_GOLDEN_DATE' );
+            throw new Core.Error( 'UNEXPECTED_GOLDEN_DATE' );
         } else if( !moment( golden.date ).isSame( NOW, 'day' )
             && !moment( golden.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            throw new core.Error( 'DONT_HAVE_ITEMS_YET' );
+            throw new Core.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = core.translate( 'commands/golden', {
+        const translations = Core.translate( 'commands/golden', {
             title: {
-                date: core.translations.getDates()[lang]
+                date: Core.translations.getDates()[lang]
             }
         });
 

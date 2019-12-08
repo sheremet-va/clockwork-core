@@ -1,7 +1,7 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-module.exports = ( core, golden, luxury ) => {
+module.exports = ( Core, golden, luxury ) => {
     const published = ( body, info ) => {
         const NOT_ELIGIBLE = 'NOT_ELIGIBLE';
 
@@ -36,8 +36,8 @@ module.exports = ( core, golden, luxury ) => {
 
     const start = async () => {
         const info = {
-            golden: await core.info.get( 'golden' ), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
-            luxury: await core.info.get( 'luxury' ) // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
+            golden: await Core.info.get( 'golden' ), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
+            luxury: await Core.info.get( 'luxury' ) // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
         };
 
         if( moment( info.golden.date ).isSame( moment(), 'day' )
@@ -47,7 +47,7 @@ module.exports = ( core, golden, luxury ) => {
 
         const benevolent_rss = 'http://benevolentbowd.ca/feed/';
 
-        const res = await core.get( benevolent_rss );
+        const res = await Core.get( benevolent_rss );
 
         published( res.data, info ).forEach( post => {
             if( post.type === 'luxury' ) {

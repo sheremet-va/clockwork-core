@@ -5,10 +5,10 @@ const REPEAT_NOTIFY_LIMIT = 30;
 
 const GET_LIMIT = 10;
 
-module.exports = core => {
-    const projects = core.config.projects;
+module.exports = Core => {
+    const projects = Core.config.projects;
 
-    core.Error = class extends Error {
+    Core.Error = class extends Error {
         constructor( message, render = {}) {
             super( message );
 
@@ -20,14 +20,14 @@ module.exports = core => {
         }
     };
 
-    core.post = async ( project, options, limit = 1 ) => {
+    Core.post = async ( project, options, limit = 1 ) => {
         if( limit > REPEAT_NOTIFY_LIMIT ) {
             return Promise.reject({ project });
         }
 
         const url = projects[project].url + options.url;
 
-        options.data.token = core.config.token;
+        options.data.token = Core.config.token;
 
         try {
             const res = await axios({
@@ -38,23 +38,23 @@ module.exports = core => {
 
             return { status: res.data.result, project };
         } catch( err ) {
-            core.logger.error(
+            Core.logger.error(
                 `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
             );
 
-            await core.wait( REPEAT_IN_SECONDS );
+            await Core.wait( REPEAT_IN_SECONDS );
 
-            return core.post( project, options, ++limit );
+            return Core.post( project, options, ++limit );
         }
     };
 
-    core.notify = async ( name, data ) => {
+    Core.notify = async ( name, data ) => {
         const promises = Object.keys( projects )
             .map( async project => {
-                const subscribers = await core.getSubsByName( project, name );
+                const subscribers = await Core.getSubsByName( project, name );
 
                 if( Object.keys( subscribers ).length ) {
-                    return core.post( project, {
+                    return Core.post( project, {
                         url: `/subscriptions/${name}`,
                         subscribers,
                         data
@@ -71,24 +71,24 @@ module.exports = core => {
             .then( result =>
                 result.forEach( res => {
                     if( res.status === 'fulfilled' ) {
-                        return res.value ? core.logger.sub( name, res.value.project, res.value.status ) : null;
+                        return res.value ? Core.logger.sub( name, res.value.project, res.value.status ) : null;
                     }
 
                     const { type, message } = res.reason;
 
                     if( message ) {
-                        return core.logger[type || 'error']( message );
+                        return Core.logger[type || 'error']( message );
                     }
 
                     // Отправить сообщение в дискорд/телеграм, что не смог отправить
-                    return core.logger.error(
+                    return Core.logger.error(
                         `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
                     );
                 })
             );
     };
 
-    core.get = async ( options, tries = 1 ) => {
+    Core.get = async ( options, tries = 1 ) => {
         if( tries > GET_LIMIT ) {
             throw new Error( 'Number of attempts exceeded' );
         }
@@ -96,19 +96,19 @@ module.exports = core => {
         return axios.get( options )
             .then( res => ({ result: 'ok', data: res.data }) )
             .catch( err => {
-                core.logger.error(
-                    `[${tries} try] Error at core.get "${options.url || options}": ${err.message}`
+                Core.logger.error(
+                    `[${tries} try] Error at Core.get "${options.url || options}": ${err.message}`
                 );
 
-                return core.get( options, ++tries );
+                return Core.get( options, ++tries );
             });
     };
 
-    core.sendError = ( reply, lang, code, render = {}) => {
-        if( core.translations.errors[code]) {
+    Core.sendError = ( reply, lang, code, render = {}) => {
+        if( Core.translations.errors[code]) {
             reply.send({
                 result: 'error',
-                message: core.translations.errors[code][lang].render( render ),
+                message: Core.translations.errors[code][lang].render( render ),
                 code
             });
         } else {
@@ -118,13 +118,13 @@ module.exports = core => {
         return false;
     };
 
-    core.getSettings = async ( project, id ) => {
+    Core.getSettings = async ( project, id ) => {
         const projectInfo = projects[project];
         const defaults = projectInfo.vk
-            ? core.config.defaultVkSettings
-            : core.config.defaultSettings;
+            ? Core.config.defaultVkSettings
+            : Core.config.defaultSettings;
 
-        const data = await core.settings[project].get( id ) || {};
+        const data = await Core.settings[project].get( id ) || {};
 
         return Object.keys( defaults ).reduce( ( returnObject, key ) => {
             returnObject[key] = data[key] ? data[key] : defaults[key];
@@ -133,37 +133,37 @@ module.exports = core => {
         }, {});
     };
 
-    core.getAllLanguages = async ( project ) => {
-        return await core.settings[project].getAllLanguages();
+    Core.getAllLanguages = async ( project ) => {
+        return await Core.settings[project].getAllLanguages();
     };
 
-    core.getSubsByName = async ( project, name ) => {
-        return await core.subscriptions[project].getByName( name );
+    Core.getSubsByName = async ( project, name ) => {
+        return await Core.subscriptions[project].getByName( name );
     };
 
-    core.setSettings = ( project, options ) => {
+    Core.setSettings = ( project, options ) => {
         const { id, type, value } = options;
         const settings = { ownerId: id };
 
         settings[type] = value;
 
-        return core.settings[project].set( settings );
+        return Core.settings[project].set( settings );
     };
 
-    core.getSubscriptions = async ( project, id ) => {
-        return await core.subscriptions[project].get( id ) || {};
+    Core.getSubscriptions = async ( project, id ) => {
+        return await Core.subscriptions[project].get( id ) || {};
     };
 
-    core.setSubscriptions = async ( project, options ) => {
+    Core.setSubscriptions = async ( project, options ) => {
         const { id, name, channels } = options;
         const subscriptions = { ownerId: id };
 
         subscriptions[name] = channels;
 
-        return core.subscriptions[project].set( subscriptions );
+        return Core.subscriptions[project].set( subscriptions );
     };
 
-    core.wait = require( 'util' ).promisify( setTimeout );
+    Core.wait = require( 'util' ).promisify( setTimeout );
 
     Object.defineProperty( String.prototype, 'render', {
         value( replaces ) {
@@ -211,23 +211,23 @@ module.exports = core => {
      *
      */
 
-    core.media = {
+    Core.media = {
         luxury: 'https://i.imgur.com/DYHHd1i.png'
     };
 
     process.on( 'uncaughtException', err =>
-        core.logger.error( `Uncaught Exception: ${
+        Core.logger.error( `Uncaught Exception: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
         }` ) );
 
     process.on( 'ReferenceError', err =>
-        core.logger.error( `ReferenceError: ${
+        Core.logger.error( `ReferenceError: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
         }` ) );
 
     process.on( 'unhandledRejection', err =>
-        core.logger.error( `Unhandled rejection: ${err.stack}` ) );
+        Core.logger.error( `Unhandled rejection: ${err.stack}` ) );
 
     process.on( 'warning', err =>
-        core.logger.error( `warning: ${err.stack}` ) );
+        Core.logger.error( `warning: ${err.stack}` ) );
 };

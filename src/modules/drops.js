@@ -12,14 +12,14 @@ const drops_schedule = JSON.parse(
     )
 );
 
-module.exports = core => {
+module.exports = Core => {
     const dates = Object.keys( drops_schedule );
 
     const getDropsSending = ( send, foundDrops ) => {
         return Object.keys( send ).reduce( ( final, lang ) => {
             const sending = {
-                time: core.translations.getDropsDay( 'time', foundDrops.sendingDate, lang ),
-                date: core.translations.getDropsDay( 'day', foundDrops.sendingDate, lang )
+                time: Core.translations.getDropsDay( 'time', foundDrops.sendingDate, lang ),
+                date: Core.translations.getDropsDay( 'day', foundDrops.sendingDate, lang )
             };
 
             final[lang] = send[lang].render( sending );
@@ -30,7 +30,7 @@ module.exports = core => {
 
     const get = async request => {
         const lang = request.settings.language;
-        const description = core.translate( 'drops/description' );
+        const description = Core.translate( 'drops/description' );
 
         const drops = dates.filter( key => {
             const [ start, end ] = key.split( ', ' );
@@ -45,12 +45,12 @@ module.exports = core => {
                 const [ start, end ] = key.split( ', ' );
 
                 const sending = {
-                    time: core.translations.getDropsDay( 'time', drop.sendingDate, lang ),
-                    date: core.translations.getDropsDay( 'day', drop.sendingDate, lang )
+                    time: Core.translations.getDropsDay( 'time', drop.sendingDate, lang ),
+                    date: Core.translations.getDropsDay( 'day', drop.sendingDate, lang )
                 };
 
                 return {
-                    when: core.translations.getDropsDate( start, end )[lang],
+                    when: Core.translations.getDropsDate( start, end )[lang],
                     where: description[drop.where].render({ streamer: drop.streamer }),
                     info: description[drop.info].render({ streamer: drop.streamer }),
                     sending: description[drop.sending].render( sending ),
@@ -59,10 +59,10 @@ module.exports = core => {
             });
 
         if( drops.length === 0 ) {
-            throw new core.Error( 'NO_DROPS_INFO' );
+            throw new Core.Error( 'NO_DROPS_INFO' );
         }
 
-        const translations = core.translate( 'commands/drops' );
+        const translations = Core.translate( 'commands/drops' );
 
         return { translations, data: drops };
     };
@@ -100,21 +100,21 @@ module.exports = core => {
 
         const foundDrops = drops_schedule[key];
         const translations = dropsStartKey
-            ? { title: core.translations.getTranslation( 'drops', 'title', 'title_soon' ) }
-            : { title: core.translations.getTranslation( 'drops', 'title', 'title_now' ) };
+            ? { title: Core.translations.getTranslation( 'drops', 'title', 'title_soon' ) }
+            : { title: Core.translations.getTranslation( 'drops', 'title', 'title_now' ) };
 
         const [ start, end ] = key.split( ', ' );
-        const description = core.translations.getCategory( 'drops', 'description' );
+        const description = Core.translations.getCategory( 'drops', 'description' );
 
         const drops = {
-            when: core.translations.getDropsDate( start, end ),
+            when: Core.translations.getDropsDate( start, end ),
             where: description[foundDrops.where].render({ streamer: foundDrops.streamer }),
             info: description[foundDrops.info].render({ streamer: foundDrops.streamer }),
             sending: getDropsSending( description[foundDrops.sending], foundDrops ),
             url: foundDrops.url
         };
 
-        return core.notify( 'drops', { translations, data: drops });
+        return Core.notify( 'drops', { translations, data: drops });
     };
 
     return { send, get };

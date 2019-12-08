@@ -1,11 +1,11 @@
 const cheerio = require( 'cheerio' );
 
-module.exports = core => {
+module.exports = Core => {
     const get = async request => {
         const lang = request.settings.language;
-        const weekly = await core.info.get( 'weekly' );
+        const weekly = await Core.info.get( 'weekly' );
 
-        const translations = core.translate( 'commands/weekly' );
+        const translations = Core.translate( 'commands/weekly' );
 
         const rendered = Object.keys( weekly )
             .reduce( ( final, region ) => {
@@ -18,12 +18,12 @@ module.exports = core => {
     };
 
     const send = async () => {
-        const translations = core.translations.getCategory( 'commands', 'weekly' );
+        const translations = Core.translations.getCategory( 'commands', 'weekly' );
 
         const url = 'https://esoleaderboards.com/trial/weekly';
-        const oldTrials = await core.info.get( 'weekly' );
+        const oldTrials = await Core.info.get( 'weekly' );
 
-        const res = await core.get( url );
+        const res = await Core.get( url );
 
         const $ = cheerio.load( res.data );
 
@@ -37,14 +37,14 @@ module.exports = core => {
         const changed = newTrials.reduce( ( obj, trial, i ) => {
             const region = i === 0 ? 'eu' : 'na';
 
-            obj[region] = core.translations.getTranslation( 'instances', 'trials', trial );
+            obj[region] = Core.translations.getTranslation( 'instances', 'trials', trial );
 
             return obj;
         }, {});
 
-        core.info.set( 'weekly', changed );
+        Core.info.set( 'weekly', changed );
 
-        return core.notify( 'weekly', { translations, data: changed });
+        return Core.notify( 'weekly', { translations, data: changed });
     };
 
     return { send, get };

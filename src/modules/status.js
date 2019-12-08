@@ -34,10 +34,10 @@ const getNewStatus = response => {
     return [];
 };
 
-module.exports = core => {
+module.exports = Core => {
     const getMaintenceTime = async () => {
         try {
-            const res = await core.get( 'https://forums.elderscrollsonline.com/en/' );
+            const res = await Core.get( 'https://forums.elderscrollsonline.com/en/' );
 
             const $ = cheerio.load( res.data, { normalizeWhitespace: true });
 
@@ -62,7 +62,7 @@ module.exports = core => {
                 const matchName = infoNames.find( inf => mes.search( inf.name ) !== -1 );
 
                 if( matchName ) {
-                    acc[matchName.key] = core.translations.getRFCDate( mes );
+                    acc[matchName.key] = Core.translations.getRFCDate( mes );
                 }
 
                 return acc;
@@ -73,20 +73,20 @@ module.exports = core => {
     };
 
     const get = async () => {
-        const translations = core.translate( 'commands/status' );
+        const translations = Core.translate( 'commands/status' );
 
-        const status = await core.info.get( 'status' );
+        const status = await Core.info.get( 'status' );
 
         return { translations, data: status };
     };
 
     const send = async () => {
-        const translations = core.translations.getCategory( 'commands', 'status' );
+        const translations = Core.translations.getCategory( 'commands', 'status' );
 
         const url = 'https://live-services.elderscrollsonline.com/status/realms';
-        const oldStatus = await core.info.get( 'status' ) || {};
+        const oldStatus = await Core.info.get( 'status' ) || {};
 
-        const res = await core.get( url );
+        const res = await Core.get( url );
 
         const newStatus = getNewStatus( res.data );
         const changedByCode = Object.keys( newStatus )
@@ -104,14 +104,14 @@ module.exports = core => {
             return changed;
         }, {});
 
-        await core.info.set( 'status', { ...changed, maintence });
+        await Core.info.set( 'status', { ...changed, maintence });
 
         statusSubscriptions( changed ).forEach( info => {
-            return core.notify( info.name, {
+            return Core.notify( info.name, {
                 translations: {
                     ...translations,
                     ...maintence,
-                    ...core.translations.getCategory( 'subscriptions', 'status' )
+                    ...Core.translations.getCategory( 'subscriptions', 'status' )
                 },
                 data: info.changed
             });

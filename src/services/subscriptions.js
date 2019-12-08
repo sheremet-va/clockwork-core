@@ -1,7 +1,7 @@
 const { CronJob } = require( 'cron' );
 
-module.exports = ( core, modules ) => {
-    const merchants = require( './merchants' )( core, modules.golden, modules.luxury );
+module.exports = ( Core, modules ) => {
+    const merchants = require( './merchants' )( Core, modules.golden, modules.luxury );
 
     new CronJob( '0 50 */1 * * *', modules.drops.send ).start(); // DROPS subscription
     new CronJob( '5 */2 * * * *', modules.esn.send ).start(); // ESN-NEWS and RUESO subscriptions

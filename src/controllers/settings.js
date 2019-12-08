@@ -1,4 +1,4 @@
-module.exports = ( core, db, project ) => {
+module.exports = ( Core, db, project ) => {
     const get = id => {
         return db.collection( 'settings' )
             .findOne({
@@ -8,7 +8,7 @@ module.exports = ( core, db, project ) => {
                 projection: { _id: 0, project: 0, ownerId: 0 }
             })
             .catch( err => {
-                core.logger.error(
+                Core.logger.error(
                     `An error ocured while trying to get ${project} settings: ${err.message}`
                 );
 
@@ -29,7 +29,7 @@ module.exports = ( core, db, project ) => {
             }, { upsert: true })
             .then( () => params )
             .catch( err => {
-                return core.logger.error(
+                return Core.logger.error(
                     `An error ocured while trying to set ${project} settings with params ${
                         JSON.stringify( params )
                     }: ${err.message}`

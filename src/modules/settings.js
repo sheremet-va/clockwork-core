@@ -1,4 +1,4 @@
-module.exports = core => {
+module.exports = Core => {
     const get = async request => {
         return { data: request.settings };
     };
@@ -9,7 +9,7 @@ module.exports = core => {
         const { project, id } = request.info;
         const { type, value } = request.params;
 
-        const lang = type === 'language' && core.config.languages.includes( value )
+        const lang = type === 'language' && Core.config.languages.includes( value )
             ? value
             : settings.language;
 
@@ -19,27 +19,27 @@ module.exports = core => {
         const valid = validate( type, value, settings, lang );
 
         if( valid.error ) {
-            throw new core.Error( valid.error, valid.render );
+            throw new Core.Error( valid.error, valid.render );
         }
 
         const langRender = type === 'pledgesLang' || type === 'merchantsLang'
             ? translateLang( value.split( '+' ) )
-            : core.translations.translate( lang, `settings/languages/${lang}` );
+            : Core.translations.translate( lang, `settings/languages/${lang}` );
 
-        const translations = core.translations.translate( lang, `settings/${translateType}`, {
+        const translations = Core.translations.translate( lang, `settings/${translateType}`, {
             success: {
                 lang: langRender,
                 prefix: value
             }
         });
 
-        core.setSettings( project, { id, type, value });
+        Core.setSettings( project, { id, type, value });
 
         return { translations };
     };
 
     const validate = ( type, value, settings, lang ) => {
-        const available = Object.keys( core.config.defaultSettings );
+        const available = Object.keys( Core.config.defaultSettings );
         const availableLangs = {
             ru: [ 'ru+en', 'ru', 'en+ru', 'en' ],
             en: [ 'en' ]
@@ -59,9 +59,9 @@ module.exports = core => {
 
         const compare = {
             language: {
-                condition: !core.config.languages.includes( value ),
+                condition: !Core.config.languages.includes( value ),
                 error: 'CANT_CHANGE_LANGUAGE',
-                render: translateLang( core.config.languages, lang )
+                render: translateLang( Core.config.languages, lang )
             },
             prefix: {
                 condition: value.length > 1,
@@ -90,7 +90,7 @@ module.exports = core => {
 
     const translateLang = ( languages, lang ) => {
         return languages
-            .map( confLang => core.translations.translate( lang, `settings/languages/${confLang}` ) )
+            .map( confLang => Core.translations.translate( lang, `settings/languages/${confLang}` ) )
             .join( ', ' );
     };
 

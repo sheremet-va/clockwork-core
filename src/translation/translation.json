@@ -6,7 +6,7 @@
           "ru": "Доступные рассылки"
         },
         "to_subscribe": {
-          "en": "To subscribe, use the command `{{ prefix }}subscribe subscription-name` in channel.",
+          "en": "To subscribe, use command `{{ prefix }}subscribe subscription-name`.",
           "ru": "Чтобы подписаться на рассылку, введите в соответствующем канале `{{ prefix }}подписаться название-рассылки`."
         }
       },
@@ -303,7 +303,7 @@
         },
         "statusPS": {
           "en": "PlayStation Servers Status",
-          "ru": "Уведомляет, если состояние серверов PlayStation обновились."
+          "ru": "Уведомляет, если состояние серверов PlayStation обновилось."
         },
         "statusPS_EU": {
           "en": "PlayStation EU Server Status",
@@ -315,7 +315,7 @@
         },
         "statusXBOX": {
           "en": "Xbox Servers Status",
-          "ru": "Уведомляет, если состояние серверов Xbox обновились."
+          "ru": "Уведомляет, если состояние серверов Xbox обновилось."
         },
         "statusXBOX_EU": {
           "en": "Xbox EU Server Status",

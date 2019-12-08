@@ -1,6 +1,6 @@
 const moment = require( 'moment' );
 
-module.exports = core => {
+module.exports = Core => {
     const getPledges = ( days = 0 ) => {
         const pledgesMaj = [
             /*  0 */ 'Wayrest Sewers II',
@@ -136,7 +136,7 @@ module.exports = core => {
             : '';
 
         const instance = name.replace( level, '' );
-        const translated = core.translations.getTranslation( 'instances', subcat, instance );
+        const translated = Core.translations.getTranslation( 'instances', subcat, instance );
 
         return Object.keys( translated ).reduce( ( instances, langCode ) => {
             const newName = level && !translated[langCode].NOT_FOUND
@@ -171,15 +171,15 @@ module.exports = core => {
         const pledges = getPledges( days );
 
         if( !pledges ) {
-            throw new core.Error( 'INCORRECT_PLEDGES_DATE' );
+            throw new Core.Error( 'INCORRECT_PLEDGES_DATE' );
         }
 
         const masks = pledges.map( pledge => getTranslations(
             'masks', getMask( Object.keys( pledge )[0]) ) );
 
-        const translations = core.translate( 'commands/pledges', {
+        const translations = Core.translate( 'commands/pledges', {
             after_days: {
-                days: core.translations.translateDays( days, lang )
+                days: Core.translations.translateDays( days, lang )
             }
         });
 
@@ -194,7 +194,7 @@ module.exports = core => {
         if( days > 0 ) {
             options.translations = {
                 ...options.translations,
-                ...core.translations.getPledgesDate( days, lang )
+                ...Core.translations.getPledgesDate( days, lang )
             };
         } else {
             delete options.translations.after_days;
@@ -209,7 +209,7 @@ module.exports = core => {
         const today = getPledges();
         const tomorrow = getPledges( TOMORROW );
 
-        return core.notify( 'pledges', { data: { today, tomorrow } });
+        return Core.notify( 'pledges', { data: { today, tomorrow } });
     };
 
     return { get, send };

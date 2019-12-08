@@ -6,7 +6,7 @@ const readdir = promisify( require( 'fs' ).readdir );
 
 const fastify = require( 'fastify' );
 
-const core = {
+const Core = {
     translations: require( './translation/translation' ),
     logger: require( './services/logger' ),
     config: require( './config' ),
@@ -18,7 +18,7 @@ const core = {
 const app = fastify();
 
 const init = async () => {
-    const { checkAccess, prepare } = require( './services/middleware' )( core );
+    const { checkAccess, prepare } = require( './services/middleware' )( Core );
 
     app.register( checkAccess );
     app.register( prepare );
@@ -30,7 +30,7 @@ const init = async () => {
             return modules;
         }
 
-        modules[file.replace( '.js', '' )] = require( `./modules/${file}` )( core );
+        modules[file.replace( '.js', '' )] = require( `./modules/${file}` )( Core );
 
         return modules;
     }, {});
@@ -38,10 +38,10 @@ const init = async () => {
     const router = require( './services/router' )( modules );
 
     app.register( router );
-    require( './services/subscriptions' )( core, modules );
+    require( './services/subscriptions' )( Core, modules );
 
     app.setErrorHandler( ( err, request, reply ) => {
-        core.logger.error( `Error from ${request.ip}: \n${err.stack}`
+        Core.logger.error( `Error from ${request.ip}: \n${err.stack}`
             + `\n\nPARAMS: ${JSON.stringify( request.params )},`
             + `\nQUERY: ${JSON.stringify( request.query )},`
             + `\nBODY: ${JSON.stringify( request.body )}.` );
@@ -49,26 +49,27 @@ const init = async () => {
         return reply.error( err.message, err.render );
     });
 
-    app.listen( core.config.PORT, () => core.logger.log( `Listening ${core.config.PORT} port.` ) );
+    app.listen( Core.config.PORT, () => Core.logger.log( `Listening ${Core.config.PORT} port.` ) );
 };
 
 MongoClient
-    .connect( core.config.db.url, { useUnifiedTopology: true })
+    .connect( Core.config.db.url, { useUnifiedTopology: true })
     .then( client => {
         const db = client.db( 'clockwork-core' );
 
-        Object.keys( core.config.projects )
+        Object.keys( Core.config.projects )
             .forEach( project => {
-                core.subscriptions[project] = require( './controllers/subscriptions' )( core, db, project );
-                core.settings[project] = require( './controllers/settings' )( core, db, project );
+                Core.subscriptions[project] = require( './controllers/subscriptions' )( Core, db, project );
+                Core.settings[project] = require( './controllers/settings' )( Core, db, project );
             });
 
-        core.info = require( './controllers/info' )( core, db );
-        core.info.drops = require( './controllers/drops' )( core, db );
+        Core.info = require( './controllers/info' )( Core, db );
+        Core.info.drops = require( './controllers/drops' )( Core, db );
 
-        require( './services/util' )( core );
-        require( './migrations/migration' )( core );
+        require( './services/util' )( Core );
+        require( './migrations/migration' )( Core );
 
         init();
     })
+    .catch( Core.logger.error );
     .catch( core.logger.error );

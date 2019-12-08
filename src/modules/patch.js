@@ -1,7 +1,7 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-module.exports = core => {
+module.exports = Core => {
     const MAX_LENGTH = 1990;
 
     const getDescription = property => {
@@ -28,9 +28,9 @@ module.exports = core => {
 
     const send = async () => {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
-        const oldPatch = await core.info.get( 'patch' );
+        const oldPatch = await Core.info.get( 'patch' );
 
-        const res = await core.get( url );
+        const res = await Core.get( url );
 
         const $ = cheerio.load( res.data, { normalizeWhitespace: true, xmlMode: true });
 
@@ -57,17 +57,17 @@ module.exports = core => {
             image: getImage( $( patch ).find( 'description' ) )
         };
 
-        core.info.set( 'patch', description );
+        Core.info.set( 'patch', description );
 
-        const translations = core.translations.getCategory( 'commands', 'patch' );
+        const translations = Core.translations.getCategory( 'commands', 'patch' );
 
-        return core.notify( 'patch', { translations, data: description });
+        return Core.notify( 'patch', { translations, data: description });
     };
 
     const get = async () => {
-        const patch = await core.info.get( 'patch' );
+        const patch = await Core.info.get( 'patch' );
 
-        const translations = core.translate( 'commands/patch' );
+        const translations = Core.translate( 'commands/patch' );
 
         return { translations, data: patch };
     };

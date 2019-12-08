@@ -1,9 +1,9 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-module.exports = core => {
+module.exports = Core => {
     const getImage = async url => {
-        const page = await core.get( url );
+        const page = await Core.get( url );
 
         const $ = cheerio.load( page.data );
 
@@ -12,9 +12,9 @@ module.exports = core => {
 
     const send = async () => {
         const url = 'http://files.elderscrollsonline.com/rss/en-us/eso-rss.xml';
-        const oldNews = await core.info.get( 'news' );
+        const oldNews = await Core.info.get( 'news' );
 
-        const res = await core.get( url );
+        const res = await Core.get( url );
 
         const $ = cheerio.load( res.data, { normalizeWhitespace: true, xmlMode: true });
 
@@ -39,11 +39,11 @@ module.exports = core => {
 
         description.image = await getImage( description.link );
 
-        await core.info.set( 'news', description );
+        await Core.info.set( 'news', description );
 
-        const translations = core.translations.getCategory( 'commands', 'news' );
+        const translations = Core.translations.getCategory( 'commands', 'news' );
 
-        return core.notify( 'news', { translations, data: description });
+        return Core.notify( 'news', { translations, data: description });
     };
 
     return { send };

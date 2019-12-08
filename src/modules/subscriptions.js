@@ -1,14 +1,14 @@
-module.exports = core => {
+module.exports = Core => {
     const getInfo = ( toSub, request ) => {
         const { name, channelId, subject } = request.body;
 
         const subs = request.subs;
 
         if( channelId === '0' ) {
-            throw new core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE' );
+            throw new Core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE' );
         }
 
-        const defaultAliases = core.config.subsAliases;
+        const defaultAliases = Core.config.subsAliases;
 
         const aliases = Object.keys( defaultAliases )
             .reduce( ( obj, sub ) => {
@@ -22,25 +22,25 @@ module.exports = core => {
         const subName = Object.keys( aliases ).find( sub => aliases[sub].includes( name ) );
 
         if( !subName ) {
-            throw new core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE', { sub: name });
+            throw new Core.Error( 'DONT_HAVE_RIGHTS_TO_SUBSCRIBE', { sub: name });
         }
 
-        const nameAlias = core.translate( `subscriptions/aliases/${subName}` );
+        const nameAlias = Core.translate( `subscriptions/aliases/${subName}` );
 
         const render = { sub: nameAlias, subject };
 
         if( toSub && subs[subName] && subs[subName].includes( channelId ) ) {
             if( subject === 'user' ) {
-                throw new core.Error( 'USER_ALREADY_SUBSCRIBED' );
+                throw new Core.Error( 'USER_ALREADY_SUBSCRIBED' );
             }
 
-            throw new core.Error( 'CHANNEL_ALREADY_SUBSCRIBED', render );
+            throw new Core.Error( 'CHANNEL_ALREADY_SUBSCRIBED', render );
         } else if( !toSub && ( !subs[subName] || !subs[subName].includes( channelId ) ) ) {
             if( subject === 'user' ) {
-                throw new core.Error( 'USER_NOT_SUBSCRIBED' );
+                throw new Core.Error( 'USER_NOT_SUBSCRIBED' );
             }
 
-            throw new core.Error( 'CHANNEL_NOT_SUBSCRIBED', render );
+            throw new Core.Error( 'CHANNEL_NOT_SUBSCRIBED', render );
         }
 
         return { subs, channelId, name: subName, subject, nameAlias };
@@ -50,18 +50,18 @@ module.exports = core => {
         const settings = request.settings;
 
         const translated = {
-            ...core.translate( 'commands/subscriptions', {
+            ...Core.translate( 'commands/subscriptions', {
                 to_subscribe: { prefix: settings.prefix }
             }),
             subscriptions: {}
         };
-        const descriptions = core.translate( 'subscriptions/descriptions' );
+        const descriptions = Core.translate( 'subscriptions/descriptions' );
 
         const lang = settings.language;
 
-        const availableSubs = core.config.subsByLanguages[lang];
-        const defaultSubs = core.config.subsByLanguages.en;
-        const aliases = core.config.subsAliases;
+        const availableSubs = Core.config.subsByLanguages[lang];
+        const defaultSubs = Core.config.subsByLanguages.en;
+        const aliases = Core.config.subsAliases;
 
         const translations = Object.keys( descriptions )
             .reduce( ( obj, name ) => {
@@ -89,12 +89,12 @@ module.exports = core => {
 
         const channels = subs[name] ? [ ...subs[name], channelId ] : [ channelId ];
 
-        const translations = core.translate( 'commands/subscribe', {
+        const translations = Core.translate( 'commands/subscribe', {
             success_channel: { subject, sub: nameAlias },
             success_user: { sub: nameAlias }
         });
 
-        core.setSubscriptions( project, { id, name, channels });
+        Core.setSubscriptions( project, { id, name, channels });
 
         return { translations };
     };
@@ -105,12 +105,12 @@ module.exports = core => {
 
         const channels = subs[name].filter( id => id !== channelId );
 
-        const translations = core.translate( 'commands/unsubscribe', {
+        const translations = Core.translate( 'commands/unsubscribe', {
             success_channel: { subject, sub: nameAlias },
             success_user: { sub: nameAlias }
         });
 
-        core.setSubscriptions( project, { id, name, channels });
+        Core.setSubscriptions( project, { id, name, channels });
 
         return { translations };
     };
