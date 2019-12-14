@@ -1,6 +1,6 @@
 {
     "name": "clockwork-core",
-    "version": "0.0.2",
+    "version": "0.0.3a",
     "description": "Core Module for Clockwork Bots",
     "main": "index.js",
     "scripts": {
