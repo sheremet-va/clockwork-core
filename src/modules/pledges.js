@@ -1,6 +1,6 @@
 const moment = require( 'moment' );
 
-module.exports = Core => {
+module.exports = function() {
     const getPledges = ( days = 0 ) => {
         const pledgesMaj = [
             /*  0 */ 'Wayrest Sewers II',
@@ -49,7 +49,7 @@ module.exports = Core => {
             /* 13 */ 'Bloodroot Forge'
         ];
 
-        const knownDate = moment([ 2019, 2, 12 ]);
+        const knownDate = moment([2019, 2, 12]);
         const now = moment();
 
         const daysLeft = now.hours() < 9
@@ -131,55 +131,52 @@ module.exports = Core => {
     };
 
     const getTranslations = ( subcat, name ) => {
-        const level = name.match( /( I| II)$/ )
+        const level = /( I| II)$/.test( name )
             ? name.match( /( I| II)$/ )[0]
             : '';
 
         const instance = name.replace( level, '' );
-        const translated = Core.translations.getTranslation( 'instances', subcat, instance );
+        const translated = this.translations.getTranslation( 'instances', subcat, instance );
 
-        return Object.keys( translated ).reduce( ( instances, langCode ) => {
-            const newName = level && !translated[langCode].NOT_FOUND
-                ? translated[langCode] + level
-                : translated[langCode];
+        return Object.entries( translated ).reduce( ( instances, [langCode, inst]) => {
+            const newName = level && !inst.NOT_FOUND ? inst + level : inst;
 
-            instances[name] = instances[name] || {};
-            instances[name][langCode] = newName;
-
-            return instances;
+            return {
+                ...instances,
+                [name]: {
+                    ...instances[name],
+                    [langCode]: newName
+                }
+            };
         }, {});
     };
 
     const translate = ( strings, lang = 'en' ) => {
         return strings.reduce( ( final, pledge ) => {
-            const name = Object.keys( pledge )[0];
+            const [name] = Object.keys( pledge );
 
             if( !pledge[name].errors ) {
-                final[name] = pledge[name][lang];
-            } else {
-                final[name] = pledge[name].errors.NOT_FOUND[lang];
+                return { ...final, [name]: pledge[name][lang] };
             }
 
-            return final;
+            return { ...final, [name]: pledge[name].errors.NOT_FOUND[lang] };
         }, {});
     };
 
-    const get = async request => {
-        const lang = request.settings.language;
-
-        const days = parseInt( request.params.days );
+    const get = async ({ settings: { language: lang }, params }) => {
+        const days = parseInt( params.days );
         const pledges = getPledges( days );
 
         if( !pledges ) {
-            throw new Core.Error( 'INCORRECT_PLEDGES_DATE' );
+            throw new this.Error( 'INCORRECT_PLEDGES_DATE' );
         }
 
         const masks = pledges.map( pledge => getTranslations(
             'masks', getMask( Object.keys( pledge )[0]) ) );
 
-        const translations = Core.translate( 'commands/pledges', {
+        const translations = this.translate( 'commands/pledges', {
             after_days: {
-                days: Core.translations.translateDays( days, lang )
+                days: this.translations.translateDays( days, lang )
             }
         });
 
@@ -194,7 +191,7 @@ module.exports = Core => {
         if( days > 0 ) {
             options.translations = {
                 ...options.translations,
-                ...Core.translations.getPledgesDate( days, lang )
+                ...this.translations.getPledgesDate( days, lang )
             };
         } else {
             delete options.translations.after_days;
@@ -209,7 +206,7 @@ module.exports = Core => {
         const today = getPledges();
         const tomorrow = getPledges( TOMORROW );
 
-        return Core.notify( 'pledges', { data: { today, tomorrow } });
+        return this.notify( 'pledges', { data: { today, tomorrow } });
     };
 
     return { get, send };

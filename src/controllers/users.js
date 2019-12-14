@@ -1,38 +1,41 @@
-module.exports = ( Core, db, project ) => {
+module.exports = ( db, project, type ) => {
     const get = id => {
-        return db.collection( 'subscriptions' )
+        return db.collection( 'users' )
             .findOne({
                 ownerId: id,
                 project
             }, {
-                projection: { _id: 0, project: 0, ownerId: 0 }
+                projection: { _id: 0, project: 0, ownerId: 0, [type]: 1 }
             })
             .catch( err => {
-                Core.logger.error(
-                    `An error ocured while trying to get ${project} subscriptions: ${err.message}`
+                this.logger.error(
+                    `An error ocured while trying to get ${project} ${type}: ${err.message}`
                 );
 
-                return null;
+                return {};
             });
     };
 
     const set = params => {
-        return db.collection( 'subscriptions' )
+        return db.collection( 'users' )
             .updateOne({
                 ownerId: params.ownerId, project
             }, {
                 $set: {
-                    ...params,
+                    ownerId: params.ownerId,
+                    [type]: params.insert, // передавать вместе со старыми
                     project
                 }
             }, { upsert: true })
             .then( () => params )
             .catch( err => {
-                return Core.logger.error(
+                this.logger.error(
                     `An error ocured while trying to set ${project} subscriptions with params ${
                         JSON.stringify( params )
                     }: ${err.message}`
                 );
+
+                return {};
             });
     };
 
@@ -60,19 +63,19 @@ module.exports = ( Core, db, project ) => {
             .toArray()
             .then( res => {
                 return res.reduce( ( result, { ownerId, channels, language }) => {
-                    if( channels ) {
-                        result[ownerId] = { language, channels };
+                    if( !channels ) {
+                        return result;
                     }
 
-                    return result;
+                    return { ...result, [ownerId]: { language, channels } };
                 }, {});
             })
             .catch( err => {
-                Core.logger.error(
+                this.logger.error(
                     `An error ocured while trying to get ${project} subs by ${name} name: ${err.message}`
                 );
 
-                return null;
+                return {};
             });
     };
 

@@ -131,7 +131,7 @@ const getDates = ( days = 0 ) => {
 };
 
 const translate = ( lang, path, render = {}) => {
-    const [ type, category, tag ] = path.split( '/' );
+    const [type, category, tag] = path.split( '/' );
 
     const translatedType = getType( type );
 
@@ -174,11 +174,11 @@ const translate = ( lang, path, render = {}) => {
 
 const translateDays = ( day, lang ) => {
     const days = {
-        en: [ 'day', 'days' ],
-        ru: [ 'день', 'дня', 'дней' ]
+        en: ['day', 'days'],
+        ru: ['день', 'дня', 'дней']
     };
 
-    return day.declOfNumber( days[lang], lang );
+    return day.pluralize( days[lang], lang );
 };
 
 const getTime = time => {
@@ -195,15 +195,15 @@ const buildDay = day => {
 const getRFCDate = string => {
     const date = string.split( ' – ' )[1];
 
-    const [ startDate, end ] = date.split( ' - ' );
-    const [ day, start ] = startDate.split( ', ' );
+    const [startDate, end] = date.split( ' - ' );
+    const [day, start] = startDate.split( ', ' );
 
     const startTime = getTime( start );
     const endTime = getTime( end );
     const startDay = buildDay( day );
     const curYear = new Date().getFullYear();
 
-    const [ startResult, endResult ] = [
+    const [startResult, endResult] = [
         `${startDay} ${curYear} ${startTime} GMT`,
         `${startDay} ${curYear} ${endTime} GMT`
     ];

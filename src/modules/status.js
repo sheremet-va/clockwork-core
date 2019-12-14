@@ -34,12 +34,59 @@ const getNewStatus = response => {
     return [];
 };
 
-module.exports = Core => {
+const statusSubscriptions = changed => {
+    const statuses = Object.keys( changed );
+
+    if( statuses.includes( 'ps_eu' ) || statuses.includes( 'ps_us' ) ) {
+        statuses.unshift( 'ps' );
+    }
+
+    if( statuses.includes( 'xbox_eu' ) || statuses.includes( 'xbox_us' ) ) {
+        statuses.unshift( 'xbox' );
+    }
+
+    statuses.unshift( 'status' );
+
+    return statuses.map( name => {
+        return {
+            name: `status${name.toUpperCase()}`,
+            changed: getChanged( name, changed )
+        };
+    });
+};
+
+const getChanged = ( name, changed ) => {
+    switch( name ) {
+        case 'status':
+            return changed;
+        case 'ps':
+            return {
+                ps_eu: changed.ps_eu,
+                ps_us: changed.ps_us
+            };
+        case 'xbox':
+            return {
+                xbox_eu: changed.xbox_eu,
+                xbox_us: changed.xbox_us
+            };
+        case 'eu':
+        case 'na':
+        case 'ps_eu':
+        case 'ps_us':
+        case 'pts':
+        case 'xbox_eu':
+        case 'xbox_us':
+        default:
+            return { ...changed, [name]: changed[name] };
+    }
+};
+
+module.exports = function() {
     const getMaintenceTime = async () => {
         try {
-            const res = await Core.get( 'https://forums.elderscrollsonline.com/en/' );
+            const { data } = await this.get( 'https://forums.elderscrollsonline.com/en/' );
 
-            const $ = cheerio.load( res.data, { normalizeWhitespace: true });
+            const $ = cheerio.load( data, { normalizeWhitespace: true });
 
             const message = $( '.DismissMessage' ).text().split( '\n' );
 
@@ -58,14 +105,17 @@ module.exports = Core => {
                 }
             ];
 
-            return message.reduce( ( acc, mes ) => {
-                const matchName = infoNames.find( inf => mes.search( inf.name ) !== -1 );
+            return message.reduce( ( acc, body ) => {
+                const matchName = infoNames.find( inf => body.search( inf.name ) !== -1 );
 
-                if( matchName ) {
-                    acc[matchName.key] = Core.translations.getRFCDate( mes );
+                if( !matchName ) {
+                    return acc;
                 }
 
-                return acc;
+                return {
+                    ...acc,
+                    [matchName.key]: this.translations.getRFCDate( body )
+                };
             }, {});
         } catch( err ) {
             return false;
@@ -73,22 +123,22 @@ module.exports = Core => {
     };
 
     const get = async () => {
-        const translations = Core.translate( 'commands/status' );
+        const translations = this.translate( 'commands/status' );
 
-        const status = await Core.info.get( 'status' );
+        const status = await this.info.get( 'status' );
 
         return { translations, data: status };
     };
 
     const send = async () => {
-        const translations = Core.translations.getCategory( 'commands', 'status' );
+        const translations = this.translations.getCategory( 'commands', 'status' );
 
         const url = 'https://live-services.elderscrollsonline.com/status/realms';
-        const oldStatus = await Core.info.get( 'status' ) || {};
+        const oldStatus = await this.info.get( 'status' );
 
-        const res = await Core.get( url );
+        const { data } = await this.get( url );
 
-        const newStatus = getNewStatus( res.data );
+        const newStatus = getNewStatus( data );
         const changedByCode = Object.keys( newStatus )
             .filter( code => newStatus[code] !== oldStatus[code]);
 
@@ -98,75 +148,21 @@ module.exports = Core => {
 
         const maintence = getMaintenceTime();
 
-        const changed = changedByCode.reduce( ( changed, code ) => {
-            changed[code] = newStatus[code];
+        const changed = changedByCode
+            .reduce( ( changed, code ) => ({ ...changed, [code]: newStatus[code] }), {});
 
-            return changed;
-        }, {});
-
-        await Core.info.set( 'status', { ...changed, maintence });
+        await this.info.set( 'status', { ...changed, maintence });
 
         statusSubscriptions( changed ).forEach( info => {
-            return Core.notify( info.name, {
+            return this.notify( info.name, {
                 translations: {
                     ...translations,
                     ...maintence,
-                    ...Core.translations.getCategory( 'subscriptions', 'status' )
+                    ...this.translations.getCategory( 'subscriptions', 'status' )
                 },
                 data: info.changed
             });
         });
-    };
-
-    const statusSubscriptions = changed => {
-        const statuses = Object.keys( changed );
-
-        if( statuses.includes( 'ps_eu' ) || statuses.includes( 'ps_us' ) ) {
-            statuses.unshift( 'ps' );
-        }
-
-        if( statuses.includes( 'xbox_eu' ) || statuses.includes( 'xbox_us' ) ) {
-            statuses.unshift( 'xbox' );
-        }
-
-        statuses.unshift( 'status' );
-
-        return statuses.map( name => {
-            return {
-                name: `status${name.toUpperCase()}`,
-                changed: getChanged( name, changed )
-            };
-        });
-    };
-
-    const getChanged = ( name, changed ) => {
-        const obj = {};
-
-        obj[name] = changed[name];
-
-        switch( name ) {
-            case 'status':
-                return changed;
-            case 'ps':
-                return {
-                    ps_eu: changed.ps_eu,
-                    ps_us: changed.ps_us
-                };
-            case 'xbox':
-                return {
-                    xbox_eu: changed.xbox_eu,
-                    xbox_us: changed.xbox_us
-                };
-            case 'eu':
-            case 'na':
-            case 'ps_eu':
-            case 'ps_us':
-            case 'pts':
-            case 'xbox_eu':
-            case 'xbox_us':
-            default:
-                return obj;
-        }
     };
 
     return { send, get };

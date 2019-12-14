@@ -1,14 +1,14 @@
 const axios = require( 'axios' );
 
 const REPEAT_IN_SECONDS = 10000;
-const REPEAT_NOTIFY_LIMIT = 30;
 
-const GET_LIMIT = 10;
+const LIMIT_REPEAT_NOTIFY = 30;
+const LIMIT_REPEAT_GET = 10;
 
-module.exports = Core => {
-    const projects = Core.config.projects;
+module.exports = function() {
+    const projects = this.config.projects;
 
-    Core.Error = class extends Error {
+    this.Error = class extends Error {
         constructor( message, render = {}) {
             super( message );
 
@@ -20,41 +20,41 @@ module.exports = Core => {
         }
     };
 
-    Core.post = async ( project, options, limit = 1 ) => {
-        if( limit > REPEAT_NOTIFY_LIMIT ) {
+    this.post = async ( project, options, limit = 1 ) => {
+        if( limit > LIMIT_REPEAT_NOTIFY ) {
             return Promise.reject({ project });
         }
 
         const url = projects[project].url + options.url;
 
-        options.data.token = Core.config.token;
+        options.data.token = this.config.token;
 
         try {
-            const res = await axios({
+            const { data } = await axios({
                 method: 'post',
                 data: options.data,
                 url
             });
 
-            return { status: res.data.result, project };
+            return { status: data.status, project };
         } catch( err ) {
-            Core.logger.error(
+            this.logger.error(
                 `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
             );
 
-            await Core.wait( REPEAT_IN_SECONDS );
+            await this.wait( REPEAT_IN_SECONDS );
 
-            return Core.post( project, options, ++limit );
+            return this.post( project, options, ++limit );
         }
     };
 
-    Core.notify = async ( name, data ) => {
+    this.notify = async ( name, data ) => {
         const promises = Object.keys( projects )
             .map( async project => {
-                const subscribers = await Core.getSubsByName( project, name );
+                const subscribers = await this.getSubsByName( project, name );
 
                 if( Object.keys( subscribers ).length ) {
-                    return Core.post( project, {
+                    return this.post( project, {
                         url: `/subscriptions/${name}`,
                         subscribers,
                         data
@@ -71,127 +71,115 @@ module.exports = Core => {
             .then( result =>
                 result.forEach( res => {
                     if( res.status === 'fulfilled' ) {
-                        return res.value ? Core.logger.sub( name, res.value.project, res.value.status ) : null;
+                        return res.value ? this.logger.sub( name, res.value.project, res.value.status ) : null;
                     }
 
                     const { type, message } = res.reason;
 
                     if( message ) {
-                        return Core.logger[type || 'error']( message );
+                        return this.logger[type || 'error']( message );
                     }
 
                     // Отправить сообщение в дискорд/телеграм, что не смог отправить
-                    return Core.logger.error(
+                    return this.logger.error(
                         `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
                     );
                 })
             );
     };
 
-    Core.get = async ( options, tries = 1 ) => {
-        if( tries > GET_LIMIT ) {
-            throw new Error( 'Number of attempts exceeded' );
+    this.get = async ( options, tries = 1 ) => {
+        if( tries > LIMIT_REPEAT_GET ) {
+            throw new this.Error( `Number of attempts to get "${options.url || options}" exceeded` );
         }
 
         return axios.get( options )
-            .then( res => ({ result: 'ok', data: res.data }) )
+            .then( ({ data }) => ({ result: 'ok', data }) )
             .catch( err => {
-                Core.logger.error(
-                    `[${tries} try] Error at Core.get "${options.url || options}": ${err.message}`
+                this.logger.error(
+                    `[${tries} try] Error at core.get "${options.url || options}": ${err.message}`
                 );
 
-                return Core.get( options, ++tries );
+                return this.get( options, ++tries );
             });
     };
 
-    Core.sendError = ( reply, lang, code, render = {}) => {
-        if( Core.translations.errors[code]) {
+    this.sendError = ( reply, lang, code, render = {}) => {
+        if( this.translations.errors[code]) {
             reply.send({
                 result: 'error',
-                message: Core.translations.errors[code][lang].render( render ),
+                message: this.translations.errors[code][lang].render( render ),
                 code
             });
         } else {
             reply.send({ result: 'error', code });
         }
 
+        // добавить в логгер
+
         return false;
     };
 
-    Core.getSettings = async ( project, id ) => {
-        const projectInfo = projects[project];
-        const defaults = projectInfo.vk
-            ? Core.config.defaultVkSettings
-            : Core.config.defaultSettings;
+    this.getSettings = async ( project, id ) => {
+        const defaults = this.settings.config.defaults[project];
 
-        const data = await Core.settings[project].get( id ) || {};
+        const { settings } = await this.settings[project].get( id ) || {};
 
-        return Object.keys( defaults ).reduce( ( returnObject, key ) => {
-            returnObject[key] = data[key] ? data[key] : defaults[key];
-
-            return returnObject;
-        }, {});
+        return Object.entries( defaults )
+            .reduce( ( result, [key, value]) =>
+                ({ ...result, [key]: settings[key] ? settings[key] : value }), {});
     };
 
-    Core.getAllLanguages = async ( project ) => {
-        return await Core.settings[project].getAllLanguages();
+    this.getAllLanguages = async ( project ) => {
+        return await this.settings[project].getAllLanguages();
     };
 
-    Core.getSubsByName = async ( project, name ) => {
-        return await Core.subscriptions[project].getByName( name );
+    this.getSubsByName = async ( project, name ) => {
+        return await this.subscriptions[project].getByName( name );
     };
 
-    Core.setSettings = ( project, options ) => {
-        const { id, type, value } = options;
-        const settings = { ownerId: id };
+    this.setSettings = ( project, { id, type, value }) => {
+        const settings = { ownerId: id, [type]: value };
 
-        settings[type] = value;
-
-        return Core.settings[project].set( settings );
+        return this.settings[project].set( settings );
     };
 
-    Core.getSubscriptions = async ( project, id ) => {
-        return await Core.subscriptions[project].get( id ) || {};
+    this.getSubscriptions = async ( project, id ) => {
+        return await this.subscriptions[project].get( id ) || {};
     };
 
-    Core.setSubscriptions = async ( project, options ) => {
-        const { id, name, channels } = options;
-        const subscriptions = { ownerId: id };
+    this.setSubscriptions = async ( project, { id, name, channels }) => {
+        const subscriptions = { ownerId: id, [name]: channels };
 
-        subscriptions[name] = channels;
-
-        return Core.subscriptions[project].set( subscriptions );
+        return this.subscriptions[project].set( subscriptions );
     };
 
-    Core.wait = require( 'util' ).promisify( setTimeout );
+    this.wait = require( 'util' ).promisify( setTimeout );
 
     Object.defineProperty( String.prototype, 'render', {
         value( replaces ) {
-            if( replaces ) {
-                return Object.keys( replaces )
-                    .reduce( ( final, replace ) => final
-                        .replace( new RegExp( `{{\\s*${replace}\\s*}}`, 'g' ), replaces[replace]), this );
+            if( !replaces ) {
+                return this;
             }
 
-            return this;
+            return Object.keys( replaces )
+                .reduce( ( final, replace ) => final
+                    .replace( new RegExp( `{{\\s*${replace}\\s*}}`, 'g' ), replaces[replace]), this );
         }
     });
 
     Object.defineProperty( Object.prototype, 'render', {
         value( replaces ) {
-            if( replaces ) {
-                return Object.keys( this ).reduce( ( final, lang ) => {
-                    final[lang] = this[lang].render( replaces );
-
-                    return final;
-                }, {});
+            if( !replaces ) {
+                return this;
             }
 
-            return this;
+            return Object.keys( this )
+                .reduce( ( final, lang ) => ({ ...final, [lang]: this[lang].render( replaces ) }), {});
         }
     });
 
-    Object.defineProperty( Number.prototype, 'declOfNumber', {
+    Object.defineProperty( Number.prototype, 'pluralize', {
         value( array, lang ) {
             switch( lang ) {
                 case 'ru':
@@ -211,23 +199,28 @@ module.exports = Core => {
      *
      */
 
-    Core.media = {
+    this.media = {
         luxury: 'https://i.imgur.com/DYHHd1i.png'
     };
 
     process.on( 'uncaughtException', err =>
-        Core.logger.error( `Uncaught Exception: ${
+        this.logger.error( `Uncaught Exception: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
         }` ) );
 
     process.on( 'ReferenceError', err =>
-        Core.logger.error( `ReferenceError: ${
+        this.logger.error( `ReferenceError: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
         }` ) );
 
-    process.on( 'unhandledRejection', err =>
-        Core.logger.error( `Unhandled rejection: ${err.stack}` ) );
+    process.on( 'unhandledRejection', err => {
+        if( err.name === 'CoreError' ) {
+            return this.logger.error( `CoreError: ${err.message}` );
+        }
+
+        return this.logger.error( `Unhandled rejection: ${err.stack}` );
+    });
 
     process.on( 'warning', err =>
-        Core.logger.error( `warning: ${err.stack}` ) );
+        this.logger.error( `warning: ${err.stack}` ) );
 };

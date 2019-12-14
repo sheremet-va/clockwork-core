@@ -1,48 +1,49 @@
-module.exports = Core => {
-    const get = async request => {
-        return { data: request.settings };
+module.exports = function() {
+    const get = async ({ settings }) => {
+        return { data: settings };
     };
 
     const set = async request => {
-        const settings = request.settings;
+        const {
+            settings,
+            info: { project, id },
+            params: { type, value }
+        } = request;
 
-        const { project, id } = request.info;
-        const { type, value } = request.params;
-
-        const lang = type === 'language' && Core.config.languages.includes( value )
+        const lang = type === 'language' && this.config.languages.includes( value )
             ? value
             : settings.language;
 
-        const languageSettings = [ 'pledgesLang', 'merchantsLang', 'language' ];
+        const languageSettings = ['pledgesLang', 'merchantsLang', 'language'];
         const translateType = languageSettings.includes( type ) ? 'language' : type;
 
         const valid = validate( type, value, settings, lang );
 
         if( valid.error ) {
-            throw new Core.Error( valid.error, valid.render );
+            throw new this.Error( valid.error, valid.render );
         }
 
         const langRender = type === 'pledgesLang' || type === 'merchantsLang'
             ? translateLang( value.split( '+' ) )
-            : Core.translations.translate( lang, `settings/languages/${lang}` );
+            : this.translations.translate( lang, `settings/languages/${lang}` );
 
-        const translations = Core.translations.translate( lang, `settings/${translateType}`, {
+        const translations = this.translations.translate( lang, `settings/${translateType}`, {
             success: {
                 lang: langRender,
                 prefix: value
             }
         });
 
-        Core.setSettings( project, { id, type, value });
+        this.setSettings( project, { id, type, value });
 
         return { translations };
     };
 
     const validate = ( type, value, settings, lang ) => {
-        const available = Object.keys( Core.config.defaultSettings );
+        const { available } = this.settings.config;
         const availableLangs = {
-            ru: [ 'ru+en', 'ru', 'en+ru', 'en' ],
-            en: [ 'en' ]
+            ru: ['ru+en', 'ru', 'en+ru', 'en'],
+            en: ['en']
         };
 
         if( !available.includes( type ) ) {
@@ -59,9 +60,9 @@ module.exports = Core => {
 
         const compare = {
             language: {
-                condition: !Core.config.languages.includes( value ),
+                condition: !this.config.languages.includes( value ),
                 error: 'CANT_CHANGE_LANGUAGE',
-                render: translateLang( Core.config.languages, lang )
+                render: translateLang( this.config.languages, lang )
             },
             prefix: {
                 condition: value.length > 1,
@@ -90,7 +91,7 @@ module.exports = Core => {
 
     const translateLang = ( languages, lang ) => {
         return languages
-            .map( confLang => Core.translations.translate( lang, `settings/languages/${confLang}` ) )
+            .map( confLang => this.translations.translate( lang, `settings/languages/${confLang}` ) )
             .join( ', ' );
     };
 

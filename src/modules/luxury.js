@@ -63,22 +63,22 @@ const downloadIcon = async icon => {
     }
 };
 
-const drawImage = async ( Core, icons ) => {
+const drawImage = async function( icons ) {
     if ( icons.length === 0 ) {
-        return Core.media.luxury;
+        return this.media.luxury;
     }
 
     const MAX_COUNT = 7;
 
     const fileName = Path.resolve( __dirname, '../temp', 'luxury.jpg' );
     const coordinates = {
-        1: [ { x: 70, y: 70 } ],
-        2: [ { x: 12, y: 87 }, { x: 87, y: 87 } ],
-        3: [ { x: 22, y: 22 }, { x: 102, y: 22 }, { x: 22, y: 102 } ],
-        4: [ { x: 20, y: 22 }, { x: 102, y: 22 }, { x: 22, y: 102 }, { x: 102, y: 102 } ],
-        5: [ { x: 12, y: 12 }, { x: 87, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 } ],
-        6: [ { x: 12, y: 12 }, { x: 87, y: 12 }, { x: 162, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 } ],
-        7: [ { x: 12, y: 12 }, { x: 87, y: 12 }, { x: 162, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 }, { x: 87, y: 162 } ]
+        1: [{ x: 70, y: 70 }],
+        2: [{ x: 12, y: 87 }, { x: 87, y: 87 }],
+        3: [{ x: 22, y: 22 }, { x: 102, y: 22 }, { x: 22, y: 102 }],
+        4: [{ x: 20, y: 22 }, { x: 102, y: 22 }, { x: 22, y: 102 }, { x: 102, y: 102 }],
+        5: [{ x: 12, y: 12 }, { x: 87, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 }],
+        6: [{ x: 12, y: 12 }, { x: 87, y: 12 }, { x: 162, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 }],
+        7: [{ x: 12, y: 12 }, { x: 87, y: 12 }, { x: 162, y: 12 }, { x: 12, y: 87 }, { x: 87, y: 87 }, { x: 12, y: 162 }, { x: 87, y: 162 }]
     };
 
     const baseLuxuryImage = await Jimp.read( __dirname + '/images/luxury.jpg' );
@@ -101,10 +101,10 @@ const drawImage = async ( Core, icons ) => {
 
             image.composite( iconWithBg, coords.x, coords.y );
         } catch( err ) {
-            Core.logger.error( `An errror occured while trying to add an icon "${icon}" on image: ${err}` );
+            this.logger.error( `An errror occured while trying to add an icon "${icon}" on image: ${err}` );
         }
 
-        fs.unlink( icon, () => Core.logger.log( `File "${icon}" was deleted.` ) );
+        fs.unlink( icon, () => this.logger.log( `File "${icon}" was deleted.` ) );
 
         return image;
     }, baseLuxuryImage );
@@ -112,19 +112,19 @@ const drawImage = async ( Core, icons ) => {
     await wholeImage.quality( 90 ).writeAsync( fileName );
 
     const file = fs.readFileSync( fileName );
-    const data = await imgurUploader( file )
-        .catch( err => ({ link: Core.media.luxury, message: err }) );
+    const { link } = await imgurUploader( file )
+        .catch( err => ({ link: this.media.luxury, message: err }) );
 
-    fs.unlink( fileName, () => Core.logger.log( `File "${fileName}" was deleted.` ) );
+    fs.unlink( fileName, () => this.logger.log( `File "${fileName}" was deleted.` ) );
 
-    return data.link;
+    return link;
 };
 
-module.exports = Core => {
-    const send = async data => {
-        const res = await Core.get( data.link );
+module.exports = function() {
+    const send = async ({ link, date }) => {
+        const { data } = await this.get( link );
 
-        const items = getItems( res.data );
+        const items = getItems( data );
         const translated = items.map( item => ({
             name: item.name, // core.translations.getFurniture( icon.item )
             price: item.price,
@@ -139,36 +139,30 @@ module.exports = Core => {
                 result.filter( icon => icon.status === 'fulfilled' )
                     .map( icon => icon.value ) );
 
-        const image = await drawImage( Core, icons );
+        const image = await drawImage.call( this, icons );
 
-        await Core.info.set( 'luxury', {
-            date: data.date,
-            link: data.link,
-            items: translated,
-            image
-        });
+        await this.info.set( 'luxury', { items: translated, date, link, image });
 
-        const translations = Core.translations.getCategory( 'merchants', 'luxury' );
+        const translations = this.translations.getCategory( 'merchants', 'luxury' );
 
-        return Core.notify( 'luxury', { translations, data: { ...translated, image }, });
+        return this.notify( 'luxury', { translations, data: { ...translated, image }, });
     };
 
-    const get = async request => {
-        const lang = request.settings.language;
+    const get = async ({ settings: { language: lang } }) => {
         const NOW = moment().utc();
 
-        const luxury = await Core.info.get( 'luxury' );
+        const luxury = await this.info.get( 'luxury' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            throw new Core.Error( 'UNEXPECTED_LUXURY_DATE' );
+            throw new this.Error( 'UNEXPECTED_LUXURY_DATE' );
         } else if( !moment( luxury.date ).isSame( NOW, 'day' )
             && !moment( luxury.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            throw new Core.Error( 'DONT_HAVE_ITEMS_YET' );
+            throw new this.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = Core.translate( 'commands/luxury', {
+        const translations = this.translate( 'commands/luxury', {
             title: {
-                date: Core.translations.getDates()[lang]
+                date: this.translations.getDates()[lang]
             }
         });
 

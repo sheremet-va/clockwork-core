@@ -1,19 +1,26 @@
-const moment = require( 'moment' );
+const now = require( 'moment' )();
 const fs = require( 'fs' );
+const { promisify } = require( 'util' );
 
-exports.log = ( content, type = 'log' ) => {
-    const timestamp = `[${moment().format( 'YYYY-MM-DD HH:mm:ss' )}]:`;
-    const day = `${moment().format( 'YYYY-MM-DD' )}`;
+const appendFile = promisify( fs.appendFile );
+const writeFile = promisify( fs.writeFile );
+
+exports.log = async ( content, type = 'log' ) => {
+    const timestamp = `[${now.format( 'YYYY-MM-DD HH:mm:ss' )}]:`;
+    const day = `${now.format( 'YYYY-MM-DD' )}`;
 
     const message = `${timestamp} (${type.toUpperCase()}) ${content}`;
+    const path = `src/logs/${day}-logs.txt`;
 
-    fs.appendFile( `src/logs/${day}-logs.txt`, `${message}\n`, err => {
-        if ( err ) fs.writeFile( `src/logs/${day}-logs.txt`, `${message}\n`, error => {
-            if ( error ) throw new Error( err );
-        });
-    });
+    try {
+        await appendFile( path, `${message}\n` );
+    }
+    catch ( e ) {
+        await writeFile( path, `${message}\n` )
+            .catch( console.error );
+    }
 
-    console.log( message );
+    return console.log( message );
 };
 
 exports.sub = ( name, project, result ) => this.log(

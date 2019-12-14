@@ -1,22 +1,22 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-module.exports = Core => {
+module.exports = function() {
     const getImage = async url => {
-        const page = await Core.get( url );
+        const { data } = await this.get( url );
 
-        const $ = cheerio.load( page.data );
+        const $ = cheerio.load( data );
 
         return $( '.lead-img', '.container' ).attr( 'src' );
     };
 
     const send = async () => {
         const url = 'http://files.elderscrollsonline.com/rss/en-us/eso-rss.xml';
-        const oldNews = await Core.info.get( 'news' );
+        const oldNews = await this.info.get( 'news' );
 
-        const res = await Core.get( url );
+        const { data } = await this.get( url );
 
-        const $ = cheerio.load( res.data, { normalizeWhitespace: true, xmlMode: true });
+        const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
         const news = $( 'item' ).filter( ( i, news ) => {
             const date = $( news ).find( 'pubDate' ).text();
@@ -39,11 +39,11 @@ module.exports = Core => {
 
         description.image = await getImage( description.link );
 
-        await Core.info.set( 'news', description );
+        await this.info.set( 'news', description );
 
-        const translations = Core.translations.getCategory( 'commands', 'news' );
+        const translations = this.translations.getCategory( 'commands', 'news' );
 
-        return Core.notify( 'news', { translations, data: description });
+        return this.notify( 'news', { translations, data: description });
     };
 
     return { send };

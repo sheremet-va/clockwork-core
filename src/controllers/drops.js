@@ -1,4 +1,4 @@
-module.exports = ( Core, db ) => {
+module.exports = db => {
     const get = ( start, end ) => {
         return db.collection( 'drops' )
             .find({
@@ -6,7 +6,7 @@ module.exports = ( Core, db ) => {
                 endDate: { $ls: end }
             })
             .toArray()
-            .catch( err => Core.logger.error(
+            .catch( err => this.logger.error(
                 `An error ocured while trying to get drops: ${err.message}`
             ) );
     };
@@ -19,7 +19,7 @@ module.exports = ( Core, db ) => {
             }, { $set: params }, { upsert: true })
             .then( () => params )
             .catch( err => {
-                Core.logger.error( `An error ocured while trying to set drops with params ${
+                this.logger.error( `An error ocured while trying to set drops with params ${
                     JSON.stringify( params )
                 }: ${err.message}` );
             });

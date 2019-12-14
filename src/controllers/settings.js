@@ -1,4 +1,6 @@
-module.exports = ( Core, db, project ) => {
+// DEPRICATED
+
+module.exports = ( db, project ) => {
     const get = id => {
         return db.collection( 'settings' )
             .findOne({
@@ -8,14 +10,15 @@ module.exports = ( Core, db, project ) => {
                 projection: { _id: 0, project: 0, ownerId: 0 }
             })
             .catch( err => {
-                Core.logger.error(
+                this.logger.error(
                     `An error ocured while trying to get ${project} settings: ${err.message}`
                 );
 
-                return null;
+                return {};
             });
     };
 
+    // вызвать еще раз, но в Core - раз 10, если не получилось - кидать ошибку, но пропускать дальше
     const set = params => {
         return db.collection( 'settings' )
             .updateOne({
@@ -29,11 +32,13 @@ module.exports = ( Core, db, project ) => {
             }, { upsert: true })
             .then( () => params )
             .catch( err => {
-                return Core.logger.error(
+                this.logger.error(
                     `An error ocured while trying to set ${project} settings with params ${
                         JSON.stringify( params )
                     }: ${err.message}`
                 );
+
+                return {};
             });
     };
 

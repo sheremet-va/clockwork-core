@@ -1,7 +1,7 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
-module.exports = Core => {
+module.exports = function() {
     const MAX_LENGTH = 1990;
 
     const getDescription = property => {
@@ -28,11 +28,11 @@ module.exports = Core => {
 
     const send = async () => {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
-        const oldPatch = await Core.info.get( 'patch' );
+        const oldPatch = await this.info.get( 'patch' );
 
-        const res = await Core.get( url );
+        const { data } = await this.get( url );
 
-        const $ = cheerio.load( res.data, { normalizeWhitespace: true, xmlMode: true });
+        const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
         const patch = $( 'item' ).filter( ( i, news ) => {
             const date = $( news ).find( 'pubDate' ).text();
@@ -57,17 +57,17 @@ module.exports = Core => {
             image: getImage( $( patch ).find( 'description' ) )
         };
 
-        Core.info.set( 'patch', description );
+        this.info.set( 'patch', description );
 
-        const translations = Core.translations.getCategory( 'commands', 'patch' );
+        const translations = this.translations.getCategory( 'commands', 'patch' );
 
-        return Core.notify( 'patch', { translations, data: description });
+        return this.notify( 'patch', { translations, data: description });
     };
 
     const get = async () => {
-        const patch = await Core.info.get( 'patch' );
+        const patch = await this.info.get( 'patch' );
 
-        const translations = Core.translate( 'commands/patch' );
+        const translations = this.translate( 'commands/patch' );
 
         return { translations, data: patch };
     };

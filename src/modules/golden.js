@@ -24,45 +24,39 @@ const getItems = body => {
     }).get().filter( e => e !== 'URL' );
 };
 
-module.exports = Core => {
-    const send = async data => {
-        const link = data.link;
-        const res = await Core.get( link );
+module.exports = function() {
+    const send = async ({ link, date }) => {
+        const { data } = await this.get( link );
 
-        const items = getItems( res.data );
+        const items = getItems( data );
 
-        await Core.info.set( 'golden', {
-            date: data.date,
-            link: data.link,
-            items
-        });
+        await this.info.set( 'golden', { date, link, items });
 
         const translatedItems = items.map( item => Object.assign( item, {
             // items.getItem( name )
-            trait: Core.translations.getTranslation( 'merchants', 'traits', item.trait )
+            trait: this.translate( `merchants/traits/${item.trait}` )
         }) );
 
-        const translations = Core.translations.getCategory( 'merchants', 'golden' );
+        const translations = this.translations.getCategory( 'merchants', 'golden' );
 
-        return Core.notify( 'golden', { translations, data: translatedItems });
+        return this.notify( 'golden', { translations, data: translatedItems });
     };
 
-    const get = async request => {
-        const lang = request.settings.language;
+    const get = async ({ settings: { language: lang } }) => {
         const NOW = moment().utc();
 
-        const golden = await Core.info.get( 'golden' );
+        const golden = await this.info.get( 'golden' );
 
         if( NOW.day() !== 0 && NOW.day() !== 6 ) {
-            throw new Core.Error( 'UNEXPECTED_GOLDEN_DATE' );
+            throw new this.Error( 'UNEXPECTED_GOLDEN_DATE' );
         } else if( !moment( golden.date ).isSame( NOW, 'day' )
             && !moment( golden.date ).isSame( NOW.subtract( 1, 'd' ), 'day' ) ) {
-            throw new Core.Error( 'DONT_HAVE_ITEMS_YET' );
+            throw new this.Error( 'DONT_HAVE_ITEMS_YET' );
         }
 
-        const translations = Core.translate( 'commands/golden', {
+        const translations = this.translate( 'commands/golden', {
             title: {
-                date: Core.translations.getDates()[lang]
+                date: this.translations.getDates()[lang]
             }
         });
 

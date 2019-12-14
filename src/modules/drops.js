@@ -12,28 +12,28 @@ const drops_schedule = JSON.parse(
     )
 );
 
-module.exports = Core => {
+module.exports = function() {
     const dates = Object.keys( drops_schedule );
 
     const getDropsSending = ( send, foundDrops ) => {
         return Object.keys( send ).reduce( ( final, lang ) => {
             const sending = {
-                time: Core.translations.getDropsDay( 'time', foundDrops.sendingDate, lang ),
-                date: Core.translations.getDropsDay( 'day', foundDrops.sendingDate, lang )
+                time: this.translations.getDropsDay( 'time', foundDrops.sendingDate, lang ),
+                date: this.translations.getDropsDay( 'day', foundDrops.sendingDate, lang )
             };
 
-            final[lang] = send[lang].render( sending );
-
-            return final;
+            return {
+                ...final,
+                [lang]: send[lang].render( sending )
+            };
         }, {});
     };
 
-    const get = async request => {
-        const lang = request.settings.language;
-        const description = Core.translate( 'drops/description' );
+    const get = async ({ settings: { language: lang } }) => {
+        const description = this.translate( 'drops/description' );
 
         const drops = dates.filter( key => {
-            const [ start, end ] = key.split( ', ' );
+            const [start, end] = key.split( ', ' );
 
             if ( moment( start ).isAfter( NOW ) || NOW.isBetween( start, end ) ) {
                 return true;
@@ -42,15 +42,15 @@ module.exports = Core => {
             .map( key => {
                 const drop = drops_schedule[key];
 
-                const [ start, end ] = key.split( ', ' );
+                const [start, end] = key.split( ', ' );
 
                 const sending = {
-                    time: Core.translations.getDropsDay( 'time', drop.sendingDate, lang ),
-                    date: Core.translations.getDropsDay( 'day', drop.sendingDate, lang )
+                    time: this.translations.getDropsDay( 'time', drop.sendingDate, lang ),
+                    date: this.translations.getDropsDay( 'day', drop.sendingDate, lang )
                 };
 
                 return {
-                    when: Core.translations.getDropsDate( start, end )[lang],
+                    when: this.translations.getDropsDate( start, end )[lang],
                     where: description[drop.where].render({ streamer: drop.streamer }),
                     info: description[drop.info].render({ streamer: drop.streamer }),
                     sending: description[drop.sending].render( sending ),
@@ -59,10 +59,10 @@ module.exports = Core => {
             });
 
         if( drops.length === 0 ) {
-            throw new Core.Error( 'NO_DROPS_INFO' );
+            throw new this.Error( 'NO_DROPS_INFO' );
         }
 
-        const translations = Core.translate( 'commands/drops' );
+        const translations = this.translate( 'commands/drops' );
 
         return { translations, data: drops };
     };
@@ -70,7 +70,7 @@ module.exports = Core => {
     const send = async () => {
         // Checks if there is a translation after 10 minutes
         const dropsStartKey = dates.find( key => {
-            const [ start ] = key.split( ', ' );
+            const [start] = key.split( ', ' );
 
             const startDate = moment( start );
             const hourMore = moment( NOW ).add( ONE_HOUR, 'hours' );
@@ -82,7 +82,7 @@ module.exports = Core => {
 
         // Checks if you can get drops right now (only 19:00 MSK). \\ проверить чтобы 2жды одна и та же не слалась
         const dropsBetweenKey = dates.find( key => {
-            const [ start, end ] = key.split( ', ' );
+            const [start, end] = key.split( ', ' );
 
             const startDate = moment( start );
             const endDate = moment( end );
@@ -100,21 +100,21 @@ module.exports = Core => {
 
         const foundDrops = drops_schedule[key];
         const translations = dropsStartKey
-            ? { title: Core.translations.getTranslation( 'drops', 'title', 'title_soon' ) }
-            : { title: Core.translations.getTranslation( 'drops', 'title', 'title_now' ) };
+            ? { title: this.translations.getTranslation( 'drops', 'title', 'title_soon' ) }
+            : { title: this.translations.getTranslation( 'drops', 'title', 'title_now' ) };
 
-        const [ start, end ] = key.split( ', ' );
-        const description = Core.translations.getCategory( 'drops', 'description' );
+        const [start, end] = key.split( ', ' );
+        const description = this.translations.getCategory( 'drops', 'description' );
 
         const drops = {
-            when: Core.translations.getDropsDate( start, end ),
+            when: this.translations.getDropsDate( start, end ),
             where: description[foundDrops.where].render({ streamer: foundDrops.streamer }),
             info: description[foundDrops.info].render({ streamer: foundDrops.streamer }),
             sending: getDropsSending( description[foundDrops.sending], foundDrops ),
             url: foundDrops.url
         };
 
-        return Core.notify( 'drops', { translations, data: drops });
+        return this.notify( 'drops', { translations, data: drops });
     };
 
     return { send, get };
