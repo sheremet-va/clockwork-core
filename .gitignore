@@ -4,6 +4,6 @@ migrations/
 
 src/services/middleware.js
 
-config.js
+configs/
 
 .eslintrc.json
