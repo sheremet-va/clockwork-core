@@ -81,6 +81,3 @@ MongoClient
         init();
     })
     .catch( core.logger.error );
-
-// хранить префикс на стороне дискорда
-// и данные о командах
