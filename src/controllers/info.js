@@ -1,4 +1,4 @@
-module.exports = db => {
+module.exports = function( db ) {
     const get = name => {
         return db.collection( 'info' )
             .findOne({ name }, { projection: { _id: 0, name: 0 } })

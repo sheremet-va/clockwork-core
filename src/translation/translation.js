@@ -193,7 +193,7 @@ const buildDay = day => {
 };
 
 const getRFCDate = string => {
-    const date = string.split( ' – ' )[1];
+    const [, date] = string.split( ' – ' );
 
     const [startDate, end] = date.split( ' - ' );
     const [day, start] = startDate.split( ', ' );

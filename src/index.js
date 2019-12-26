@@ -42,17 +42,19 @@ const init = async () => {
         };
     }, {});
 
-    const router = require( './services/router' )( modules );
+    const router = require( './services/router' ).call( core, modules );
 
     app.register( router );
 
     require( './services/subscriptions' ).call( core, modules );
 
     app.setErrorHandler( ( err, request, reply ) => {
-        core.logger.error( `Error from ${request.ip}: \n${err.stack}`
-            + `\n\nPARAMS: ${JSON.stringify( request.params )},`
-            + `\nQUERY: ${JSON.stringify( request.query )},`
-            + `\nBODY: ${JSON.stringify( request.body )}.` );
+        if( err.name !== 'CoreError' ) {
+            core.logger.error( `Error from ${request.ip}: \n${err.stack}`
+                + `\n\nPARAMS: ${JSON.stringify( request.params )},`
+                + `\nQUERY: ${JSON.stringify( request.query )},`
+                + `\nBODY: ${JSON.stringify( request.body )}.` );
+        }
 
         return reply.error( err.message, err.render );
     });

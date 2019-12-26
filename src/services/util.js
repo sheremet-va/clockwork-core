@@ -16,7 +16,7 @@ module.exports = function() {
             this.message = message;
             this.code = 500;
             this.name = 'CoreError';
-            this.render = render;
+            // this.render = render;
         }
     };
 
@@ -30,13 +30,13 @@ module.exports = function() {
         options.data.token = this.config.token;
 
         try {
-            const { data } = await axios({
+            const { data: { status } } = await axios({
                 method: 'post',
                 data: options.data,
                 url
             });
 
-            return { status: data.status, project };
+            return { status, project };
         } catch( err ) {
             this.logger.error(
                 `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
@@ -123,7 +123,7 @@ module.exports = function() {
     this.getSettings = async ( project, id ) => {
         const defaults = this.settings.config.defaults[project];
 
-        const { settings } = await this.settings[project].get( id ) || {};
+        const settings = await this.settings[project].get( id ) || {};
 
         return Object.entries( defaults )
             .reduce( ( result, [key, value]) =>

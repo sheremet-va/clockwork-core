@@ -1,4 +1,4 @@
-module.exports = db => {
+module.exports = function( db ) {
     const get = ( start, end ) => {
         return db.collection( 'drops' )
             .find({

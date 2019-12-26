@@ -1,11 +1,11 @@
-module.exports = ( db, project, type ) => {
+module.exports = function( db, project, type ) {
     const get = id => {
         return db.collection( 'users' )
             .findOne({
                 ownerId: id,
                 project
             }, {
-                projection: { _id: 0, project: 0, ownerId: 0, [type]: 1 }
+                projection: { _id: 0, [type]: 1 }
             })
             .catch( err => {
                 this.logger.error(
