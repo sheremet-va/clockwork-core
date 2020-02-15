@@ -207,12 +207,10 @@ module.exports = function() {
         luxury: 'https://i.imgur.com/DYHHd1i.png'
     };
 
-    process.on( 'uncaughtException', err => {
-        this.logger.error( err.stack );
-    }
-        /* this.logger.error( `Uncaught Exception: ${
+    process.on( 'uncaughtException', err =>
+        this.logger.error( `Uncaught Exception: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
-        }` ) */ );
+        }` ) );
 
     process.on( 'ReferenceError', err =>
         this.logger.error( `ReferenceError: ${
