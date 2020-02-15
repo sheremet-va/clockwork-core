@@ -2,7 +2,12 @@ const moment = require( 'moment' );
 const Path = require( 'path' );
 const fs = require( 'fs' );
 
-const NOW = moment();
+const __module = {
+    name: 'drops',
+    path: '/drops',
+    time: '0 50 */1 * * *'
+};
+
 const ONE_HOUR = 1;
 
 const drops_schedule = JSON.parse(
@@ -30,12 +35,14 @@ module.exports = function() {
     };
 
     const get = async ({ settings: { language: lang } }) => {
+        const now = moment();
+
         const description = this.translate( 'drops/description' );
 
         const drops = dates.filter( key => {
             const [start, end] = key.split( ', ' );
 
-            if ( moment( start ).isAfter( NOW ) || NOW.isBetween( start, end ) ) {
+            if ( moment( start ).isAfter( now ) || now.isBetween( start, end ) ) {
                 return true;
             }
         })
@@ -68,12 +75,14 @@ module.exports = function() {
     };
 
     const send = async () => {
+        const now = moment();
+
         // Checks if there is a translation after 10 minutes
         const dropsStartKey = dates.find( key => {
             const [start] = key.split( ', ' );
 
             const startDate = moment( start );
-            const hourMore = moment( NOW ).add( ONE_HOUR, 'hours' );
+            const hourMore = moment( now ).add( ONE_HOUR, 'hours' );
 
             if( startDate.isSame( hourMore, 'hours' ) ) {
                 return true;
@@ -87,7 +96,7 @@ module.exports = function() {
             const startDate = moment( start );
             const endDate = moment( end );
 
-            if ( NOW.isBetween( startDate, endDate ) && NOW.hours() === 19 ) {
+            if ( now.isBetween( startDate, endDate ) && now.hours() === 19 ) {
                 return true;
             }
         });
@@ -99,14 +108,14 @@ module.exports = function() {
         }
 
         const foundDrops = drops_schedule[key];
-        const translations = dropsStartKey
-            ? { title: this.translations.getTranslation( 'drops', 'title', 'title_soon' ) }
-            : { title: this.translations.getTranslation( 'drops', 'title', 'title_now' ) };
+        const translations = {
+            title: this.translations.getTranslation( 'drops', 'title', dropsStartKey ? 'title_soon' : 'title_now' )
+        };
 
         const [start, end] = key.split( ', ' );
         const description = this.translations.getCategory( 'drops', 'description' );
 
-        const drops = {
+        const drop = {
             when: this.translations.getDropsDate( start, end ),
             where: description[foundDrops.where].render({ streamer: foundDrops.streamer }),
             info: description[foundDrops.info].render({ streamer: foundDrops.streamer }),
@@ -114,8 +123,8 @@ module.exports = function() {
             url: foundDrops.url
         };
 
-        return this.notify( 'drops', { translations, data: drops });
+        return this.notify( 'drops', { translations, data: drop });
     };
 
-    return { send, get };
+    return { ...__module, send, get };
 };

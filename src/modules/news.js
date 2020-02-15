@@ -1,6 +1,12 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
+const __module = {
+    name: 'news',
+    path: '/rueso',
+    time: '15 */2 * * * *'
+};
+
 module.exports = function() {
     const getImage = async url => {
         const { data } = await this.get( url );
@@ -18,9 +24,11 @@ module.exports = function() {
 
         const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
-        const news = $( 'item' ).filter( ( i, news ) => {
-            const date = $( news ).find( 'pubDate' ).text();
-            const link = $( news ).find( 'link' ).text();
+        const news = $( 'item' ).filter( ( _, news ) => {
+            const $news = $( news );
+
+            const date = $news.find( 'pubDate' ).text();
+            const link = $news.find( 'link' ).text();
 
             if( moment().isSame( date ) && oldNews.link !== link ) {
                 return true;
@@ -31,10 +39,12 @@ module.exports = function() {
             return;
         }
 
+        const $news = $( news );
+
         const description = {
-            title: $( news ).find( 'title' ).text(),
-            link: $( news ).find( 'link' ).text(),
-            description: $( news ).find( 'description' ).text()
+            title: $news.find( 'title' ).text(),
+            link: $news.find( 'link' ).text(),
+            description: $news.find( 'description' ).text()
         };
 
         description.image = await getImage( description.link );
@@ -46,5 +56,5 @@ module.exports = function() {
         return this.notify( 'news', { translations, data: description });
     };
 
-    return { send };
+    return { ...__module, send };
 };

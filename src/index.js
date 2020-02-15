@@ -34,11 +34,9 @@ const init = async () => {
 
         const [name] = file.split( '.' );
 
-        const _module = require( `./modules/${file}` ).call( core );
-
         return {
             ...modules,
-            [name]: _module
+            [name]: require( `./modules/${file}` ).call( core )
         };
     }, {});
 
@@ -50,13 +48,15 @@ const init = async () => {
 
     app.setErrorHandler( ( err, request, reply ) => {
         if( err.name !== 'CoreError' ) {
-            core.logger.error( `Error from ${request.ip}: \n${err.stack}`
+            core.logger.error(
+                `Error from ${request.ip}: \n${err.stack}`
                 + `\n\nPARAMS: ${JSON.stringify( request.params )},`
                 + `\nQUERY: ${JSON.stringify( request.query )},`
-                + `\nBODY: ${JSON.stringify( request.body )}.` );
+                + `\nBODY: ${JSON.stringify( request.body )}.`
+            );
         }
 
-        return reply.error( err.message, err.render );
+        return reply.error( err.message, err.renderObject );
     });
 
     app.listen( core.config.PORT, () => core.logger.log( `Listening ${core.config.PORT} port.` ) );

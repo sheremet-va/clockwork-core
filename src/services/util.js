@@ -16,7 +16,7 @@ module.exports = function() {
             this.message = message;
             this.code = 500;
             this.name = 'CoreError';
-            // this.render = render;
+            this.renderObject = render;
         }
     };
 
@@ -33,6 +33,7 @@ module.exports = function() {
             const { data: { status } } = await axios({
                 method: 'post',
                 data: options.data,
+                subscribers: options.subscribers,
                 url
             });
 
@@ -52,18 +53,14 @@ module.exports = function() {
         const promises = Object.keys( projects )
             .map( async project => {
                 const subscribers = await this.getSubsByName( project, name );
+                const url = `/subscriptions/${name}`;
 
                 if( Object.keys( subscribers ).length ) {
-                    return this.post( project, {
-                        url: `/subscriptions/${name}`,
-                        subscribers,
-                        data
-                    });
+                    return this.post( project, { url, subscribers, data });
                 }
 
                 return Promise.reject({
-                    message: `No one is subscribed to ${name} on "${project}" project.`,
-                    type: 'warn'
+                    message: `No one is subscribed to ${name} on "${project}" project.`, type: 'warn'
                 });
             });
 
@@ -71,7 +68,9 @@ module.exports = function() {
             .then( result =>
                 result.forEach( res => {
                     if( res.status === 'fulfilled' ) {
-                        return res.value ? this.logger.sub( name, res.value.project, res.value.status ) : null;
+                        const { value, status, project } = res.value;
+
+                        return value ? this.logger.sub( name, project, status ) : null;
                     }
 
                     const { type, message } = res.reason;
@@ -82,7 +81,9 @@ module.exports = function() {
 
                     // Отправить сообщение в дискорд/телеграм, что не смог отправить
                     return this.logger.error(
-                        `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
+                        `Number of attempts while trying to post "${
+                            name
+                        }" subscription to ${res.reason.project} exceeded.`
                     );
                 })
             );
@@ -104,7 +105,7 @@ module.exports = function() {
             });
     };
 
-    this.sendError = ( reply, lang, code, render = {}) => {
+    this.sendError = ( reply, lang = 'en', code = 'NOT_FOUND', render = {}) => {
         if( this.translations.errors[code]) {
             reply.send({
                 result: 'error',

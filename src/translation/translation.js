@@ -12,12 +12,14 @@ const LLLT_formats = {
 };
 
 Object.keys( LLY_formats )
-    .forEach( key => moment.updateLocale( key, {
-        longDateFormat: {
-            '[LL-Y]': LLY_formats[key],
-            '[LLLT]': LLLT_formats[key]
-        }
-    }) );
+    .forEach( key => {
+        moment.updateLocale( key, {
+            longDateFormat: {
+                '[LL-Y]': LLY_formats[key],
+                '[LLLT]': LLLT_formats[key]
+            }
+        });
+    });
 
 const errors = translations.errors;
 const NOT_FOUND = {
@@ -33,19 +35,19 @@ const getType = type => {
 };
 
 const getCategory = ( type, cat ) => {
-    const translatedType = getType( type );
+    const tType = getType( type );
 
-    if( !translatedType.errors ) {
-        return translatedType[cat] || NOT_FOUND;
+    if( !tType.errors ) {
+        return tType[cat] || NOT_FOUND;
     }
 
     return NOT_FOUND;
 };
 
 const getTranslation = ( type, cat, tag ) => {
-    const translatedCat = getCategory( type, cat );
+    const tCategory = getCategory( type, cat );
 
-    if( !translatedCat.errors ) {
+    if( !tCategory.errors ) {
         return translations[type][cat][tag] || NOT_FOUND;
     }
 
@@ -81,26 +83,25 @@ const getDropsDate = ( start, end ) => {
 
     const translations = getCategory( 'drops', 'dates' );
 
-    return Object.keys( dates )
-        .reduce( ( description, key ) => {
-            const start = dates[key].start;
-            const end = dates[key].end;
+    return Object.keys( dates ).reduce( ( description, key ) => {
+        const start = dates[key].start;
+        const end = dates[key].end;
 
-            const replaces = {
-                start_day: start.format( '[LL-Y]' ),
-                start_time: start.format( 'LT' ),
-                end_day: end.format( '[LL-Y]' ),
-                end_time: end.format( 'LT' )
-            };
+        const replaces = {
+            start_day: start.format( '[LL-Y]' ),
+            start_time: start.format( 'LT' ),
+            end_day: end.format( '[LL-Y]' ),
+            end_time: end.format( 'LT' )
+        };
 
-            if( moment( start ).isSame( end, 'day' ) ) {
-                description[key] = translations.one_day[key].render( replaces );
-            } else {
-                description[key] = translations.period[key].render( replaces );
-            }
+        if( moment( start ).isSame( end, 'day' ) ) {
+            description[key] = translations.one_day[key].render( replaces );
+        } else {
+            description[key] = translations.period[key].render( replaces );
+        }
 
-            return description;
-        }, {});
+        return description;
+    }, {});
 };
 
 const getDropsDay = ( type, date, lang ) => {
@@ -133,43 +134,41 @@ const getDates = ( days = 0 ) => {
 const translate = ( lang, path, render = {}) => {
     const [type, category, tag] = path.split( '/' );
 
-    const translatedType = getType( type );
+    const tType = getType( type );
 
-    if( translatedType.errors ) {
+    if( tType.errors ) {
         return NOT_FOUND;
     }
 
     if( !category ) {
-        return Object.keys( translatedType )
-            .reduce( ( str, translatedCategory ) => {
-                str[translatedCategory] = Object.keys( translatedType[translatedCategory])
-                    .reduce( ( strCat, translatedTag ) => {
-                        strCat[translatedTag] = getTranslation( type, translatedCategory, translatedTag )[lang]
-                            .render( render[translatedTag]);
+        return Object.keys( tType ).reduce( ( str, tCategory ) => {
+            const translation = Object.keys( tType[tCategory]).reduce( ( strCat, tagName ) => {
+                const translated = getTranslation( type, tCategory, tagName )[lang];
+                const tag = translated.render( render[tagName]);
 
-                        return strCat;
-                    }, {});
-                return str;
+                return { ...strCat, [tagName]: tag };
             }, {});
+
+            return { ...str, [tCategory]: translation };
+        }, {});
     }
 
-    const translatedCategory = getCategory( type, category );
+    const tCategory = getCategory( type, category );
 
-    if( translatedCategory.error ) {
+    if( tCategory.error ) {
         return NOT_FOUND;
     }
 
-    if( !tag ) {
-        return Object.keys( translatedCategory )
-            .reduce( ( strCat, translatedTag ) => {
-                strCat[translatedTag] = getTranslation( type, category, translatedTag )[lang]
-                    .render( render[translatedTag]);
-
-                return strCat;
-            }, {});
+    if( tag ) {
+        return getTranslation( type, category, tag )[lang] || NOT_FOUND;
     }
 
-    return getTranslation( type, category, tag )[lang] || NOT_FOUND;
+    return Object.keys( tCategory ).reduce( ( strCat, tagName ) => {
+        const translated = getTranslation( type, category, tagName )[lang];
+        const tag = translated.render( render[tagName]);
+
+        return { ...strCat, [tagName]: tag };
+    }, {});
 };
 
 const translateDays = ( day, lang ) => {
@@ -182,7 +181,15 @@ const translateDays = ( day, lang ) => {
 };
 
 const getTime = time => {
-    return time.match( /\(([0-9:]+) UTC\)/ )[1];
+    const result = time.match( /\(([0-9:]+) UTC\)/ )[1];
+
+    const [hour, min] = result.split( ':' );
+
+    if( hour.length === 1 ) {
+        return `0${hour}:${min}`;
+    }
+
+    return `${hour}:${min}`;
 };
 
 const buildDay = day => {

@@ -1,47 +1,60 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
+const __module = {
+    name: 'patch',
+    path: '/patch-notes',
+    time: '20 */2 * * * *'
+};
+
+// @todo patchnotes for xbox, ps
+
 module.exports = function() {
     const MAX_LENGTH = 1990;
 
     const getDescription = property => {
-        if( /<br \/>([^>]+)<br \/>/.test( property.text() ) ) {
-            return property.text()
-                .match( /<br \/>([^>]+)<br \/>/ )[1]
-                .replace( /&rsquo;/gi, '\'' )
-                .trim()
-                .substr( 0, MAX_LENGTH );
+        const text = property.text();
+
+        if( !/<br \/>([^>]+)<br \/>/.test( text ) ) {
+            return '';
         }
 
-        return '';
+        return text.match( /<br \/>([^>]+)<br \/>/ )[1]
+            .replace( /&rsquo;/gi, '\'' )
+            .trim()
+            .substr( 0, MAX_LENGTH );
     };
 
     const getImage = description => {
-        if( /src="([^\s]+)"/.test( description.html() ) ) {
-            return description.html()
-                .match( /src="([^\s]+)"/ )[1]
-                .replace( /-\d+x\d+/, '' );
+        const html = description.html();
+
+        if( !/src="([^\s]+)"/.test( html ) ) {
+            return null;
         }
 
-        return null;
+        return html.match( /src="([^\s]+)"/ )[1].replace( /-\d+x\d+/, '' );
     };
 
     const send = async () => {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
-        const oldPatch = await this.info.get( 'patch' );
+        const old = await this.info.get( 'patch' );
 
         const { data } = await this.get( url );
 
         const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
-        const patch = $( 'item' ).filter( ( i, news ) => {
-            const date = $( news ).find( 'pubDate' ).text();
-            const title = $( news ).find( 'title' ).text();
-            const link = $( news ).find( 'link' ).text();
+        const patch = $( 'item' ).filter( ( _, news ) => {
+            const $news = $( news );
 
-            if( title.startsWith( 'PC/Mac Patch Notes' )
-                && moment().isSame( date, 'day' )
-                && oldPatch.link !== link ) {
+            const date = $news.find( 'pubDate' ).text();
+            const title = $news.find( 'title' ).text();
+            const link = $news.find( 'link' ).text();
+
+            if(
+                title.startsWith( 'PC/Mac Patch Notes' ) &&
+                moment().isSame( date, 'day' ) &&
+                old.link !== link
+            ) {
                 return true;
             }
         }).get()[0];
@@ -50,11 +63,14 @@ module.exports = function() {
             return;
         }
 
+        const $patch = $( patch );
+        const $description = $patch.find( 'description' );
+
         const description = {
-            title: $( patch ).find( 'title' ).text(),
-            link: $( patch ).find( 'link' ).text(),
-            description: getDescription( $( patch ).find( 'description' ) ),
-            image: getImage( $( patch ).find( 'description' ) )
+            title: $patch.find( 'title' ).text(),
+            link: $patch.find( 'link' ).text(),
+            description: getDescription( $description ),
+            image: getImage( $description )
         };
 
         this.info.set( 'patch', description );
@@ -72,5 +88,5 @@ module.exports = function() {
         return { translations, data: patch };
     };
 
-    return { send, get };
+    return { ...__module, send, get };
 };

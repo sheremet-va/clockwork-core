@@ -1,13 +1,16 @@
 const cheerio = require( 'cheerio' );
 const moment = require( 'moment' );
 
+const CRON_TIME = '10 */2 * * * 6';
+const SERVICE_NAME = 'merchants';
+
 module.exports = function( golden, luxury ) {
     const published = ( body, info ) => {
         const NOT_ELIGIBLE = 'NOT_ELIGIBLE';
 
         const $ = cheerio.load( body, { xmlMode: true });
 
-        return $( 'item' ).map( ( i, item ) => {
+        return $( 'item' ).map( ( _, item ) => {
             const title = $( item ).find( 'title' ).text();
 
             const isLuxury = /LUXURY FURNITURE VENDOR ITEMS/i.test( title );
@@ -24,9 +27,11 @@ module.exports = function( golden, luxury ) {
 
             const publishedToday = moment( date ).isSame( moment(), 'day' );
 
-            if( !publishedToday
-                || isLuxury && date === info.luxury.date
-                || isGolden && date === info.golden.date ) {
+            if(
+                !publishedToday ||
+                isLuxury && date === info.luxury.date ||
+                isGolden && date === info.golden.date
+            ) {
                 return NOT_ELIGIBLE;
             }
 
@@ -40,8 +45,12 @@ module.exports = function( golden, luxury ) {
             luxury: await this.info.get( 'luxury' ) // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
         };
 
-        if( moment( info.golden.date ).isSame( moment(), 'day' )
-            && moment( info.luxury.date ).isSame( moment(), 'day' ) ) {
+        const now = moment();
+
+        if(
+            moment( info.golden.date ).isSame( now, 'day' ) &&
+            moment( info.luxury.date ).isSame( now, 'day' )
+        ) {
             return;
         }
 
@@ -58,5 +67,5 @@ module.exports = function( golden, luxury ) {
         });
     };
 
-    return { published, start };
+    return { published, start, time: CRON_TIME, name: SERVICE_NAME };
 };

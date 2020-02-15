@@ -1,5 +1,11 @@
 const cheerio = require( 'cheerio' );
 
+const __module = {
+    name: 'status',
+    path: '/status',
+    time: '30 */3 * * * *'
+};
+
 const getNewStatus = response => {
     const data = response.zos_platform_response;
 
@@ -18,20 +24,20 @@ const getNewStatus = response => {
         'The Elder Scrolls Online (XBox - EU)': 'xbox_eu',
     };
 
-    if( data.result_message === 'success' ) {
-        return Object.keys( data.response )
-            .reduce( ( status, code ) => {
-                const alias = status_aliases[code];
-
-                if( alias ) {
-                    status[alias] = data.response[code];
-                }
-
-                return status;
-            }, {});
+    if( data.result_message !== 'success' ) {
+        return [];
     }
 
-    return [];
+    return Object.entries( data.response )
+        .reduce( ( status, [code, value]) => {
+            const alias = status_aliases[code];
+
+            if( alias ) {
+                return { ...status, [alias]: value };
+            }
+
+            return status;
+        }, {});
 };
 
 const statusSubscriptions = changed => {
@@ -108,6 +114,14 @@ module.exports = function() {
             return message.reduce( ( acc, body ) => {
                 const matchName = infoNames.find( inf => body.search( inf.name ) !== -1 );
 
+                if( /Over/.test( body ) ) {
+                    return acc;
+                }
+
+                if( /No maintenance/.test( body ) ) {
+                    return acc;
+                }
+
                 if( !matchName ) {
                     return acc;
                 }
@@ -118,7 +132,7 @@ module.exports = function() {
                 };
             }, {});
         } catch( err ) {
-            return false;
+            return {};
         }
     };
 
@@ -134,22 +148,22 @@ module.exports = function() {
         const translations = this.translations.getCategory( 'commands', 'status' );
 
         const url = 'https://live-services.elderscrollsonline.com/status/realms';
-        const oldStatus = await this.info.get( 'status' );
+        const old = await this.info.get( 'status' );
 
         const { data } = await this.get( url );
 
-        const newStatus = getNewStatus( data );
-        const changedByCode = Object.keys( newStatus )
-            .filter( code => newStatus[code] !== oldStatus[code]);
+        const status = getNewStatus( data );
+        const changedByCode = Object.keys( status )
+            .filter( code => status[code] !== old[code]);
 
         if( changedByCode.length === 0 ) {
             return;
         }
 
-        const maintence = getMaintenceTime();
+        const maintence = await getMaintenceTime();
 
         const changed = changedByCode
-            .reduce( ( changed, code ) => ({ ...changed, [code]: newStatus[code] }), {});
+            .reduce( ( changed, code ) => ({ ...changed, [code]: status[code] }), {});
 
         await this.info.set( 'status', { ...changed, maintence });
 
@@ -165,5 +179,5 @@ module.exports = function() {
         });
     };
 
-    return { send, get };
+    return { ...__module, send, get, conf };
 };

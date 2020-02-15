@@ -1,7 +1,14 @@
 const moment = require( 'moment' );
 
+const __module = {
+    name: 'pledges',
+    path: '/pledges/:days',
+    time: '25 00 9 * * *'
+};
+
 module.exports = function() {
     const getPledges = ( days = 0 ) => {
+        // @todo place into db
         const pledgesMaj = [
             /*  0 */ 'Wayrest Sewers II',
             /*  1 */ 'Fungal Grotto I',
@@ -209,5 +216,5 @@ module.exports = function() {
         return this.notify( 'pledges', { data: { today, tomorrow } });
     };
 
-    return { get, send };
+    return { ...__module, get, send };
 };

@@ -1,4 +1,4 @@
-const now = require( 'moment' )();
+const moment = require( 'moment' );
 const fs = require( 'fs' );
 const { promisify } = require( 'util' );
 
@@ -6,6 +6,8 @@ const appendFile = promisify( fs.appendFile );
 const writeFile = promisify( fs.writeFile );
 
 exports.log = async ( content, type = 'log' ) => {
+    const now = moment();
+
     const timestamp = `[${now.format( 'YYYY-MM-DD HH:mm:ss' )}]:`;
     const day = `${now.format( 'YYYY-MM-DD' )}`;
 
@@ -14,8 +16,7 @@ exports.log = async ( content, type = 'log' ) => {
 
     try {
         await appendFile( path, `${message}\n` );
-    }
-    catch ( e ) {
+    } catch ( e ) {
         await writeFile( path, `${message}\n` )
             .catch( console.error );
     }

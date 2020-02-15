@@ -1,3 +1,8 @@
+const __module = {
+    name: 'subscriptions',
+    path: '/subscriptions'
+};
+
 module.exports = function() {
     const getInfo = ( toSub, request ) => {
         const { name, channelId, subject } = request.body;
@@ -12,8 +17,8 @@ module.exports = function() {
 
         const aliases = Object.keys( defaultAliases )
             .reduce( ( obj, sub ) => {
-                const languages = Object.keys( defaultAliases[sub])
-                    .reduce( ( acc, lang ) => [...acc, ...defaultAliases[sub][lang]], []);
+                const languages = Object.values( defaultAliases[sub])
+                    .reduce( ( acc, value ) => [...acc, ...value], []);
 
                 return { ...obj, [sub]: languages };
             }, {});
@@ -28,21 +33,25 @@ module.exports = function() {
 
         const render = { sub: nameAlias, subject };
 
-        if( toSub && subs[subName] && subs[subName].includes( channelId ) ) {
-            if( subject === 'user' ) {
-                throw new this.Error( 'USER_ALREADY_SUBSCRIBED' );
+        validate( toSub, subs[subName], { channelId, render });
+
+        return { subs, channelId, name: subName, subject, sub: nameAlias };
+    };
+
+    const validate = ( toSub, sub, { channelId, render }) => {
+        if( toSub && sub && sub.includes( channelId ) ) {
+            if( render.subject === 'user' ) {
+                throw new this.Error( 'USER_ALREADY_SUBSCRIBED', render );
             }
 
             throw new this.Error( 'CHANNEL_ALREADY_SUBSCRIBED', render );
-        } else if( !toSub && ( !subs[subName] || !subs[subName].includes( channelId ) ) ) {
-            if( subject === 'user' ) {
-                throw new this.Error( 'USER_NOT_SUBSCRIBED' );
+        } else if( !toSub && ( !sub || !sub.includes( channelId ) ) ) {
+            if( render.subject === 'user' ) {
+                throw new this.Error( 'USER_NOT_SUBSCRIBED', render );
             }
 
             throw new this.Error( 'CHANNEL_NOT_SUBSCRIBED', render );
         }
-
-        return { subs, channelId, name: subName, subject, nameAlias: sub };
     };
 
     const get = async ({ settings: { prefix, language: lang }, subs }) => {
@@ -80,7 +89,7 @@ module.exports = function() {
         return { data: subs, translations };
     };
 
-    const sub = request => {
+    const sub = async request => {
         const { subs, name, subject, channelId, sub } = getInfo( true, request );
         const { project, id } = request.info;
 
@@ -112,5 +121,5 @@ module.exports = function() {
         return { translations };
     };
 
-    return { get, sub, unsub };
+    return { ...__module, get, sub, unsub };
 };

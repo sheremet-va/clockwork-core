@@ -1,16 +1,13 @@
-module.exports = modules => {
-    return ( app, opts, done ) => {
-        app.get( '/drops', modules.drops.get );
-        app.get( '/golden', modules.golden.get );
-        app.get( '/luxury', modules.luxury.get );
-        app.get( '/patch-notes', modules.patch.get );
-        app.get( '/pledges/:days', modules.pledges.get );
-        app.get( '/rueso', modules.esn.get );
-        app.get( '/settings', modules.settings.get );
-        app.get( '/status', modules.status.get );
-        app.get( '/weekly', modules.weekly.get );
+module.exports = function( modules ) {
+    return ( app, _, done ) => {
+        // building ONLY `get` paths
+        Object.values( modules ).forEach( ({ get, path }) => {
+            if( !get || !path ) {
+                return;
+            }
 
-        app.get( '/subscriptions', modules.subscriptions.get );
+            app.get( path, get );
+        });
 
         app.post( '/subscriptions/sub', modules.subscriptions.sub );
         app.post( '/subscriptions/unsub', modules.subscriptions.unsub );

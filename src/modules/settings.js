@@ -1,3 +1,7 @@
+const __module = {
+    name: 'settings'
+};
+
 module.exports = function() {
     const get = async ({ settings }) => {
         return { data: settings };
@@ -24,7 +28,7 @@ module.exports = function() {
         }
 
         const langRender = type === 'pledgesLang' || type === 'merchantsLang'
-            ? translateLang( value.split( '+' ) )
+            ? translateLang( value.split( '+' ), lang )
             : this.translations.translate( lang, `settings/languages/${lang}` );
 
         const translations = this.translations.translate( lang, `settings/${translateType}`, {
@@ -62,7 +66,7 @@ module.exports = function() {
             language: {
                 condition: !this.config.languages.includes( value ),
                 error: 'CANT_CHANGE_LANGUAGE',
-                render: translateLang( this.config.languages, lang )
+                render: { langs: this.config.languages.join( ', ' ) }
             },
             prefix: {
                 condition: value.length > 1,
@@ -72,13 +76,12 @@ module.exports = function() {
             comboLang: {
                 condition: !availableLangs[lang].includes( value ),
                 error: 'CANT_CHANGE_COMBO_LANG',
-                render: availableLangs[lang].join( ', ' )
+                render: { langs: availableLangs[lang].join( ', ' ) }
             }
         };
 
         const compareType = type === 'pledgesLang' || type === 'merchantsLang'
-            ? 'comboLang'
-            : type;
+            ? 'comboLang' : type;
 
         const { error, render, condition } = compare[compareType];
 
@@ -91,9 +94,10 @@ module.exports = function() {
 
     const translateLang = ( languages, lang ) => {
         return languages
-            .map( confLang => this.translations.translate( lang, `settings/languages/${confLang}` ) )
+            .map( confLang =>
+                this.translations.translate( lang, `settings/languages/${confLang}` ) )
             .join( ', ' );
     };
 
-    return { get, set };
+    return { ...__module, get, set };
 };
