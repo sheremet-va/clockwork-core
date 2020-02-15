@@ -100,7 +100,7 @@ module.exports = function() {
             success_user: { sub }
         });
 
-        this.setSubscriptions( project, { id, name, channels });
+        this.setSubscriptions( project, subs, { id, name, channels });
 
         return { translations };
     };
@@ -116,7 +116,7 @@ module.exports = function() {
             success_user: { sub }
         });
 
-        this.setSubscriptions( project, { id, name, channels });
+        this.setSubscriptions( project, subs, { id, name, channels });
 
         return { translations };
     };

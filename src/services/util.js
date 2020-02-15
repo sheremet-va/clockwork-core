@@ -121,38 +121,41 @@ module.exports = function() {
         return false;
     };
 
-    this.getSettings = async ( project, id ) => {
+    this.getUser = async ( project, id ) => {
         const defaults = this.settings.config.defaults[project];
 
-        const settings = await this.settings[project].get( id ) || {};
+        const user = await this.users[project].get( id ) || { settings: {}, subscriptions: {} };
 
-        return Object.entries( defaults )
+        const settings = Object.entries( defaults )
             .reduce( ( result, [key, value]) =>
-                ({ ...result, [key]: settings[key] ? settings[key] : value }), {});
-    };
+                ({ ...result, [key]: user.settings[key] ? user.settings[key] : value }), {});
 
-    this.getAllLanguages = async ( project ) => {
-        return await this.settings[project].getAllLanguages();
+        return { ...user, settings };
     };
 
     this.getSubsByName = async ( project, name ) => {
-        return await this.subscriptions[project].getByName( name );
+        return await this.subscriptions[project].getSubsByName( name );
     };
 
-    this.setSettings = ( project, { id, type, value }) => {
-        const settings = { ownerId: id, [type]: value };
+    this.setSettings = ( project, was, { id, type, value }) => {
+        const defaults = this.settings.config.defaults[project];
+        const settings = { ...was, [type]: value };
 
-        return this.settings[project].set( settings );
+        const rebuild = Object.entries( defaults )
+            .filter( ([key, value]) => settings[key] !== value )
+            .reduce( ( result, [key]) => ({ ...result, [key]: settings[key] }), {});
+
+        return this.settings[project].set( id, rebuild );
     };
 
-    this.getSubscriptions = async ( project, id ) => {
-        return await this.subscriptions[project].get( id ) || {};
-    };
+    this.setSubscriptions = async ( project, was, { id, name, channels }) => {
+        const subscriptions = { ...was, [name]: channels };
 
-    this.setSubscriptions = async ( project, { id, name, channels }) => {
-        const subscriptions = { ownerId: id, [name]: channels };
+        const rebuild = Object.entries( subscriptions )
+            .filter( ([, value]) => value.length !== 0 )
+            .reduce( ( result, [key, value]) => ({ ...result, [key]: value }), {});
 
-        return this.subscriptions[project].set( subscriptions );
+        return this.subscriptions[project].set( id, rebuild );
     };
 
     this.wait = require( 'util' ).promisify( setTimeout );
@@ -204,10 +207,12 @@ module.exports = function() {
         luxury: 'https://i.imgur.com/DYHHd1i.png'
     };
 
-    process.on( 'uncaughtException', err =>
-        this.logger.error( `Uncaught Exception: ${
+    process.on( 'uncaughtException', err => {
+        this.logger.error( err.stack );
+    }
+        /* this.logger.error( `Uncaught Exception: ${
             err.stack.replace( new RegExp( `${__dirname}/`, 'g' ), './' )
-        }` ) );
+        }` ) */ );
 
     process.on( 'ReferenceError', err =>
         this.logger.error( `ReferenceError: ${

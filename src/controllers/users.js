@@ -1,12 +1,33 @@
+// {
+//     ownerId: 'string',
+//     project: 'string',
+//     settings: {
+//         setting: 'string'
+//     },
+//     subscriptions: {
+//         name: ['number']
+//     }
+// }
+
+/**
+ * @param {Object} db db connection
+ * @param {String} project project name
+ * @param {String} type request type
+ * @returns {{get: Function, set: Function}}
+ */
 module.exports = function( db, project, type ) {
-    const get = id => {
+
+    /**
+     * returns all info about the user
+     * @param {Number} ownerId user id
+     * @returns {Object}
+     */
+    const get = ownerId => {
         return db.collection( 'users' )
-            .findOne({
-                ownerId: id,
-                project
-            }, {
-                projection: { _id: 0, [type]: 1 }
-            })
+            .findOne(
+                { ownerId, project },
+                { projection: { _id: 0 } }
+            )
             .catch( err => {
                 this.logger.error(
                     `An error ocured while trying to get ${project} ${type}: ${err.message}`
@@ -16,17 +37,24 @@ module.exports = function( db, project, type ) {
             });
     };
 
-    const set = params => {
+    /**
+     * updates or creates a document with user
+     * @param {Number} ownerId user id
+     * @returns {Object}
+     */
+    const set = ( ownerId, params ) => {
         return db.collection( 'users' )
-            .updateOne({
-                ownerId: params.ownerId, project
-            }, {
-                $set: {
-                    ownerId: params.ownerId,
-                    [type]: params.insert, // передавать вместе со старыми
-                    project
-                }
-            }, { upsert: true })
+            .updateOne(
+                { ownerId, project },
+                {
+                    $set: {
+                        ownerId,
+                        project,
+                        [type]: params
+                    }
+                },
+                { upsert: true }
+            )
             .then( () => params )
             .catch( err => {
                 this.logger.error(
@@ -39,37 +67,18 @@ module.exports = function( db, project, type ) {
             });
     };
 
-    const getByName = name => {
-        return db.collection( 'subscriptions' )
-            .aggregate([
-                {
-                    $lookup: {
-                        from: 'settings',
-                        localField: 'ownerId',
-                        foreignField: 'ownerId',
-                        as: 'result'
-                    }
-                },
-                { $unwind: '$result' },
-                {
-                    $project: {
-                        _id: 0,
-                        channels: `$${name}`,
-                        language: '$result.language',
-                        ownerId: 1
-                    }
-                }
-            ])
-            .toArray()
-            .then( res => {
-                return res.reduce( ( result, { ownerId, channels, language }) => {
-                    if( !channels ) {
-                        return result;
-                    }
+    const getSubsByName = name => {
+        const field = `subscriptions.${name}`;
 
-                    return { ...result, [ownerId]: { language, channels } };
-                }, {});
-            })
+        return db.collection( 'users' )
+            .find(
+                {
+                    [field]: { $exists: true }
+                },
+                { projection: { _id: 0, [field]: 1 } }
+            )
+            .toArray()
+            .then( docs => docs.reduce( ( all, doc ) => [...all, ...doc.subscriptions[name]], []) )
             .catch( err => {
                 this.logger.error(
                     `An error ocured while trying to get ${project} subs by ${name} name: ${err.message}`
@@ -79,5 +88,5 @@ module.exports = function( db, project, type ) {
             });
     };
 
-    return { get, set, getByName };
+    return { get, set, getSubsByName };
 };

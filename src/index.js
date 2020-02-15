@@ -16,7 +16,8 @@ const core = {
     },
     settings: {
         config: require( './configs/settings' )
-    }
+    },
+    users: {}
 };
 
 const init = async () => {
@@ -73,6 +74,7 @@ MongoClient
             .forEach( project => {
                 core.subscriptions[project] = require( './controllers/users' ).call( core, db, project, 'subscriptions' );
                 core.settings[project] = require( './controllers/users' ).call( core, db, project, 'settings' );
+                core.users[project] = require( './controllers/users' ).call( core, db, project, 'subscriptions' );
             });
 
         core.info = require( './controllers/info' ).call( core, db );

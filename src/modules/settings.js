@@ -38,7 +38,7 @@ module.exports = function() {
             }
         });
 
-        this.setSettings( project, { id, type, value });
+        this.setSettings( project, settings, { id, type, value });
 
         return { translations };
     };
