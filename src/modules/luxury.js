@@ -8,7 +8,7 @@ const fs = require( 'fs' );
 
 const furnitureIcons = JSON.parse(
     fs.readFileSync(
-        Path.resolve( __dirname, 'dependencies', 'furniture.json' ), // не сохранять "/esoui/art/icons/"
+        Path.resolve( __dirname, 'dependencies', 'furniture.json' ), // TODO don't save "/esoui/art/icons/"
         'utf8'
     )
 );

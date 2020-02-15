@@ -7,7 +7,7 @@ const __module = {
     time: '20 */2 * * * *'
 };
 
-// @todo patchnotes for xbox, ps
+// TODO patchnotes for xbox, ps
 
 module.exports = function() {
     const MAX_LENGTH = 1990;

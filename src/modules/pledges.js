@@ -8,7 +8,7 @@ const __module = {
 
 module.exports = function() {
     const getPledges = ( days = 0 ) => {
-        // @todo place into db
+        // TODO place into db
         const pledgesMaj = [
             /*  0 */ 'Wayrest Sewers II',
             /*  1 */ 'Fungal Grotto I',

@@ -12,7 +12,7 @@ module.exports = function() {
 
         const translations = this.translate( 'commands/weekly' );
 
-        // @todo save only one version
+        // TODO save only one version
         const rendered = Object.keys( weekly )
             .reduce( ( final, region ) => ({ ...final, [region]: weekly[region][lang] }), {});
 

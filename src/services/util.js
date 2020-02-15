@@ -199,10 +199,6 @@ module.exports = function() {
         }
     });
 
-    /**
-     *
-     */
-
     this.media = {
         luxury: 'https://i.imgur.com/DYHHd1i.png'
     };
