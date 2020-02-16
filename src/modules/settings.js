@@ -31,14 +31,17 @@ module.exports = function() {
             ? translateLang( value.split( '+' ), lang )
             : this.translations.translate( lang, `settings/languages/${lang}` );
 
+        const zone = type === 'timezone' ? getTimezone( value ) : null;
+
         const translations = this.translations.translate( lang, `settings/${translateType}`, {
             success: {
                 lang: langRender,
-                prefix: value
+                prefix: value,
+                timezone: zone || value
             }
         });
 
-        this.setSettings( project, settings, { id, type, value });
+        this.setSettings( project, settings, { id, type, value: zone || value });
 
         return { translations };
     };
@@ -58,6 +61,10 @@ module.exports = function() {
             return { error: 'EMPTY_SETTINGS', render: { setting: type } };
         }
 
+        if( type === 'timezone' ) {
+            value = getTimezone( value.trim() );
+        }
+
         if( settings[type] === value ) {
             return { error: 'SAME_SETTINGS' };
         }
@@ -70,26 +77,58 @@ module.exports = function() {
             },
             prefix: {
                 condition: value.length > 1,
-                error: 'PREFIX_TOO_LONG',
-                render: {}
+                error: 'PREFIX_TOO_LONG'
             },
             comboLang: {
                 condition: !availableLangs[lang].includes( value ),
                 error: 'CANT_CHANGE_COMBO_LANG',
                 render: { langs: availableLangs[lang].join( ', ' ) }
+            },
+            timezone: {
+                condition: typeof value === 'object',
+                error: 'WRONG_TIMEZONE_OFFSET'
             }
         };
 
         const compareType = type === 'pledgesLang' || type === 'merchantsLang'
             ? 'comboLang' : type;
 
-        const { error, render, condition } = compare[compareType];
+        const { error, render = {}, condition } = compare[compareType];
 
         if( condition ) {
             return { error, render };
         }
 
         return true;
+    };
+
+    const getTimezone = value => {
+        const moment = require( 'moment-timezone' );
+        const { zones } = require( 'moment-timezone/data/packed/latest.json' );
+
+        const abbr = new RegExp( value, 'g' );
+
+        const zone = zones.filter( z => {
+            const z_timezone = z.split( '|' )[0];
+
+            if( z_timezone === value ) {
+                return true;
+            }
+
+            if( !abbr.test( z ) ) {
+                return false;
+            }
+
+            const z_abbr = moment.tz.zone( z_timezone ).abbr( new Date().valueOf() );
+
+            if( z_abbr === value ) {
+                return true;
+            }
+
+            return false;
+        }).map( z => z.split( '|' )[0]);
+
+        return zone[0] || {};
     };
 
     const translateLang = ( languages, lang ) => {

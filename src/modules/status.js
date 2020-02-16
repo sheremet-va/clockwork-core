@@ -9,6 +9,10 @@ const __module = {
 const getNewStatus = response => {
     const data = response.zos_platform_response;
 
+    if( data.result_message !== 'success' ) {
+        return [];
+    }
+
     const status_aliases = {
         // PC
         'The Elder Scrolls Online (EU)': 'eu',
@@ -23,10 +27,6 @@ const getNewStatus = response => {
         'The Elder Scrolls Online (XBox - US)': 'xbox_us',
         'The Elder Scrolls Online (XBox - EU)': 'xbox_eu',
     };
-
-    if( data.result_message !== 'success' ) {
-        return [];
-    }
 
     return Object.entries( data.response )
         .reduce( ( status, [code, value]) => {
@@ -55,7 +55,7 @@ const statusSubscriptions = changed => {
 
     return statuses.map( name => {
         return {
-            name: `status${name.toUpperCase()}`,
+            name: `status${name !== 'status' ? name.toUpperCase() : ''}`,
             changed: getChanged( name, changed )
         };
     });
@@ -87,10 +87,18 @@ const getChanged = ( name, changed ) => {
     }
 };
 
+const areAllServersUp = statuses => {
+    return !Object.values( statuses ).some( status => status === 'DOWN' );
+};
+
 module.exports = function() {
-    const getMaintenceTime = async () => {
+    const getMaintenceTime = async changed => {
+        if( areAllServersUp( changed ) ) {
+            return {};
+        }
+
         try {
-            const { data } = await this.get( 'https://forums.elderscrollsonline.com/en/' );
+            const { data } = await this.request( 'https://forums.elderscrollsonline.com/en/' );
 
             const $ = cheerio.load( data, { normalizeWhitespace: true });
 
@@ -114,15 +122,7 @@ module.exports = function() {
             return message.reduce( ( acc, body ) => {
                 const matchName = infoNames.find( inf => body.search( inf.name ) !== -1 );
 
-                if( /Over/.test( body ) ) {
-                    return acc;
-                }
-
-                if( /No maintenance/.test( body ) ) {
-                    return acc;
-                }
-
-                if( !matchName ) {
+                if( !matchName || /(Over|No maintenance)/i.test( body ) ) {
                     return acc;
                 }
 
@@ -145,12 +145,12 @@ module.exports = function() {
     };
 
     const send = async () => {
-        const translations = this.translations.getCategory( 'commands', 'status' );
+        const translations = this.translations.get( 'commands/status' );
 
         const url = 'https://live-services.elderscrollsonline.com/status/realms';
         const old = await this.info.get( 'status' );
 
-        const { data } = await this.get( url );
+        const { data } = await this.request( url );
 
         const status = getNewStatus( data );
         const changedByCode = Object.keys( status )
@@ -160,10 +160,10 @@ module.exports = function() {
             return;
         }
 
-        const maintence = await getMaintenceTime();
+        const maintence = await getMaintenceTime( changedByCode );
 
-        const changed = changedByCode
-            .reduce( ( changed, code ) => ({ ...changed, [code]: status[code] }), {});
+        const changed = changedByCode.reduce(
+            ( changed, code ) => ({ ...changed, [code]: status[code] }), {});
 
         await this.info.set( 'status', { ...changed, maintence });
 
@@ -172,12 +172,39 @@ module.exports = function() {
                 translations: {
                     ...translations,
                     ...maintence,
-                    ...this.translations.getCategory( 'subscriptions', 'status' )
+                    ...this.translations.get( 'subscriptions/status' )
                 },
                 data: info.changed
             });
         });
     };
 
-    return { ...__module, send, get, conf };
+    /* const conf = [
+        {
+            method: 'GET',
+            url: '/status',
+            schema: {
+                query: {
+                    project: { type: 'string', default: 'assistant' },
+                    id: { type: 'integer', required: true }
+                },
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            result: { type: 'string' },
+                            data: { type: 'object' },
+                            translations: { type: 'object' }
+                        }
+                    }
+                }
+            },
+            handler: get,
+            api: {
+
+            }
+        }
+    ]; */
+
+    return { ...__module, send, get };
 };
