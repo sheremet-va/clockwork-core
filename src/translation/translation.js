@@ -28,31 +28,23 @@ const NOT_FOUND = {
     }
 };
 
-const getAll = () => translations;
+const get = path => {
+    const [type, cat, tag] = path.split( ',' );
 
-const getType = type => {
-    return translations[type] || NOT_FOUND;
-};
-
-const getCategory = ( type, cat ) => {
-    const tType = getType( type );
-
-    if( !tType.errors ) {
-        return tType[cat] || NOT_FOUND;
+    if( !type ) {
+        return translations;
     }
 
-    return NOT_FOUND;
-};
-
-const getTranslation = ( type, cat, tag ) => {
-    const tCategory = getCategory( type, cat );
-
-    if( !tCategory.errors ) {
-        return translations[type][cat][tag] || NOT_FOUND;
+    if( !cat ) {
+        return translations[type] || NOT_FOUND;
     }
 
-    return NOT_FOUND;
-};
+    if( !tag ) {
+        return translations[type][cat] || NOT_FOUND;
+    }
+
+    return translations[type][cat][tag];
+}
 
 const getPledgesDate = ( days, lang ) => {
     const day = moment().add( days, 'days' );
@@ -69,19 +61,21 @@ const getPledgesDate = ( days, lang ) => {
     };
 };
 
-const getDropsDate = ( start, end ) => {
+const getDropsDate = ( start, end, timezone ) => {
     const dates = {
         en: {
-            start: moment( start ).utc().locale( 'en' ),
-            end: moment( end ).utc().locale( 'en' )
+            start: moment( start ).tz( timezone ).locale( 'en' ),
+            end: moment( end ).tz( timezone ).locale( 'en' )
         },
         ru: {
-            start: moment( start ).locale( 'ru' ),
-            end: moment( end ).locale( 'ru' )
+            start: moment( start ).tz( timezone ).locale( 'ru' ),
+            end: moment( end ).tz( timezone ).locale( 'ru' )
         }
     };
 
-    const translations = getCategory( 'drops', 'dates' );
+    const translations = get( 'drops/dates' );
+
+    const abbr = moment.tz.zone( timezone ).abbr( start );
 
     return Object.keys( dates ).reduce( ( description, key ) => {
         const start = dates[key].start;
@@ -91,7 +85,8 @@ const getDropsDate = ( start, end ) => {
             start_day: start.format( '[LL-Y]' ),
             start_time: start.format( 'LT' ),
             end_day: end.format( '[LL-Y]' ),
-            end_time: end.format( 'LT' )
+            end_time: end.format( 'LT' ),
+            abbr
         };
 
         if( moment( start ).isSame( end, 'day' ) ) {
@@ -104,22 +99,25 @@ const getDropsDate = ( start, end ) => {
     }, {});
 };
 
-const getDropsDay = ( type, date, lang ) => {
+const getDropsSending = ( date, lang, timezone ) => {
+    const abbr = moment.tz.zone( timezone ).abbr( date );
+
+    const time = moment( date ).tz( timezone );
+
     const dates_time = {
-        en: `${moment( date ).utc().format( 'LT' )} UTC`,
-        ru: `${moment( date ).format( 'LT' )} МСК`
+        en: `${time.locale( 'en' ).format( 'LT' )} (${abbr})`,
+        ru: `${time.locale( 'ru' ).format( 'LT' )} (${abbr})`
     };
 
     const dates_date = {
-        en: moment( date ).utc().locale( 'en' ).format( '[LL-Y]' ),
-        ru: moment( date ).locale( 'ru' ).format( '[LL-Y]' )
+        en: time.locale( 'en' ).format( '[LL-Y]' ),
+        ru: time.locale( 'ru' ).format( '[LL-Y]' )
     };
 
-    if( type === 'time' ) {
-        return lang ? dates_time[lang] : dates_time;
-    }
-
-    return lang ? dates_date[lang] : dates_date;
+    return {
+        time: dates_time[lang],
+        date: dates_date[lang]
+    };
 };
 
 const getDates = ( days = 0 ) => {
@@ -134,7 +132,7 @@ const getDates = ( days = 0 ) => {
 const translate = ( lang, path, render = {}) => {
     const [type, category, tag] = path.split( '/' );
 
-    const tType = getType( type );
+    const tType = get( type );
 
     if( tType.errors ) {
         return NOT_FOUND;
@@ -143,7 +141,7 @@ const translate = ( lang, path, render = {}) => {
     if( !category ) {
         return Object.keys( tType ).reduce( ( str, tCategory ) => {
             const translation = Object.keys( tType[tCategory]).reduce( ( strCat, tagName ) => {
-                const translated = getTranslation( type, tCategory, tagName )[lang];
+                const translated = get( `${type}/${tCategory}/${tagName}` )[lang];
                 const tag = translated.render( render[tagName]);
 
                 return { ...strCat, [tagName]: tag };
@@ -153,18 +151,18 @@ const translate = ( lang, path, render = {}) => {
         }, {});
     }
 
-    const tCategory = getCategory( type, category );
+    const tCategory = get( type + '/' + category );
 
     if( tCategory.error ) {
         return NOT_FOUND;
     }
 
     if( tag ) {
-        return getTranslation( type, category, tag )[lang] || NOT_FOUND;
+        return get( `${type}/${category}/${tag}` )[lang] || NOT_FOUND;
     }
 
     return Object.keys( tCategory ).reduce( ( strCat, tagName ) => {
-        const translated = getTranslation( type, category, tagName )[lang];
+        const translated = get( `${type}/${category}/${tagName}` )[lang];
         const tag = translated.render( render[tagName]);
 
         return { ...strCat, [tagName]: tag };
@@ -216,28 +214,17 @@ const getRFCDate = string => {
     ];
 
     return {
-        en: `${getMoment( 'en', startResult ).format( '[LLLT]' )} - ${getMoment( 'en', endResult ).format( 'LT' )}`,
-        ru: `${getMoment( 'ru', startResult ).format( '[LLLT]' )} до ${getMoment( 'ru', endResult ).format( 'LT' )}`
+        start: startResult,
+        end: endResult
     };
 };
 
-const getMoment = ( lang, time ) => {
-    return {
-        en: moment( time ).utc().locale( 'en' ),
-        ru: moment( time ).locale( 'ru' ),
-    }[lang];
-};
-
 module.exports = {
-    getAll,
-    getType,
     getDates,
     getRFCDate,
-    getCategory,
-    getDropsDay,
+    getDropsSending,
     getDropsDate,
     getPledgesDate,
-    getTranslation,
 
     errors,
 

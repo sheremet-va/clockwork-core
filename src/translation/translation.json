@@ -88,6 +88,10 @@
         "maintence": {
           "en": "NA and EU megaservers for patch maintenance",
           "ru": "Профилактика на серверах Америки и Европы"
+        },
+        "time": {
+          "en": "{{ start_day }}, from {{ start_time }}–{{ end_time }} ({{ abbr }})",
+          "ru": "{{ start_day }} с {{ start_time }} до {{ end_time }} ({{ abbr }})"
         }
       },
 
@@ -116,12 +120,12 @@
           "ru": "Ближайшие Twitch Drops"
         },
         "notice_title": {
-          "en": "Notice",
+          "en": "Details",
           "ru": "Примечания"
         },
         "notice_description": {
-          "en": "The time is in UTC. Watch the stream at least 5 minutes and don't forget to [link](https://help.elderscrollsonline.com/app/answers/detail/a_id/41809) your ESO and Twitch accounts!",
-          "ru": "Указано московское время. Смотрите трансляцию не менее 5 минут и не забудьте [связать](https://vk.com/wall-145918036_253477) учётные записи ESO и Twitch!"
+          "en": "Tune in for at least 5 mins to receive a drop and don't forget to [link](https://help.elderscrollsonline.com/app/answers/detail/a_id/41809) your ESO and Twitch accounts!",
+          "ru": "Смотрите трансляцию не менее 5 минут и не забудьте [связать](https://vk.com/wall-145918036_253477) учётные записи ESO и Twitch!"
         }
       },
 
@@ -187,6 +191,16 @@
         "success": {
           "en": "Prefix was changed to {{ prefix }}.",
           "ru": "Префикс успешно изменён на «{{ prefix }}»."
+        }
+      },
+      "timezone": {
+        "title": {
+          "en": "Timezone Offset Change",
+          "ru": "Изменение смещения часового пояса"
+        },
+        "success": {
+          "en": "Timezone was changed to '{{ timezone }}'.",
+          "ru": "Часовой пояс изменён на '{{ timezone }}'"
         }
       }
     },
@@ -327,7 +341,7 @@
         },
         "pledges": {
           "en": "Daily Pledges",
-          "ru": "Каждый день в 9:00 присылает сообщение о текущих обетах (и соответствующих масках) на выбранных языках."
+          "ru": "Каждый день присылает сообщение о текущих обетах (и соответствующих масках) на выбранных языках."
         },
         "golden": {
           "en": "Latest Adazabi Aba-daro Shipments",
@@ -419,7 +433,7 @@
         },
         "title_soon": {
           "en": "Stream Starts in 10 Minutes! Don't Miss a Twitch Drop!",
-          "ru": "Трансляция через 10 минут! Не пропустите Twitch Drops!"
+          "ru": "Трансляция через 10 минут! Не пропустите Twitch Drop!"
         }
       },
       "description": {
@@ -427,7 +441,7 @@
           "en": "[ESO Stream Team](https://www.twitch.tv/team/esostreamteam) Members.",
           "ru": "Каналы партнёров на [Twitch](https://www.twitch.tv/team/esostreamteam)."
         },
-        "where_any_team": {
+        "where_any": {
           "en": "Any [ESO](https://www.twitch.tv/directory/game/The%20Elder%20Scrolls%20Online) stream.",
           "ru": "Любые трансляции по [ESO](https://www.twitch.tv/directory/game/The%20Elder%20Scrolls%20Online)."
         },
@@ -474,12 +488,12 @@
       },
       "dates": {
         "one_day": {
-          "en": "{{ start_day }}, from {{ start_time }}–{{ end_time }}",
-          "ru": "{{ start_day }} с {{ start_time }} до {{ end_time }}"
+          "en": "{{ start_day }}, from {{ start_time }}–{{ end_time }} ({{ abbr }})",
+          "ru": "{{ start_day }} с {{ start_time }} до {{ end_time }} ({{ abbr }})"
         },
         "period": {
-          "en": "From {{ start_day }}, {{ start_time }} to {{ end_day }}, {{ end_time }}",
-          "ru": "С {{ start_time }} {{ start_day }} до {{ end_time }} {{ end_day }}"
+          "en": "From {{ start_day }}, {{ start_time }} to {{ end_day }}, {{ end_time }} ({{ abbr }})",
+          "ru": "С {{ start_time }} {{ start_day }} до {{ end_time }} {{ end_day }} ({{ abbr }})"
         }
       }
     },
@@ -560,6 +574,10 @@
       "USER_NOT_SUBSCRIBED": {
         "en": "You are not subscribed to '{{ sub }}'.",
         "ru": "Вы не подписаны на рассылку «{{ sub }}»."
+      },
+      "WRONG_TIMEZONE_OFFSET": {
+        "en": "Wrong timezone. Couldn't find timezone matching your query.",
+        "ru": "Неверный часовой пояс. Не могу найти часовой пояс, подходящий под ваш запрос."
       }
     }
   }
