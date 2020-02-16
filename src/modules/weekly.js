@@ -20,12 +20,12 @@ module.exports = function() {
     };
 
     const send = async () => {
-        const translations = this.translations.getCategory( 'commands', 'weekly' );
+        const translations = this.translations.get( 'commands/weekly' );
 
         const url = 'https://esoleaderboards.com/trial/weekly';
         const old = await this.info.get( 'weekly' );
 
-        const { data } = await this.get( url );
+        const { data } = await this.request( url );
 
         const $ = cheerio.load( data );
 

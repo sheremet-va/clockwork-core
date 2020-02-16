@@ -39,7 +39,7 @@ module.exports = function() {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
         const old = await this.info.get( 'patch' );
 
-        const { data } = await this.get( url );
+        const { data } = await this.request( url );
 
         const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
@@ -75,7 +75,7 @@ module.exports = function() {
 
         this.info.set( 'patch', description );
 
-        const translations = this.translations.getCategory( 'commands', 'patch' );
+        const translations = this.translations.get( 'commands/patch' );
 
         return this.notify( 'patch', { translations, data: description });
     };

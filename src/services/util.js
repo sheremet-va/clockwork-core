@@ -49,10 +49,10 @@ module.exports = function() {
         }
     };
 
-    this.notify = async ( name, data ) => {
+    this.notify = async ( name, data, condition = () => true ) => {
         const promises = Object.keys( projects )
             .map( async project => {
-                const subscribers = await this.getSubsByName( project, name );
+                const subscribers = await this.getSubsByName( project, name, condition );
                 const url = `/subscriptions/${name}`;
 
                 if( Object.keys( subscribers ).length ) {
@@ -89,31 +89,31 @@ module.exports = function() {
             );
     };
 
-    this.get = async ( options, tries = 1 ) => {
+    this.request = async ( options, tries = 1 ) => {
         if( tries > LIMIT_REPEAT_GET ) {
             throw new this.Error( `Number of attempts to get "${options.url || options}" exceeded` );
         }
 
-        return axios.get( options )
+        return axios[options.url ? 'request' : 'get']( options )
             .then( ({ data }) => ({ result: 'ok', data }) )
             .catch( err => {
                 this.logger.error(
                     `[${tries} try] Error at core.get "${options.url || options}": ${err.message}`
                 );
 
-                return this.get( options, ++tries );
+                return this.request( options, ++tries );
             });
     };
 
     this.sendError = ( reply, lang = 'en', code = 'NOT_FOUND', render = {}) => {
         if( this.translations.errors[code]) {
-            reply.send({
+            reply.code( 500 ).send({
                 result: 'error',
                 message: this.translations.errors[code][lang].render( render ),
                 code
             });
         } else {
-            reply.send({ result: 'error', code });
+            reply.code( 500 ).send({ result: 'error', code });
         }
 
         // добавить в логгер
@@ -126,15 +126,15 @@ module.exports = function() {
 
         const user = await this.users[project].get( id ) || { settings: {}, subscriptions: {} };
 
-        const settings = Object.entries( defaults )
-            .reduce( ( result, [key, value]) =>
-                ({ ...result, [key]: user.settings[key] ? user.settings[key] : value }), {});
+        const settings = { ...defaults, ...user.settings };
 
         return { ...user, settings };
     };
 
-    this.getSubsByName = async ( project, name ) => {
-        return await this.subscriptions[project].getSubsByName( name );
+    this.getSubsByName = async ( project, name, condition ) => {
+        const settings = this.settings.config.defaults[project];
+
+        return await this.subscriptions[project].getSubsByName( name, { condition, settings });
     };
 
     this.setSettings = ( project, was, { id, type, value }) => {

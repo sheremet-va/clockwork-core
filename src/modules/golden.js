@@ -26,25 +26,25 @@ const getItems = body => {
             return 'URL';
         }
 
-        const full_name = prepare( text, /(^[^\d]+)/, [/\*$/i, '']);
-        const name = prepare( full_name, /(^[^–]+)/, ['’', '\'']);
-        const trait = prepare( full_name, /([^–]+$)/ );
+        const fullName = prepare( text, /(^[^\d]+)/, [/\*$/i, '']);
+        const name = prepare( fullName, /(^[^–]+)/, ['’', '\'']);
+        const trait = prepare( fullName, /([^–]+$)/ );
 
-        const price = text.replace( full_name, '' ).trim();
-        const can_sell = text.search( /\*$/i ) !== -1;
+        const price = text.replace( fullName, '' ).trim();
+        const canSell = text.search( /\*$/i ) !== -1;
 
         return {
             name,
             price,
             trait,
-            can_sell
+            canSell
         };
     }).get().filter( e => e !== 'URL' );
 };
 
 module.exports = function() {
     const send = async ({ link, date }) => {
-        const { data } = await this.get( link );
+        const { data } = await this.request( link );
 
         const items = getItems( data );
 
@@ -52,10 +52,10 @@ module.exports = function() {
 
         const translatedItems = items.map( item => Object.assign( item, {
             // items.getItem( name )
-            trait: this.translations.getTranslation( 'merchants', 'traits', item.trait )
+            trait: this.translations.get( `merchants/traits/${item.trait}` )
         }) );
 
-        const translations = this.translations.getCategory( 'merchants', 'golden' );
+        const translations = this.translations.get( 'merchants/golden' );
 
         return this.notify( 'golden', { translations, data: translatedItems });
     };

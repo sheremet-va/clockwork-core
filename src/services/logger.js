@@ -21,6 +21,8 @@ exports.log = async ( content, type = 'log' ) => {
             .catch( console.error );
     }
 
+    // TODO слать лог в бота через axios
+
     return console.log( message );
 };
 

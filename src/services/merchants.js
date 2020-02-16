@@ -11,7 +11,8 @@ module.exports = function( golden, luxury ) {
         const $ = cheerio.load( body, { xmlMode: true });
 
         return $( 'item' ).map( ( _, item ) => {
-            const title = $( item ).find( 'title' ).text();
+            const $item = $( item );
+            const title = $item.find( 'title' ).text();
 
             const isLuxury = /LUXURY FURNITURE VENDOR ITEMS/i.test( title );
             const isGolden = /GOLDEN VENDOR ITEMS/i.test( title );
@@ -22,8 +23,8 @@ module.exports = function( golden, luxury ) {
 
             const type = isLuxury ? 'luxury' : 'golden';
 
-            const link = $( item ).find( 'link' ).text();
-            const date = $( item ).find( 'pubDate' ).text();
+            const link = $item.find( 'link' ).text();
+            const date = $item.find( 'pubDate' ).text();
 
             const publishedToday = moment( date ).isSame( moment(), 'day' );
 
@@ -56,7 +57,7 @@ module.exports = function( golden, luxury ) {
 
         const benevolent_rss = 'http://benevolentbowd.ca/feed/';
 
-        const { data } = await this.get( benevolent_rss );
+        const { data } = await this.request( benevolent_rss );
 
         published( data, info ).forEach( post => {
             if( post.type === 'luxury' ) {

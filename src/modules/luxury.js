@@ -126,10 +126,10 @@ const drawImage = async function( icons ) {
 
 module.exports = function() {
     const send = async ({ link, date }) => {
-        const { data } = await this.get( link );
+        const { data } = await this.request( link );
 
         const items = getItems( data );
-        const translated = items.map( item => ({ ...item }) ); // core.translations.getFurniture( icon.item )
+        const translated = items.map( ({ name, price, isNew }) => ({ name, price, isNew }) ); // core.translations.getFurniture( icon.item )
 
         const promises = items.map( item => item.icon && downloadIcon( item.icon ) );
 
@@ -141,7 +141,7 @@ module.exports = function() {
 
         await this.info.set( 'luxury', { items: translated, date, link, image });
 
-        const translations = this.translations.getCategory( 'merchants', 'luxury' );
+        const translations = this.translations.get( 'merchants/luxury' );
 
         return this.notify( 'luxury', { translations, data: { ...translated, image }, });
     };

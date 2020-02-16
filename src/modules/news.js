@@ -9,7 +9,7 @@ const __module = {
 
 module.exports = function() {
     const getImage = async url => {
-        const { data } = await this.get( url );
+        const { data } = await this.request( url );
 
         const $ = cheerio.load( data );
 
@@ -20,7 +20,7 @@ module.exports = function() {
         const url = 'http://files.elderscrollsonline.com/rss/en-us/eso-rss.xml';
         const oldNews = await this.info.get( 'news' );
 
-        const { data } = await this.get( url );
+        const { data } = await this.request( url );
 
         const $ = cheerio.load( data, { normalizeWhitespace: true, xmlMode: true });
 
@@ -51,7 +51,7 @@ module.exports = function() {
 
         await this.info.set( 'news', description );
 
-        const translations = this.translations.getCategory( 'commands', 'news' );
+        const translations = this.translations.get( 'commands/news' );
 
         return this.notify( 'news', { translations, data: description });
     };

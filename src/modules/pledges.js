@@ -143,7 +143,7 @@ module.exports = function() {
             : '';
 
         const instance = name.replace( level, '' );
-        const translated = this.translations.getTranslation( 'instances', subcat, instance );
+        const translated = this.translations.get( `instances/${subcat}/${instance}` );
 
         return Object.entries( translated ).reduce( ( instances, [langCode, inst]) => {
             const newName = level && !inst.NOT_FOUND ? inst + level : inst;
