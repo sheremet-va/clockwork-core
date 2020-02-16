@@ -67,7 +67,7 @@ module.exports = function( db, project, type ) {
             });
     };
 
-    const getSubsByName = name => {
+    const getSubsByName = ( name, { condition, settings }) => {
         const field = `subscriptions.${name}`;
 
         return db.collection( 'users' )
@@ -75,10 +75,31 @@ module.exports = function( db, project, type ) {
                 {
                     [field]: { $exists: true }
                 },
-                { projection: { _id: 0, [field]: 1 } }
+                {
+                    projection: {
+                        _id: 0,
+                        ownerId: 1,
+                        settings: 1,
+                        [field]: 1
+                    }
+                }
             )
             .toArray()
-            .then( docs => docs.reduce( ( all, doc ) => [...all, ...doc.subscriptions[name]], []) )
+            .then( docs => {
+                return docs.reduce( ( all, doc ) => {
+                    if( !condition( doc ) ) {
+                        return { all };
+                    }
+
+                    const id = doc.ownerId;
+                    const result = {
+                        settings: { ...settings, ...doc.settings },
+                        subscriptions: doc.subscriptions[name]
+                    };
+
+                    return { ...all, [id]: result };
+                }, {});
+            })
             .catch( err => {
                 this.logger.error(
                     `An error ocured while trying to get ${project} subs by ${name} name: ${err.message}`
