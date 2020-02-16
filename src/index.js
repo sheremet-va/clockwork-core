@@ -65,7 +65,7 @@ const init = async () => {
 
 MongoClient
     .connect( core.config.db.url, { useUnifiedTopology: true })
-    .then( client => {
+    .then( async client => {
         const db = client.db( 'clockwork-core' );
 
         require( './services/util' ).call( core );
@@ -74,14 +74,15 @@ MongoClient
             .forEach( project => {
                 core.subscriptions[project] = require( './controllers/users' ).call( core, db, project, 'subscriptions' );
                 core.settings[project] = require( './controllers/users' ).call( core, db, project, 'settings' );
-                core.users[project] = require( './controllers/users' ).call( core, db, project, 'subscriptions' );
+                core.users[project] = core.subscriptions[project];
             });
 
         core.info = require( './controllers/info' ).call( core, db );
         core.info.drops = require( './controllers/drops' ).call( core, db );
 
         require( './migrations/migration' )( core );
+        require( './services/drops' ).call( core );
 
-        init();
+        await init();
     })
     .catch( core.logger.error );
