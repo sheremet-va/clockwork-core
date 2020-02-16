@@ -220,6 +220,8 @@ const getRFCDate = string => {
 };
 
 module.exports = {
+    get,
+
     getDates,
     getRFCDate,
     getDropsSending,
