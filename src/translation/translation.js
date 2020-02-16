@@ -29,7 +29,7 @@ const NOT_FOUND = {
 };
 
 const get = path => {
-    const [type, cat, tag] = path.split( ',' );
+    const [type, cat, tag] = path.split( '/' );
 
     if( !type ) {
         return translations;
@@ -43,7 +43,7 @@ const get = path => {
         return translations[type][cat] || NOT_FOUND;
     }
 
-    return translations[type][cat][tag];
+    return translations[type][cat][tag] || NOT_FOUND;
 }
 
 const getPledgesDate = ( days, lang ) => {
