@@ -3,7 +3,7 @@ logs/
 migrations/
 dist/
 
-src/services/middleware.js
+src/services/middleware.ts
 
 configs/
 
