@@ -1,6 +1,7 @@
 node_modules/
 logs/
 migrations/
+dist/
 
 src/services/middleware.js
 
