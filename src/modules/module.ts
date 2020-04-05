@@ -1,10 +1,13 @@
 import { User } from '../controllers/users';
 import { InfoController } from '../controllers/info';
+
 import { Route } from '../services/router';
+import { Category, Item } from '../translation/translation';
 
 declare interface NotifyOptions {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
-    translations?: any; // Category | Tags
+    translations?: Category | Item;
 }
 
 export class Module {
@@ -24,18 +27,10 @@ export class Module {
         this.info = this.core.info;
     }
 
-    async get(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions> {
-        return {};
-    }
-
-    async send(options?: object): Promise<void> {
-        return;
-    }
-
-    async notify(name: string, data: NotifyOptions, condition = (user: User) => true): Promise<void> {
+    async notify(name: string, data: NotifyOptions, condition = (_user: User): boolean => true): Promise<void> {
         const projects = this.core.config.projects;
 
-        const promises = Object.keys(projects)
+        const promises = (Object.keys(projects) as project[])
             .map(async project => {
                 const settings = this.core.settings.config.defaults[project];
                 const subscribers = await this.core.getSubsByName(project, name, condition, settings);

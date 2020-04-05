@@ -54,7 +54,7 @@ export default class Luxury extends Module {
         await this.info.set('luxury', { items: translated, date, link, image });
 
         // TODO добавить языковые настройки
-        const translations = this.core.translations.get('merchants/luxury');
+        const translations = this.core.translations.get('merchants/luxury') as Category;
 
         return this.notify('luxury', { translations, data: { items: translated, image, link, date }, });
     };

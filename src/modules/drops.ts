@@ -2,7 +2,7 @@ import moment from 'moment-timezone';
 
 import { Module } from './module';
 
-import { Category } from '../translation/translation';
+import { Category, Item } from '../translation/translation';
 
 import { User } from '../controllers/users';
 import { DropItem } from '../controllers/drops';
@@ -108,11 +108,11 @@ export default class Drops extends Module {
         }
 
         const translations = {
-            title: this.core.translations.get(`drops/title/${dropStart ? 'title_soon' : 'title_now'}`),
+            title: this.core.translations.get(`drops/title/${dropStart ? 'title_soon' : 'title_now'}`) as Item,
             ...(this.core.translations.get('subscriptions/drops') as Category)
         };
 
-        const description = this.core.translations.get('drops/description');
+        const description = this.core.translations.get('drops/description') as Category;
 
         const formatted = {
             ...drop,

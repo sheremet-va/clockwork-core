@@ -28,7 +28,7 @@ export default class WeeklyModule extends Module {
     };
 
     send = async (): Promise<void> => {
-        const translations = this.core.translations.get('commands/weekly');
+        const translations = this.core.translations.get('commands/weekly') as Category;
 
         const url = 'https://esoleaderboards.com/trial/weekly';
         const old = await this.info.get('weekly') as WeeklyInfo || { eu: { en: '' }, na: { en: '' } };

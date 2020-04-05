@@ -1,26 +1,43 @@
-import { Module } from "./module";
+import { Module } from './module';
 
-import { StatusItem } from "../controllers/info";
-import { Category } from "../translation/translation";
-import { Route } from "../services/router";
+import { StatusItem } from '../controllers/info';
+import { Category } from '../translation/translation';
+import { Route } from '../services/router';
 
 import cheerio from 'cheerio';
 
+type status = 'UP' | 'DOWN';
+
 interface Changed {
-    eu?: 'UP' | 'DOWN';
-    na?: 'UP' | 'DOWN';
-    ps_eu?: 'UP' | 'DOWN';
-    ps_us?: 'UP' | 'DOWN';
-    pts?: 'UP' | 'DOWN';
-    xbox_eu?: 'UP' | 'DOWN';
-    xbox_us?: 'UP' | 'DOWN';
+    eu?: status;
+    na?: status;
+    ps_eu?: status;
+    ps_us?: status;
+    pts?: status;
+    xbox_eu?: status;
+    xbox_us?: status;
 }
 
-const getNewStatus = (response: any) => {
+type ZosResponse = {
+    zos_platform_response: {
+        result_message: 'success' | 'fail';
+        response: {
+            'The Elder Scrolls Online (EU)': status;
+            'The Elder Scrolls Online (NA)': status;
+            'The Elder Scrolls Online (PTS)': status;
+            'The Elder Scrolls Online (PS4 - EU)': status;
+            'The Elder Scrolls Online (PS4 - US)': status;
+            'The Elder Scrolls Online (XBox - US)': status;
+            'The Elder Scrolls Online (XBox - EU)': status;
+        };
+    };
+}
+
+const getNewStatus = (response: ZosResponse): Changed => {
     const data = response.zos_platform_response;
 
     if (data.result_message !== 'success') {
-        return [];
+        return {};
     }
 
     const status_aliases = {
@@ -50,28 +67,7 @@ const getNewStatus = (response: any) => {
         }, {});
 };
 
-const statusSubscriptions = (changed: Changed) => {
-    const statuses = Object.keys(changed);
-
-    if (statuses.includes('ps_eu') || statuses.includes('ps_us')) {
-        statuses.unshift('ps');
-    }
-
-    if (statuses.includes('xbox_eu') || statuses.includes('xbox_us')) {
-        statuses.unshift('xbox');
-    }
-
-    statuses.unshift('status');
-
-    return statuses.map(name => {
-        return {
-            name: `status${name !== 'status' ? name.toUpperCase() : ''}`,
-            changed: getChanged(name, changed)
-        };
-    });
-};
-
-const getChanged = (name: string, changed: Changed) => {
+const getChanged = (name: string, changed: Changed): Changed => {
     switch (name) {
         case 'status':
             return changed;
@@ -97,6 +93,27 @@ const getChanged = (name: string, changed: Changed) => {
     }
 };
 
+const statusSubscriptions = (changed: Changed): { name: string; changed: Changed }[] => {
+    const statuses = Object.keys(changed);
+
+    if (statuses.includes('ps_eu') || statuses.includes('ps_us')) {
+        statuses.unshift('ps');
+    }
+
+    if (statuses.includes('xbox_eu') || statuses.includes('xbox_us')) {
+        statuses.unshift('xbox');
+    }
+
+    statuses.unshift('status');
+
+    return statuses.map(name => {
+        return {
+            name: `status${name !== 'status' ? name.toUpperCase() : ''}`,
+            changed: getChanged(name, changed)
+        };
+    });
+};
+
 export default class Pledges extends Module {
     name = 'status';
     cron = '30 */3 * * * *';
@@ -113,7 +130,12 @@ export default class Pledges extends Module {
         super(core);
     }
 
-    getMaintenceTime = async (changed: string[]) => {
+    getMaintenceTime = async (): Promise<{
+        [k: string]: {
+            start: string;
+            end: string;
+        };
+    }> => {
         // if( areAllServersUp( changed ) ) {
         //     return {};
         // }
@@ -146,7 +168,7 @@ export default class Pledges extends Module {
                 [k: string]: {
                     start: string;
                     end: string;
-                }
+                };
             };
         } catch (err) {
             return {};
@@ -178,7 +200,7 @@ export default class Pledges extends Module {
 
         const { data } = await this.core.request(url);
 
-        const status = getNewStatus(data);
+        const status = getNewStatus(data as ZosResponse);
         const changedByCode = Object.keys(status)
             .filter(code => status[code] !== old[code]);
 
@@ -186,7 +208,7 @@ export default class Pledges extends Module {
             return;
         }
 
-        const maintence = await this.getMaintenceTime(changedByCode);
+        const maintence = await this.getMaintenceTime();
 
         const changed = changedByCode.reduce(
             (changed, code) => ({ ...changed, [code]: status[code] }), {});
@@ -206,5 +228,5 @@ export default class Pledges extends Module {
 }
 
 export declare interface Maintenance {
-    [key: string]: { start?: number, end?: number };
+    [key: string]: { start?: number; end?: number };
 }

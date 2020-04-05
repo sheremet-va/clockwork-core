@@ -1,6 +1,7 @@
 import { Module } from './module';
 
 import { NewsInfo } from '../controllers/info';
+import { Category } from '../translation/translation';
 
 import cheerio from 'cheerio';
 import moment from 'moment';
@@ -49,18 +50,18 @@ export default class News extends Module {
 
         const $news = $(news);
 
+        const link = $news.find('link').text();
+
         const description = {
             title: $news.find('title').text(),
-            link: $news.find('link').text(),
+            link,
             description: $news.find('description').text(),
-            image: ''
+            image: await this.image(link)
         };
-
-        description.image = await this.image(description.link);
 
         await this.core.info.set('news', description);
 
-        const translations = this.core.translations.get('commands/news');
+        const translations = this.core.translations.get('commands/news') as Category;
 
         return this.notify('news', { translations, data: description });
     };

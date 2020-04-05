@@ -219,7 +219,7 @@ export default class Pledges extends Module {
         const tomorrowMasks = today.map(pledge =>
             this.getTranslations('masks', this.getMask(pledge.en)));
 
-        const translations = this.core.translations.get('commands/pledges');
+        const translations = this.core.translations.get('commands/pledges') as Category;
 
         return this.notify('pledges', {
             translations,

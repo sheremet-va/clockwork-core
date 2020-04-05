@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Core Module for Clockwork Bots",
     "scripts": {
-        "start": "node --inspect=5858 -r ts-node/register ./src/index.ts",
+        "start": "node -r ts-node/register ./src/index.ts",
         "start:watch": "nodemon",
         "build": "tsc"
     },

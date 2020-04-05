@@ -31,7 +31,7 @@ export default class Golden extends Module {
             trait: this.core.translations.get(`merchants/traits/${item.trait}`)
         }));
 
-        const translations = this.core.translations.get('merchants/golden');
+        const translations = this.core.translations.get('merchants/golden') as Category;
 
         return this.notify('golden', { translations, data: { items: translatedItems, link, date } });
     };

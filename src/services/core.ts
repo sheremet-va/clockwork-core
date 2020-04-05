@@ -3,7 +3,7 @@ import fastify from 'fastify';
 
 import { Db } from 'mongodb';
 
-import { User, SubscriptionsController, SettingsController } from '../controllers/users';
+import { User, SubscriptionsController, SettingsController, UsersObject } from '../controllers/users';
 import { InfoController } from '../controllers/info';
 
 import { Translations, translate } from '../translation/translation';
@@ -45,7 +45,7 @@ function build(logger: Logger): void {
     });
 
     Object.defineProperty(Number.prototype, 'pluralize', {
-        value(array, lang) {
+        value(array: string[], lang: language) {
             switch (lang) {
                 case 'ru':
                     return `${this} ${array[(this % 10 === 1 && this % 100 !== 11)
@@ -130,6 +130,7 @@ class BaseCore {
 
     connect(db: Db): void {
         this.buildInfo(db);
+
         this.projects.forEach(project => this.buildUser(db, project));
     }
 
@@ -186,7 +187,7 @@ class BaseCore {
 
         const config = typeof options === 'string' ? { url: options, method: 'GET' } : options;
 
-        return axios.request(config as AxiosRequestConfig)
+        return axios(config as AxiosRequestConfig)
             .then(({ data }) => ({ result: 'ok', data }))
             .catch(async err => {
                 this.logger.error(
@@ -199,7 +200,12 @@ class BaseCore {
             });
     }
 
-    sendError(reply: fastify.FastifyReply<HttpResponse>, lang: language, code: string, render?: object): false {
+    sendError(
+        reply: fastify.FastifyReply<HttpResponse>,
+        lang: language,
+        code: string,
+        render?: object
+    ): false {
         const error = this.translations.translate(lang, 'errors/errors/' + code, render);
 
         if (typeof error === 'string') {
@@ -227,7 +233,12 @@ class BaseCore {
         return { ...user, settings };
     }
 
-    async getSubsByName(project: string, name: string, condition: (user: User) => boolean, settings: Settings): Promise<User> {
+    async getSubsByName(
+        project: project,
+        name: string,
+        condition: (user: User) => boolean,
+        settings: Settings
+    ): Promise<UsersObject> {
         return await this.subscriptions[project].getSubsByName(name, settings, condition);
     }
 
@@ -243,21 +254,21 @@ class BaseCore {
             .filter(([key, value]) => settings[key] !== value)
             .reduce((result, [key]) => ({ ...result, [key]: settings[key] }), {}) as Settings;
 
-        return this.settings[project].set(id, rebuild);
+        return this.settings[project].set(id, rebuild) as Promise<Settings>;
     }
 
     setSubscriptions(
         project: project,
         was: Subscriptions,
         { id, name = '', channels = [] }: { id: string; name: string; channels: string[] }
-    ): Promise<object> {
+    ): Promise<Subscriptions> {
         const subscriptions = { ...was, [name]: channels };
 
         const rebuild = Object.entries(subscriptions)
             .filter(([, value]) => value.length !== 0)
             .reduce((result, [key, value]) => ({ ...result, [key]: value }), {});
 
-        return this.subscriptions[project].set(id, rebuild);
+        return this.subscriptions[project].set(id, rebuild) as Promise<Subscriptions>;
     }
 }
 

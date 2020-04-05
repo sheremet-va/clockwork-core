@@ -58,9 +58,9 @@ const init = async (core: Core): Promise<void> => {
             reply.error(err.message, err.renderObject);
 
             return;
-        } else {
-            reply.code(500);
         }
+
+        reply.code(500);
 
         core.logger.error(
             `Error from ${request.ip}: \n${err.stack}`

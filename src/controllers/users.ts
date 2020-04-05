@@ -18,7 +18,7 @@ declare global {
     } | []
 }
 
-declare interface UsersObject {
+export declare interface UsersObject {
     [key: string]: User[];
 }
 
@@ -51,30 +51,26 @@ class UsersController {
         }
     }
 
-    set(ownerId: string, params: any): any {
-        return this.#db.collection('users')
-            .updateOne(
-                {
+    async set(ownerId: string, params: Settings | Subscriptions): Promise<Settings | Subscriptions> {
+        try {
+            await this.#db.collection('users')
+                .updateOne({
                     ownerId,
                     project: this.#project
-                },
-                {
+                }, {
                     $set: {
                         ownerId,
                         project: this.#project,
                         [this.type]: params
                     }
-                },
-                { upsert: true }
-            )
-            .then(() => params)
-            .catch(err => {
-                const stringifiedParams = JSON.stringify(params);
+                }, { upsert: true });
+            return params;
+        }
+        catch (err) {
+            const stringifiedParams = JSON.stringify(params);
 
-                throw new CoreError(
-                    `An error ocured while trying to set ${this.#project} subscriptions with params ${stringifiedParams}: ${err.message}`
-                );
-            });
+            throw new CoreError(`An error ocured while trying to set ${this.#project} subscriptions with params ${stringifiedParams}: ${err.message}`);
+        }
     }
 
     async getSubsByName(

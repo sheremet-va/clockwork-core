@@ -46,10 +46,10 @@ export default class SubscriptionsModule extends Module {
         const aliases = Object.keys(defaultAliases)
             .reduce((obj, sub) => {
                 const languages = Object.values(defaultAliases[sub])
-                    .reduce((acc, value) => [...acc, ...value], []);
+                    .reduce((acc: string[], value: string[]) => [...acc, ...value], []) as string[];
 
                 return { ...obj, [sub]: languages };
-            }, {});
+            }, {}) as { [k: string]: string[] };
 
         const subName = Object.keys(aliases).find(sub => sub === name || aliases[sub].includes(name));
 
