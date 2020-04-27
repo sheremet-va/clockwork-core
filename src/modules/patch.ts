@@ -1,10 +1,9 @@
-import cheerio from 'cheerio';
-import moment from 'moment';
+import * as cheerio from 'cheerio';
+import * as moment from 'moment';
 
 import { Module } from './module';
 
 import { PatchInfo } from '../controllers/info';
-import { Category } from '../translation/translation';
 import { Route } from '../services/router';
 
 const MAX_LENGTH = 1990;
@@ -24,31 +23,32 @@ export default class Patch extends Module {
     }
 
     description = (property: Cheerio): string => {
-        const text = property.text();
+        const match = /<br \/>([^>]+)<br \/>/.exec(property.text());
 
-        if (!/<br \/>([^>]+)<br \/>/.test(text)) {
+        if (!match) {
             return '';
         }
 
-        return /<br \/>([^>]+)<br \/>/.exec(text)[1]
+        return match[1]
             .replace(/&rsquo;/gi, '\'')
             .trim()
             .substr(0, MAX_LENGTH);
     };
 
     image = (description: Cheerio): string => {
-        const html = description.html();
+        const html = description.html() || '';
+        const match = /src="([^\s]+)"/.exec(html);
 
-        if (!/src="([^\s]+)"/.test(html)) {
-            return null;
+        if (!match) {
+            return '';
         }
 
-        return /src="([^\s]+)"/.exec(html)[1].replace(/-\d+x\d+/, '');
+        return match[1].replace(/-\d+x\d+/, '');
     };
 
     send = async (): Promise<void> => {
         const url = 'https://forums.elderscrollsonline.com/en/categories/patch-notes/feed.rss';
-        const old = await this.core.info.get('patch') as PatchInfo;
+        const old = await this.core.info.get<PatchInfo>('patch');
 
         const { data } = await this.core.request(url);
 
@@ -61,13 +61,11 @@ export default class Patch extends Module {
             const title = $news.find('title').text();
             const link = $news.find('link').text();
 
-            if (
+            return (
                 title.startsWith('PC/Mac Patch Notes') &&
                 moment().isSame(date, 'day') &&
                 old.link !== link
-            ) {
-                return true;
-            }
+            );
         }).get()[0];
 
         if (!patch) {
@@ -88,15 +86,15 @@ export default class Patch extends Module {
 
         this.core.info.set('patch', description);
 
-        const translations = this.core.translations.get('commands/patch') as Category;
+        const translations = this.core.translations.get('commands', 'patch');
 
         return this.notify('patch', { translations, data: description });
     };
 
-    get = async (): Promise<ReplyOptions> => {
-        const patch = await this.core.info.get('patch') as PatchInfo;
+    get = async ({ settings: { language: lang } }: CoreRequest): Promise<ReplyOptions> => {
+        const patch = await this.core.info.get('patch');
 
-        const translations = this.core.translate('commands/patch') as Category;
+        const translations = this.core.translate(lang, 'commands', 'patch');
 
         return { translations, data: patch };
     };

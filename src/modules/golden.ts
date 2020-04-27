@@ -1,12 +1,11 @@
-import cheerio from 'cheerio';
-import moment from 'moment-timezone';
+import * as cheerio from 'cheerio';
+import * as moment from 'moment-timezone';
 
 import { Module } from './module';
 import { CoreError } from '../services/core';
 import { Route } from '../services/router';
 
 import { GoldenInfo, GoldenItem } from '../controllers/info';
-import { Category } from '../translation/translation';
 
 export default class Golden extends Module {
     name = 'golden';
@@ -28,22 +27,22 @@ export default class Golden extends Module {
 
         const translatedItems = items.map(item => Object.assign(item, {
             // items.getItem( name )
-            trait: this.core.translations.get(`merchants/traits/${item.trait}`)
+            trait: this.core.translations.get('merchants', 'traits', item.trait)
         }));
 
-        const translations = this.core.translations.get('merchants/golden') as Category;
+        const translations = this.core.translations.get('merchants', 'golden');
 
         return this.notify('golden', { translations, data: { items: translatedItems, link, date } });
     };
 
-    get = async (): Promise<ReplyOptions> => {
+    get = async ({ settings: { language: lang } }: CoreRequest): Promise<ReplyOptions> => {
         const now = moment().utc();
 
         if (now.day() !== 0 && now.day() !== 6) {
             throw new CoreError('UNEXPECTED_GOLDEN_DATE');
         }
 
-        const golden = await this.info.get('golden') as GoldenInfo;
+        const golden = await this.info.get<GoldenInfo>('golden');
 
         const date = moment(golden.date);
 
@@ -54,19 +53,25 @@ export default class Golden extends Module {
             throw new CoreError('DONT_HAVE_ITEMS_YET');
         }
 
-        const translations = this.core.translate('merchants/golden') as Category;
+        const translations = this.core.translate(lang, 'merchants', 'golden');
 
         return { translations, data: golden };
     };
 
     private prepare(text: string, match: RegExp, [what = /’/g, how = '\''] = []): string {
-        if (!match.test(text)) {
+        const matched = match.exec(text);
+
+        if (!matched) {
+            this.core.logger.error(
+                `${match} wasn't found in ${text}.`
+            );
+
             return '';
         }
 
-        const matched = match.exec(text)[0].trim();
+        const result = matched[0].trim();
 
-        return what ? matched.replace(what, how) : matched;
+        return what ? result.replace(what, how) : result;
     }
 
     private items(body: string): GoldenItem[] {

@@ -1,10 +1,9 @@
 import { Module } from './module';
 
-import { StatusItem } from '../controllers/info';
-import { Category } from '../translation/translation';
 import { Route } from '../services/router';
 
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
+import { StatusItem } from '../controllers/info';
 
 type status = 'UP' | 'DOWN';
 
@@ -18,18 +17,21 @@ interface Changed {
     xbox_us?: status;
 }
 
+type ChangedNotify = keyof Changed | 'ps' | 'xbox' | 'status';
+
+type ZosResponseServers =
+    | 'The Elder Scrolls Online (EU)'
+    | 'The Elder Scrolls Online (NA)'
+    | 'The Elder Scrolls Online (PTS)'
+    | 'The Elder Scrolls Online (PS4 - EU)'
+    | 'The Elder Scrolls Online (PS4 - US)'
+    | 'The Elder Scrolls Online (XBox - US)'
+    | 'The Elder Scrolls Online (XBox - EU)'
+
 type ZosResponse = {
     zos_platform_response: {
         result_message: 'success' | 'fail';
-        response: {
-            'The Elder Scrolls Online (EU)': status;
-            'The Elder Scrolls Online (NA)': status;
-            'The Elder Scrolls Online (PTS)': status;
-            'The Elder Scrolls Online (PS4 - EU)': status;
-            'The Elder Scrolls Online (PS4 - US)': status;
-            'The Elder Scrolls Online (XBox - US)': status;
-            'The Elder Scrolls Online (XBox - EU)': status;
-        };
+        response: Record<ZosResponseServers, status>;
     };
 }
 
@@ -40,7 +42,7 @@ const getNewStatus = (response: ZosResponse): Changed => {
         return {};
     }
 
-    const status_aliases = {
+    const status_aliases: Record<ZosResponseServers, keyof Changed> = {
         // PC
         'The Elder Scrolls Online (EU)': 'eu',
         'The Elder Scrolls Online (NA)': 'na',
@@ -57,7 +59,7 @@ const getNewStatus = (response: ZosResponse): Changed => {
 
     return Object.entries(data.response)
         .reduce((status, [code, value]) => {
-            const alias = status_aliases[code];
+            const alias = status_aliases[code as ZosResponseServers];
 
             if (alias) {
                 return { ...status, [alias]: value };
@@ -67,7 +69,10 @@ const getNewStatus = (response: ZosResponse): Changed => {
         }, {});
 };
 
-const getChanged = (name: string, changed: Changed): Changed => {
+const getChanged = (
+    name: ChangedNotify,
+    changed: Changed
+): Changed => {
     switch (name) {
         case 'status':
             return changed;
@@ -94,7 +99,7 @@ const getChanged = (name: string, changed: Changed): Changed => {
 };
 
 const statusSubscriptions = (changed: Changed): { name: string; changed: Changed }[] => {
-    const statuses = Object.keys(changed);
+    const statuses = Object.keys(changed) as ChangedNotify[];
 
     if (statuses.includes('ps_eu') || statuses.includes('ps_us')) {
         statuses.unshift('ps');
@@ -182,10 +187,10 @@ export default class Pledges extends Module {
     };
 
     get = async ({ settings }: CoreRequest): Promise<ReplyOptions> => {
-        const status = await this.info.get('status') as StatusItem;
-        const translations = this.core.translate('commands/status') as Category;
+        const status = await this.info.get<StatusItem>('status');
+        const translations = this.core.translate(settings.language, 'commands', 'status');
 
-        const render = this.core.dates.maintence(status.maintence, settings);
+        const render = this.core.dates.maintence(status.maintence || {}, settings);
 
         Object.assign(status, { maintence: render });
 
@@ -193,15 +198,15 @@ export default class Pledges extends Module {
     };
 
     send = async (): Promise<void> => {
-        const translations = this.core.translations.get('commands/status') as Category;
+        const translations = this.core.translations.get('commands', 'status');
 
         const url = 'https://live-services.elderscrollsonline.com/status/realms';
-        const old = await this.info.get('status');
+        const old = await this.info.get<Changed>('status');
 
         const { data } = await this.core.request(url);
 
         const status = getNewStatus(data as ZosResponse);
-        const changedByCode = Object.keys(status)
+        const changedByCode = (Object.keys(status) as (keyof Changed)[])
             .filter(code => status[code] !== old[code]);
 
         if (changedByCode.length === 0) {
@@ -219,7 +224,7 @@ export default class Pledges extends Module {
             return this.notify(info.name, {
                 translations: {
                     ...translations,
-                    ...this.core.translations.get('subscriptions/status') as Category
+                    ...this.core.translations.get('subscriptions', 'status')
                 },
                 data: { ...info.changed, maintence }
             });

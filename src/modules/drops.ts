@@ -1,8 +1,6 @@
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 
 import { Module } from './module';
-
-import { Category, Item } from '../translation/translation';
 
 import { User } from '../controllers/users';
 import { DropItem } from '../controllers/drops';
@@ -37,13 +35,13 @@ export default class Drops extends Module {
     }
 
     when = async ({ query: { start, end }, settings: { timezone } }: CoreRequest): Promise<ReplyOptions> => {
-        const translations = this.core.dates.drops(parseInt(start), parseInt(end), timezone);
+        const translations = this.core.dates.drops(+start, parseInt(end), timezone);
 
         return { translations };
     }
 
     sending = async ({ query: { start }, settings: { timezone, language } }: CoreRequest): Promise<ReplyOptions> => {
-        const data = this.core.dates.dropsSending(parseInt(start), language, timezone);
+        const data = this.core.dates.dropsSending(+start, language, timezone);
 
         return { data };
     }
@@ -55,8 +53,8 @@ export default class Drops extends Module {
             throw new CoreError('NO_DROPS_INFO');
         }
 
-        const translations = this.core.translate('commands/drops') as Category;
-        const description = this.core.translate('drops/description') as Category;
+        const translations = this.core.translate(lang, 'commands', 'drops');
+        const description = this.core.translate(lang, 'drops', 'description');
 
         const formated = drops.map(drop => {
             const sending = this.core.dates.dropsSending(drop.sendingDate, lang, timezone);
@@ -84,11 +82,7 @@ export default class Drops extends Module {
             const startDate = moment(drop.startDate);
             const hourMore = moment().add(ONE_HOUR, 'hours');
 
-            if (startDate.isSame(hourMore, 'hours')) {
-                return true;
-            }
-
-            return true;
+            return startDate.isSame(hourMore, 'hours');
         });
 
         // Checks if you can get drops right now.
@@ -96,9 +90,7 @@ export default class Drops extends Module {
             const startDate = moment(drop.startDate);
             const endDate = moment(drop.endDate);
 
-            if (now.isBetween(startDate, endDate)) {
-                return true;
-            }
+            return now.isBetween(startDate, endDate);
         });
 
         const drop = dropStart || dropBetween;
@@ -108,11 +100,11 @@ export default class Drops extends Module {
         }
 
         const translations = {
-            title: this.core.translations.get(`drops/title/${dropStart ? 'title_soon' : 'title_now'}`) as Item,
-            ...(this.core.translations.get('subscriptions/drops') as Category)
+            title: this.core.translations.get('drops', 'title', dropStart ? 'title_soon' : 'title_now'),
+            ...this.core.translations.get('subscriptions', 'drops')
         };
 
-        const description = this.core.translations.get('drops/description') as Category;
+        const description = this.core.translations.get('drops', 'description');
 
         const formatted = {
             ...drop,

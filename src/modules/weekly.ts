@@ -1,12 +1,10 @@
 import { Module } from './module';
 
-import { Category } from '../translation/translation';
-
 import { WeeklyInfo } from '../controllers/info';
 
 import { Route } from '../services/router';
 
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 export default class WeeklyModule extends Module {
     name = 'weekly';
@@ -20,18 +18,18 @@ export default class WeeklyModule extends Module {
         super(core);
     }
 
-    get = async (): Promise<ReplyOptions> => {
+    get = async ({ settings: { language } }: CoreRequest): Promise<ReplyOptions> => {
         const weekly = await this.info.get('weekly');
-        const translations = this.core.translate('commands/weekly') as Category;
+        const translations = this.core.translate(language, 'commands', 'weekly');
 
         return { translations, data: weekly };
     };
 
     send = async (): Promise<void> => {
-        const translations = this.core.translations.get('commands/weekly') as Category;
+        const translations = this.core.translations.get('commands', 'weekly');
 
         const url = 'https://esoleaderboards.com/trial/weekly';
-        const old = await this.info.get('weekly') as WeeklyInfo || { eu: { en: '' }, na: { en: '' } };
+        const old = await this.info.get<WeeklyInfo>('weekly') || { eu: { en: '' }, na: { en: '' } };
 
         const { data } = await this.core.request(url);
 
@@ -51,7 +49,7 @@ export default class WeeklyModule extends Module {
 
             return {
                 ...obj,
-                [region]: this.core.translations.get(`instances/trials/${trial}`)
+                [region]: this.core.translations.get('instances', 'trials', trial)
             };
         }, {});
 

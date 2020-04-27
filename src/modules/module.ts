@@ -4,30 +4,33 @@ import { InfoController } from '../controllers/info';
 import { Route } from '../services/router';
 import { Category, Item } from '../translation/translation';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { RequestHandler } from 'fastify';
+
 declare interface NotifyOptions {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
     translations?: Category | Item;
 }
 
-export class Module {
-    public core: Core;
-
-    public name: string = null;
-    public cron: string = null;
+export abstract class Module {
+    public name = '';
+    public cron = '';
 
     public api: Route[] = [];
     public routes: Route[] = [];
 
     info: InfoController;
 
-    constructor(core: Core) {
-        this.core = core;
-
+    constructor(public core: Core) {
         this.info = this.core.info;
     }
 
-    async notify(name: string, data: NotifyOptions, condition = (_user: User): boolean => true): Promise<void> {
+    async notify(
+        name: Extract<keyof Subscriptions, string>,
+        data: NotifyOptions,
+        condition = (_user: User): boolean => true
+    ): Promise<void> {
         const projects = this.core.config.projects;
 
         const promises = (Object.keys(projects) as project[])
@@ -63,7 +66,11 @@ export class Module {
                         return this.core.logger.sub(name, project, status);
                     }
 
-                    const { type, message, notify } = res.reason;
+                    const { type, message, notify } = res.reason as {
+                        type: 'warn' | 'error' | 'log';
+                        message: string;
+                        notify: boolean;
+                    };
 
                     if ('notify' in res.reason && !notify) {
                         return;
@@ -84,11 +91,6 @@ export class Module {
 
 declare global {
     class ModuleController extends Module {
-        core: Core;
-        name: string;
-        cron: string;
-        info: InfoController;
-
         get(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
         send(): Promise<void>;
         notify(name: string, data: ReplyOptions, condition?: (user: User) => boolean): Promise<void>;
@@ -99,6 +101,8 @@ declare global {
         maintenance?(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
         when?(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
         sending?(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
+
+        handler: RequestHandler;
     }
 
     type Modules = {

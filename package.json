@@ -1,6 +1,6 @@
 {
     "name": "clockwork-core",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Core Module for Clockwork Bots",
     "scripts": {
         "start": "node -r ts-node/register ./src/index.ts",
@@ -32,6 +32,7 @@
     "homepage": "https://github.com/MNekrasov/clockwork-core#readme",
     "dependencies": {
         "@types/cheerio": "^0.22.17",
+        "@types/cron": "^1.7.2",
         "@types/moment-timezone": "^0.5.13",
         "@types/mongodb": "^3.5.4",
         "@typescript-eslint/eslint-plugin": "^2.25.0",

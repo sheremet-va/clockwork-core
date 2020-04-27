@@ -32,7 +32,7 @@ export class DropsController {
         }
     }
 
-    async set(params: DropItem): Promise<DropItem> {
+    async set<Params extends DropItem>(params: Params): Promise<DropItem> {
         try {
             await this.#db.collection('drops')
                 .updateOne({
@@ -49,7 +49,10 @@ export class DropsController {
         }
     }
 
-    async remove(startDate: number, endDate: number): Promise<{ startDate: number; endDate: number }> {
+    async remove<Start extends number, End extends number>(
+        startDate: Start,
+        endDate: End
+    ): Promise<{ startDate: Start; endDate: End }> {
         try {
             await this.#db.collection('drops')
                 .deleteOne({

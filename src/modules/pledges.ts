@@ -1,9 +1,9 @@
 import { Module } from './module';
 import { CoreError } from '../services/core';
 
-import moment from 'moment';
+import * as moment from 'moment';
 
-import { Item, Category } from '../translation/translation';
+import { Item } from '../translation/translation';
 import { Route } from '../services/router';
 
 // засунуть в info?
@@ -147,7 +147,9 @@ export default class Pledges extends Module {
             'Unhallowed Grave': 'Kjalnar\'s Nightmare'
         };
 
-        return masks[pledge] ? masks[pledge] : pledge;
+        const name = pledge as keyof typeof masks;
+
+        return name in masks ? masks[name] : name;
     }
 
     getTranslations(subcat: string, dungeon: string): { [k in language]: string } {
@@ -155,7 +157,9 @@ export default class Pledges extends Module {
         const level = matches ? matches[0] : '';
 
         const instance = dungeon.replace(level, '');
-        const translated = this.core.translations.get(`instances/${subcat}/${instance}`) as Item;
+        const translated = this.core.translations.get('instances', subcat, instance);
+
+        const instances = {} as Record<string, Record<language, string>>;
 
         return Object.entries(translated).reduce((instances, [langCode, inst]) => {
             const newName = level ? inst + level : inst;
@@ -167,7 +171,7 @@ export default class Pledges extends Module {
                     [langCode]: newName
                 }
             };
-        }, {})[dungeon];
+        }, instances)[dungeon];
     }
 
     translate(strings: Item[], lang: language = 'en'): { [key: string]: string }[] {
@@ -184,11 +188,11 @@ export default class Pledges extends Module {
         const masks = pledges.map(pledge =>
             this.getTranslations('masks', this.getMask(pledge.en)));
 
-        const translations = this.core.translate('commands/pledges', {
+        const translations = this.core.translate(lang, {
             after_days: {
                 days: this.core.dates.pluralize(days, lang)
             }
-        }) as (Category & { day?: string; date?: string });
+        }, 'commands', 'pledges');
 
         const options = {
             translations,
@@ -219,7 +223,7 @@ export default class Pledges extends Module {
         const tomorrowMasks = today.map(pledge =>
             this.getTranslations('masks', this.getMask(pledge.en)));
 
-        const translations = this.core.translations.get('commands/pledges') as Category;
+        const translations = this.core.translations.get('commands', 'pledges');
 
         return this.notify('pledges', {
             translations,

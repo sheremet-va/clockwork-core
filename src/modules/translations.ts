@@ -1,7 +1,5 @@
 import { Module } from './module';
 
-import { Category, Tag } from '../translation/translation';
-
 import { CoreError } from '../services/core';
 import { Route } from '../services/router';
 
@@ -40,10 +38,11 @@ export default class TranslationsModule extends Module {
     get = async (request: CoreRequest): Promise<ReplyOptions> => {
         const {
             query: { value },
-            params: { type, category, tag }
+            params: { type = '', category = '', tag = '' },
+            settings: { language }
         } = request;
 
-        const translations = this.core.translate(`${type}/${category}${tag ? '/' + tag : ''}`) as Category | Tag;
+        const translations = this.core.translate(language, type, category, tag);
 
         if (category === 'prefix') {
             this.validatePrefix(value);

@@ -1,18 +1,16 @@
-import moment from 'moment';
+import * as moment from 'moment';
+import * as cheerio from 'cheerio';
 
 import { CronJob } from 'cron';
-import cheerio from 'cheerio';
 
 import { DropsController, DropItem } from '../controllers/drops';
 
 const ESO_URL = 'https://www.elderscrollsonline.com';
 
 export class DropsManager {
-    core: Core;
     drops: DropsController
 
-    constructor(core: Core) {
-        this.core = core;
+    constructor(public core: Core) {
         this.drops = core.info.drops;
 
         new CronJob('0 0 12 */1 * *', this.work).start();
@@ -68,7 +66,7 @@ export class DropsManager {
         }).get();
 
         Promise.allSettled(drops).then(drops => {
-            drops.forEach((result) => {
+            drops.forEach(result => {
                 if (result.status !== 'fulfilled') {
                     return;
                 }

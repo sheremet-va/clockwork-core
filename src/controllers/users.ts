@@ -15,7 +15,7 @@ export declare interface User {
 declare global {
     type Subscriptions = {
         [key: string]: string[];
-    } | []
+    }
 }
 
 export declare interface UsersObject {
@@ -37,7 +37,7 @@ class UsersController {
 
     async get(ownerId: string): Promise<User> {
         try {
-            return this.#db.collection('users')
+            const user = this.#db.collection('users')
                 .findOne(
                     {
                         ownerId,
@@ -45,13 +45,19 @@ class UsersController {
                     },
                     { projection: { _id: 0 } }
                 );
+
+            if( !user ) {
+                throw new CoreError(`No user with ${ownerId} owner ID was found.`);
+            }
+
+            return user;
         }
         catch (err) {
             throw new CoreError(`An error ocured while trying to get ${this.#project} ${this.type}: ${err.message}`);
         }
     }
 
-    async set(ownerId: string, params: Settings | Subscriptions): Promise<Settings | Subscriptions> {
+    async set<T>(ownerId: string, params: T): Promise<T> {
         try {
             await this.#db.collection('users')
                 .updateOne({
@@ -67,14 +73,16 @@ class UsersController {
             return params;
         }
         catch (err) {
-            const stringifiedParams = JSON.stringify(params);
+            const stringified = JSON.stringify(params);
 
-            throw new CoreError(`An error ocured while trying to set ${this.#project} subscriptions with params ${stringifiedParams}: ${err.message}`);
+            throw new CoreError(
+                `An error ocured while trying to set ${this.#project} subscriptions with params ${stringified}: ${err.message}`
+            );
         }
     }
 
     async getSubsByName(
-        name: string,
+        name: keyof Subscriptions,
         settings: Settings,
         condition: (user: User) => boolean
     ): Promise<UsersObject> {
@@ -93,9 +101,9 @@ class UsersController {
                         [field]: 1
                     }
                 })
-                .toArray();
+                .toArray() as User[];
 
-            return docs.reduce((all: object, doc: User) => {
+            return docs.reduce((all, doc) => {
                 const passed = condition({
                     ...doc,
                     settings: { ...settings, ...doc.settings }
@@ -120,7 +128,7 @@ class UsersController {
 }
 
 export class SubscriptionsController extends UsersController {
-    config: SubscriptionsConfig;
+    config!: SubscriptionsConfig;
 
     constructor(db: Db, project: project) {
         super(db, project, 'subsciptions');
@@ -128,7 +136,7 @@ export class SubscriptionsController extends UsersController {
 }
 
 export class SettingsController extends UsersController {
-    config: SettingsConfig;
+    config!: SettingsConfig;
 
     constructor(db: Db, project: project) {
         super(db, project, 'subsciptions');

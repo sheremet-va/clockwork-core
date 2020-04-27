@@ -1,12 +1,10 @@
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 
-import { Translations, Category } from './translation';
+import { Translations } from './translation';
+import { CoreError } from '../services/core';
 import { Maintenance } from '../modules/status';
 import { languages } from '../configs/main';
-
-import locales from './locales';
-
-locales(moment);
+import { Logger } from '../services/logger';
 
 type replaces = {
     startDate: moment.Moment;
@@ -21,17 +19,24 @@ type replaces = {
 }
 
 class Dates {
-    translate: Translations;
+    translate = new Translations();
+    logger = new Logger();
 
-    constructor() {
-        this.translate = new Translations();
+    private zone(timezone: string): moment.MomentZone {
+        const zone = moment.tz.zone(timezone);
+
+        if( !zone ) {
+            throw new CoreError('Invalid timezone: ' + timezone);
+        }
+
+        return zone;
     }
 
     private replaces(
         { start, end }: { start?: number; end?: number },
-        { timezone, language }: Settings
+        { timezone, language }: { timezone: string; language: language }
     ): replaces {
-        const abbr = moment.tz.zone(timezone).abbr(new Date().valueOf());
+        const abbr = this.zone(timezone).abbr(new Date().valueOf());
 
         const startDate = moment(start).tz(timezone).locale(language);
         const endDate = moment(end).tz(timezone).locale(language);
@@ -40,9 +45,9 @@ class Dates {
             startDate,
             endDate,
             replaces: {
-                start_day: startDate.format('[LL-Y]'),
+                start_day: this.format(startDate, 'LLY'),
                 start_time: startDate.format('LT'),
-                end_day: endDate.format('[LL-Y]'),
+                end_day: this.format(endDate, 'LLY'),
                 end_time: endDate.format('LT'),
                 abbr
             }
@@ -54,13 +59,30 @@ class Dates {
         const day = moment().add(days, 'days');
 
         return {
-            date: day.locale(lang).format('[LL-Y]'),
+            date: this.format(day.locale(lang), 'LLY'),
             day: day.locale(lang).format('dddd')
         };
     }
 
+    private format(date: moment.Moment, format: string): string {
+        const formats = {
+            LLY: {
+                en: 'MMMM D',
+                ru: 'D MMMM'
+            },
+            LLLT: {
+                en: 'MMMM D, LT',
+                ru: 'D MMMM с LT'
+            }
+        };
+
+        const lang = date.locale() as language;
+
+        return date.format(formats[format as keyof typeof formats][lang]);
+    }
+
     drops(start: number, end: number, timezone: string): { [key in language]: string } {
-        const translations = this.translate.get('drops/dates') as Category;
+        const translations = this.translate.get('drops', 'dates');
 
         const result = languages.reduce((description, language) => {
             const {
@@ -81,13 +103,13 @@ class Dates {
     }
 
     dropsSending(date: number, lang: language, timezone: string): { time: string; date: string } {
-        const abbr = moment.tz.zone(timezone).abbr(date);
+        const abbr = this.zone(timezone).abbr(date);
 
         const time = moment(date).tz(timezone);
 
         return {
             time: time.locale(lang).format('LT') + ` (${abbr})`,
-            date: time.locale(lang).format('[LL-Y]')
+            date: this.format(time.locale(lang), 'LLY')
         };
     }
 
@@ -111,8 +133,8 @@ class Dates {
         const day = moment(time);
 
         return {
-            en: day.locale('en').format('[LL-Y]'),
-            ru: day.locale('ru').format('[LL-Y]')
+            en: this.format(day.locale('en'), 'LLY'),
+            ru: this.format(day.locale('ru'), 'LLY')
         };
     }
 
@@ -125,10 +147,28 @@ class Dates {
         return day.pluralize(days[lang], lang);
     }
 
-    private time(time: string): string {
-        const result = /\(([0-9:]+) UTC\)/.exec(time)[1];
+    private log(message: string): void {
+        try {
+            throw new Error();
+        } catch(err) {
+            this.logger.error(
+                `${message}\n` + err.stack
+            );
+        }
+    }
 
-        const [hour, min] = result.split(':');
+    private time(time: string): string {
+        const match = /\(([0-9:]+) UTC\)/.exec(time);
+
+        if( !match ) {
+            this.log(
+                `Error while parsing ${time} time. Empty string returned.`
+            );
+
+            return '';
+        }
+
+        const [hour, min] = match[1].split(':');
 
         if (hour.length === 1) {
             return `0${hour}:${min}`;
@@ -138,8 +178,19 @@ class Dates {
     }
 
     private day(day: string): string {
-        const date = /\d+/.exec(day)[0];
-        const month = /\w+/.exec(day)[0].slice(0, 3);
+        const match_date = /\d+/.exec(day);
+        const match_month = /\w+/.exec(day);
+
+        if( !match_date || !match_month ) {
+            this.log(
+                `Can't parse ${day} day. (Date: ${match_date}, Month: ${match_month}) Empty string returned.`
+            );
+
+            return '';
+        }
+
+        const date = match_date[0];
+        const month = match_date[0].slice(0, 3);
 
         return `${date} ${month}`;
     }
@@ -154,6 +205,13 @@ class Dates {
         const endTime = this.time(end);
         const startDay = this.day(day);
         const curYear = new Date().getFullYear();
+
+        if( !startTime || !endTime || !startDay ) {
+            return {
+                start: '',
+                end: ''
+            };
+        }
 
         const [startResult, endResult] = [
             `${startDay} ${curYear} ${startTime} GMT`,

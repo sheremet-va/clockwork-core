@@ -1,9 +1,9 @@
-import imgurUploader from 'imgur-uploader';
-import moment from 'moment-timezone';
-import cheerio from 'cheerio';
 import axios from 'axios';
 import Jimp from 'jimp';
 
+import * as imgurUploader from 'imgur-uploader';
+import * as moment from 'moment-timezone';
+import * as cheerio from 'cheerio';
 import * as Path from 'path';
 import * as fs from 'fs';
 
@@ -13,14 +13,18 @@ import { LuxuryInfo, LuxuryItem } from '../controllers/info';
 import { CoreError } from '../services/core';
 import { Route } from '../services/router';
 
-import { Category } from '../translation/translation';
-
 const furnitureIcons = JSON.parse(
     fs.readFileSync(
         Path.resolve(__dirname, 'dependencies', 'furniture.json'), // TODO don't save "/esoui/art/icons/"
         'utf8'
     )
 );
+
+type Item = {
+    link: string;
+    date: string;
+    type: 'luxury' | 'golden';
+}
 
 export default class Luxury extends Module {
     name = 'luxury';
@@ -33,7 +37,7 @@ export default class Luxury extends Module {
         super(core);
     }
 
-    send = async ({ link, date }): Promise<void> => {
+    send = async ({ link, date }: Item): Promise<void> => {
         const { data } = await this.core.request(link);
 
         const items = this.items(data as string);
@@ -45,28 +49,34 @@ export default class Luxury extends Module {
             }
         });
 
-        const icons = await Promise.allSettled(promises).then(result =>
-            result.map(icon => icon.status === 'fulfilled' && icon.value).filter(noFalse => noFalse)
-        );
+        const icons = await Promise.allSettled(promises).then(result => {
+            return result.map(icon => {
+                if( icon.status === 'fulfilled' ) {
+                    return icon.value;
+                }
+
+                return false;
+            }).filter(value => typeof value === 'string');
+        }) as string[];
 
         const image = await this.drawImage(icons);
 
         await this.info.set('luxury', { items: translated, date, link, image });
 
         // TODO добавить языковые настройки
-        const translations = this.core.translations.get('merchants/luxury') as Category;
+        const translations = this.core.translations.get('merchants', 'luxury');
 
         return this.notify('luxury', { translations, data: { items: translated, image, link, date }, });
     };
 
-    get = async (): Promise<ReplyOptions> => {
+    get = async ({ settings: { language: lang } }: CoreRequest): Promise<ReplyOptions> => {
         const now = moment().utc();
 
         if (now.day() !== 0 && now.day() !== 6) {
             throw new CoreError('UNEXPECTED_LUXURY_DATE');
         }
 
-        const luxury = await this.info.get('luxury') as LuxuryInfo;
+        const luxury = await this.info.get<LuxuryInfo>('luxury');
 
         const date = moment(luxury.date);
 
@@ -77,10 +87,28 @@ export default class Luxury extends Module {
             throw new CoreError('DONT_HAVE_ITEMS_YET');
         }
 
-        const translations = this.core.translate('merchants/luxury') as Category;
+        const translations = this.core.translate(lang, 'merchants', 'luxury');
 
         return { translations, data: luxury };
     };
+
+    log = (
+        fullName: string,
+        name: RegExpExecArray | null,
+        price: RegExpExecArray | null
+    ): void => {
+        if( !name ) {
+            this.core.logger.error(
+                `Name from ${fullName} wasn't found.`
+            );
+        }
+
+        if( !price ) {
+            this.core.logger.error(
+                `Price from ${fullName} wasn't found.`
+            );
+        }
+    }
 
     items = (body: string): (LuxuryItem & { icon: string })[] => {
         const $ = cheerio.load(body);
@@ -92,12 +120,22 @@ export default class Luxury extends Module {
                 return 'URL';
             }
 
-            const name = /(^[^\d]+)/.exec(fullName)[0].trim();
-            const price = /([\d,g]{3,})/.exec(fullName)[0].trim();
+            const name_match = /(^[^\d]+)/.exec(fullName);
+            const price_match = /([\d,g]{3,})/.exec(fullName);
+
+            const name = ( name_match || fullName )[0].trim();
+            const price = ( price_match || '' )[0].trim();
+
+            this.log( fullName, name_match, price_match );
+
             const isNew = fullName.search(/NEW/i) !== -1;
             const icon = furnitureIcons[name]
                 ? furnitureIcons[name].replace('/esoui/art/icons/', '')
                 : null;
+
+            if( !icon ) {
+                this.core.logger.error( `Icon for "${name}" wasn't found.` );
+            }
 
             return { name, price, icon, isNew };
         }).get().filter((e: LuxuryItem & { icon: string } | 'URL') => e !== 'URL');
@@ -151,7 +189,13 @@ export default class Luxury extends Module {
         ];
 
         const wholeImage = await Jimp.read(__dirname + '/images/luxury.jpg');
-        const iconsCount = icons.length > MAX_COUNT ? MAX_COUNT : icons.length;
+        const iconsCount = ( icons.length > MAX_COUNT ? MAX_COUNT : icons.length ) as 1 | 2;
+
+        const positions = coordinates[iconsCount];
+
+        if( !positions ) {
+            return this.core.media.luxury;
+        }
 
         let i = 0;
 
@@ -164,7 +208,7 @@ export default class Luxury extends Module {
                 continue;
             }
 
-            const { x, y } = coordinates[iconsCount][i];
+            const { x, y } = positions[i];
 
             try {
                 const iconBg = await Jimp.read(__dirname + '/images/bg.png');
@@ -186,7 +230,7 @@ export default class Luxury extends Module {
 
         const file = fs.readFileSync(fileName);
         const { link } = await imgurUploader(file)
-            .catch(({ message }) => ({ link: this.core.media.luxury, message }));
+            .catch(({ message }: { message: string }) => ({ link: this.core.media.luxury, message }));
 
         fs.unlink(fileName, () => this.core.logger.log(`File "${fileName}" was deleted.`));
 

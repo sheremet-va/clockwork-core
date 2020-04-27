@@ -1,11 +1,9 @@
 import { Module } from './module';
 
-import { Category, Tag } from '../translation/translation';
-
 import { CoreError } from '../services/core';
 import { Route } from '../services/router';
 
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import { zones } from 'moment-timezone/data/packed/latest.json';
 
 import * as settingsConfig from '../configs/settings';
@@ -29,7 +27,7 @@ export default class SettingsModule extends Module {
         super(core);
     }
 
-    get = async ({ settings, subscriptions = [] }: CoreRequest): Promise<ReplyOptions> => {
+    get = async ({ settings, subscriptions = {} }: CoreRequest): Promise<ReplyOptions> => {
         const languages = this.core.config.languages;
 
         return { data: { settings, subscriptions, languages } };
@@ -62,25 +60,25 @@ export default class SettingsModule extends Module {
         const valid = this.validate(type, value, settings, lang);
 
         if (typeof valid !== 'boolean') {
-            throw new CoreError(valid.error, valid.render);
+            throw new CoreError(valid.error || 'UNKNOWN_ERROR', valid.render);
         }
 
         const langRender = type === 'pledgesLang' || type === 'merchantsLang'
             ? this.translateLang(value.split('+'), lang)
-            : this.core.translations.translate(lang, `settings/languages/${lang}`) as Tag;
+            : this.core.translate(lang, 'settings', 'languages', lang) as string;
 
         const zone = type === 'timezone' ? this.getTimezone(value) : null;
 
         const languageSettings = ['pledgesLang', 'merchantsLang', 'language'];
         const translateType = languageSettings.includes(type) ? 'language' : type;
 
-        const translations = this.core.translations.translate(lang, `settings/${translateType}`, {
+        const translations = this.core.translate(lang, {
             success: {
                 lang: langRender,
                 prefix: value,
                 timezone: zone || value
             }
-        }) as Category;
+        }, 'settings', translateType);
 
         const cleanConfig = type === 'language' ? this.cleanSettings(settings, project) : settings;
 
@@ -153,7 +151,7 @@ export default class SettingsModule extends Module {
     translateLang = (languages: string[], lang: language): string => {
         return languages
             .map(confLang =>
-                this.core.translations.translate(lang, `settings/languages/${confLang}`))
+                this.core.translations.translate(lang, {}, 'settings', 'languages', confLang))
             .join(', ');
     };
 
@@ -181,7 +179,13 @@ export default class SettingsModule extends Module {
                 return false;
             }
 
-            const zoneAbbr = moment.tz.zone(timezone).abbr(new Date().valueOf());
+            const zone = moment.tz.zone(timezone);
+
+            if( !zone ) {
+                return false;
+            }
+
+            const zoneAbbr = zone.abbr(new Date().valueOf());
 
             if (zoneAbbr === value) {
                 return true;

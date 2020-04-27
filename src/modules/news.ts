@@ -1,10 +1,9 @@
 import { Module } from './module';
 
 import { NewsInfo } from '../controllers/info';
-import { Category } from '../translation/translation';
 
-import cheerio from 'cheerio';
-import moment from 'moment';
+import * as cheerio from 'cheerio';
+import * as moment from 'moment';
 
 export default class News extends Module {
     name = 'news';
@@ -14,7 +13,7 @@ export default class News extends Module {
         super(core);
     }
 
-    image = async (url: string): Promise<string> => {
+    image = async (url: string): Promise<string | undefined> => {
         const { data } = await this.core.request(url);
 
         const $ = cheerio.load(data as string);
@@ -24,7 +23,7 @@ export default class News extends Module {
 
     send = async (): Promise<void> => {
         const url = 'http://files.elderscrollsonline.com/rss/en-us/eso-rss.xml';
-        const oldNews = await this.core.info.get('news') as NewsInfo;
+        const oldNews = await this.core.info.get<NewsInfo>('news');
 
         const { data } = await this.core.request(url);
 
@@ -36,12 +35,7 @@ export default class News extends Module {
             const date = $news.find('pubDate').text();
             const link = $news.find('link').text();
 
-            if (
-                moment().isSame(date) &&
-                oldNews.link !== link
-            ) {
-                return true;
-            }
+            return moment().isSame(date) && oldNews.link !== link;
         }).get()[0];
 
         if (!news) {
@@ -61,7 +55,7 @@ export default class News extends Module {
 
         await this.core.info.set('news', description);
 
-        const translations = this.core.translations.get('commands/news') as Category;
+        const translations = this.core.translations.get('commands', 'news');
 
         return this.notify('news', { translations, data: description });
     };

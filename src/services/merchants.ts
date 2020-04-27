@@ -1,5 +1,5 @@
-import moment from 'moment';
-import cheerio from 'cheerio';
+import * as moment from 'moment';
+import * as cheerio from 'cheerio';
 
 import { GoldenInfo, LuxuryInfo } from '../controllers/info';
 
@@ -13,19 +13,14 @@ type Item = {
 }
 
 export class Merchants {
-    core: Core;
     name = 'merchants';
     cron = '*/15 * * * * 6';
 
-    golden: Golden;
-    luxury: Luxury;
-
-    constructor(core, golden: Golden, luxury: Luxury) {
-        this.core = core;
-
-        this.golden = golden;
-        this.luxury = luxury;
-    }
+    constructor(
+        public core: Core,
+        public golden: Golden,
+        public luxury: Luxury
+    ) {}
 
     published = (
         body: string,
@@ -67,8 +62,8 @@ export class Merchants {
 
     start = async (): Promise<void> => {
         const info = {
-            golden: await this.core.info.get('golden') as GoldenInfo, // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
-            luxury: await this.core.info.get('luxury') as LuxuryInfo // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
+            golden: await this.core.info.get<GoldenInfo>('golden'), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
+            luxury: await this.core.info.get<LuxuryInfo>('luxury') // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
         };
 
         const now = moment();

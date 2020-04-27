@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import { MongoClient } from 'mongodb';
 
 import { readdir as readSync } from 'fs';
-import fastify from 'fastify';
+import * as fastify from 'fastify';
 
 import { CoreError, Core } from './services/core';
 
@@ -12,6 +12,8 @@ import middleware from './services/middleware';
 
 import router from './services/router';
 import subscriptions from './services/subscriptions';
+
+import * as config from './configs/main';
 
 const readdir = promisify(readSync);
 
@@ -51,10 +53,10 @@ const init = async (core: Core): Promise<void> => {
 
     app.setErrorHandler((
         err: CoreError | fastify.FastifyError,
-        request: CoreRequest,
-        reply: CoreReply
+        request: CoreRequest | fastify.FastifyRequest,
+        reply: CoreReply | fastify.FastifyReply<HttpResponse>
     ): void => {
-        if (err instanceof CoreError) {
+        if (err instanceof CoreError && 'error' in reply) {
             reply.error(err.message, err.renderObject);
 
             return;
@@ -73,15 +75,12 @@ const init = async (core: Core): Promise<void> => {
     app.listen(core.config.PORT, () => core.logger.log(`Listening ${core.config.PORT} port.`));
 };
 
-
-const core = new Core();
-
 MongoClient
-    .connect(core.config.db.url, { useUnifiedTopology: true })
+    .connect(config.db.url, { useUnifiedTopology: true })
     .then(async client => {
         const db = client.db('clockwork-core');
 
-        core.connect(db);
+        const core = new Core(db);
 
         // функцию которая создаст папочку для логов и изображений в моделях + сделает миграцию и создаст temp
 

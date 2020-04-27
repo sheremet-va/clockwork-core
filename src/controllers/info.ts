@@ -88,10 +88,16 @@ export class InfoController {
         this.store = new StoreController(db);
     }
 
-    async get(name: string): Promise<Result> {
+    async get<T>(name: string): Promise<T> {
         try {
-            return this.#db.collection('info')
+            const result = this.#db.collection('info')
                 .findOne({ name }, { projection: { _id: 0, name: 0 } });
+
+            if( !result ) {
+                throw new CoreError( `Can't get info with the name ${name}` );
+            }
+
+            return result;
         }
         catch (err) {
             throw new CoreError(

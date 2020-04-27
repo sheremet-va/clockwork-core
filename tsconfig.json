@@ -2,7 +2,6 @@
     "compilerOptions": { // Опции компилятора TS -> JS
         "module": "commonjs", // Способ компиляции модулей (на выходе)
         "target": "es2020", // В JS какого века компилировать
-        "esModuleInterop": true,
         "lib": ["es2020"], // Какие библиотеки включать (тут есть async/await, например)
         "sourceMap": true, // Нужно ли юзать удобные для дебага source map'ы (да, нужно)
         "outDir": "dist", // Куда выплевывать скомпиленный код
@@ -11,6 +10,9 @@
             "*": ["node_modules/*", "src/types/*"] // Где брать дополнительные типы
         },
         "resolveJsonModule": true,
+        "strict": true,
+        "strictBindCallApply": false,
+        "removeComments": true
     },
     "include": ["src/**/*.ts"], // Что именно компилировать,
     "exclude": [
