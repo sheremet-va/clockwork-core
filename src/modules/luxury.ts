@@ -1,9 +1,9 @@
 import axios from 'axios';
-import Jimp from 'jimp';
 
 import * as imgurUploader from 'imgur-uploader';
 import * as moment from 'moment-timezone';
 import * as cheerio from 'cheerio';
+import * as Jimp from 'jimp';
 import * as Path from 'path';
 import * as fs from 'fs';
 

@@ -214,13 +214,7 @@ class BaseCore {
     }
 
     async getUser(project: project, id: string): Promise<User> {
-        const defaults = this.settings.config.defaults[project];
-
-        const user = await this.users[project].get(id) || { settings: {}, subscriptions: {} };
-
-        const settings = { ...defaults, ...user.settings };
-
-        return { ...user, settings };
+        return await this.users[project].get(id);
     }
 
     async getSubsByName(
@@ -235,7 +229,11 @@ class BaseCore {
     setSettings(
         project: project,
         was: Settings,
-        { id, type, value }: { id: string; type: settingsConfig.available; value: language | string }
+        { id, type, value }: {
+            id: string;
+            type: settingsConfig.available;
+            value: language | string;
+        }
     ): Promise<Settings> {
         const defaults = this.settings.config.defaults[project];
         const settings = { ...was, [type]: value };

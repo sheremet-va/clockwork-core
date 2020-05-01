@@ -5,6 +5,7 @@ import { MongoClient } from 'mongodb';
 
 import { readdir as readSync } from 'fs';
 import * as fastify from 'fastify';
+import * as Path from 'path';
 
 import { CoreError, Core } from './services/core';
 
@@ -25,10 +26,12 @@ const init = async (core: Core): Promise<void> => {
     app.register(checkAccess);
     app.register(prepare);
 
-    const moduleFiles = await readdir('./src/modules/');
+    const path = Path.resolve(__dirname, 'modules');
+
+    const moduleFiles = await readdir(path);
 
     const promises = moduleFiles.map(async file => {
-        if (!file.endsWith('.ts') || file.includes('module')) {
+        if (!file.endsWith('.ts') || !file.endsWith('.js') || file.includes('module')) {
             return;
         }
 
@@ -40,7 +43,9 @@ const init = async (core: Core): Promise<void> => {
     const modules = await Promise.all(promises)
         .then((modules: ModuleController[]) => modules.filter(noFalse => noFalse))
         .catch(err => {
-            core.logger.error(err);
+            core.logger.error(err.message);
+
+            console.log(err);
 
             process.exit(1);
         });
@@ -58,8 +63,6 @@ const init = async (core: Core): Promise<void> => {
     ): void => {
         if (err instanceof CoreError && 'error' in reply) {
             reply.error(err.message, err.renderObject);
-
-            return;
         }
 
         reply.code(500);

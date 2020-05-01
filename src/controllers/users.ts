@@ -1,7 +1,7 @@
 import { Db } from 'mongodb';
 
 import { SubscriptionsConfig } from '../configs/subscriptions';
-import { SettingsConfig } from '../configs/settings';
+import { defaults, SettingsConfig } from '../configs/settings';
 
 import { CoreError } from '../services/core';
 
@@ -27,10 +27,13 @@ class UsersController {
     #project: project;
 
     type: string;
+    default: Settings;
 
     constructor(db: Db, project: project, type: string) {
         this.#db = db;
         this.#project = project;
+
+        this.default = defaults[this.#project];
 
         this.type = type;
     }
@@ -47,7 +50,12 @@ class UsersController {
                 );
 
             if( !user ) {
-                throw new CoreError(`No user with ${ownerId} owner ID was found.`);
+                return {
+                    ownerId,
+                    project: this.#project,
+                    settings: this.default,
+                    subscriptions: {}
+                }
             }
 
             return user;

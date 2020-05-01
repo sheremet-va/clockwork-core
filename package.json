@@ -3,22 +3,9 @@
     "version": "0.1.1",
     "description": "Core Module for Clockwork Bots",
     "scripts": {
-        "start": "node -r ts-node/register ./src/index.ts",
+        "start": "npm run build && node dist/index.js",
         "start:watch": "nodemon",
-        "build": "tsc"
-    },
-    "nodemonConfig": {
-        "ignore": [
-            "**/*.test.ts",
-            "**/*.spec.ts",
-            ".git",
-            "node_modules"
-        ],
-        "watch": [
-            "src"
-        ],
-        "exec": "npm start",
-        "ext": "ts"
+        "build": "rimraf ./dist && tsc"
     },
     "repository": {
         "type": "git",
@@ -43,7 +30,7 @@
         "fastify": "^2.12.0",
         "fastify-plugin": "^1.6.0",
         "imgur-uploader": "^4.2.1",
-        "jimp": "^0.8.5",
+        "jimp": "^0.10.3",
         "moment": "^2.24.0",
         "moment-timezone": "^0.5.27",
         "mongodb": "^3.5.3",
@@ -51,6 +38,7 @@
     },
     "devDependencies": {
         "eslint": "^6.8.0",
+        "rimraf": "^3.0.2",
         "typescript": "^3.8.3"
     }
 }
