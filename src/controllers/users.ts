@@ -39,26 +39,32 @@ class UsersController {
     }
 
     async get(ownerId: string): Promise<User> {
+        const defaults = {
+            ownerId,
+            project: this.#project,
+            settings: this.default,
+            subscriptions: {}
+        };
+
         try {
-            const user = this.#db.collection('users')
+            const user = await this.#db.collection('users')
                 .findOne(
                     {
                         ownerId,
                         project: this.#project
                     },
                     { projection: { _id: 0 } }
-                );
+                ) as User;
 
             if( !user ) {
-                return {
-                    ownerId,
-                    project: this.#project,
-                    settings: this.default,
-                    subscriptions: {}
-                }
+                return defaults;
             }
 
-            return user;
+            return {
+                ...defaults,
+                settings: { ...this.default, ...user.settings },
+                subscriptions: user.subscriptions || {}
+            };
         }
         catch (err) {
             throw new CoreError(`An error ocured while trying to get ${this.#project} ${this.type}: ${err.message}`);
@@ -84,7 +90,7 @@ class UsersController {
             const stringified = JSON.stringify(params);
 
             throw new CoreError(
-                `An error ocured while trying to set ${this.#project} subscriptions with params ${stringified}: ${err.message}`
+                `An error ocured while trying to set ${this.#project} ${this.type} with params ${stringified}: ${err.message}`
             );
         }
     }
@@ -139,7 +145,7 @@ export class SubscriptionsController extends UsersController {
     config!: SubscriptionsConfig;
 
     constructor(db: Db, project: project) {
-        super(db, project, 'subsciptions');
+        super(db, project, 'subscriptions');
     }
 }
 
@@ -147,6 +153,6 @@ export class SettingsController extends UsersController {
     config!: SettingsConfig;
 
     constructor(db: Db, project: project) {
-        super(db, project, 'subsciptions');
+        super(db, project, 'settings');
     }
 }

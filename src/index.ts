@@ -31,11 +31,15 @@ const init = async (core: Core): Promise<void> => {
     const moduleFiles = await readdir(path);
 
     const promises = moduleFiles.map(async file => {
-        if (!file.endsWith('.ts') || !file.endsWith('.js') || file.includes('module')) {
+        if (file.includes('module') || (!file.endsWith('.ts') && !file.endsWith('.js'))) {
             return;
         }
 
         const module = await import(`./modules/${file}`);
+
+        if( !module.default ) {
+            return;
+        }
 
         return new module.default(core);
     }, {});
@@ -63,14 +67,16 @@ const init = async (core: Core): Promise<void> => {
     ): void => {
         if (err instanceof CoreError && 'error' in reply) {
             reply.error(err.message, err.renderObject);
+
+            return;
         }
 
-        reply.code(500);
+        reply.code(500).send({ code: 'SERVER_ERROR', message: 'Something terrible happend...' });
 
         core.logger.error(
             `Error from ${request.ip}: \n${err.stack}`
             + `\n\nPARAMS: ${JSON.stringify(request.params)},`
-            + `\nQUERY: ${JSON.stringify(request.query)},`
+            + `\nQUERY: ${JSON.stringify(request.query).replace(core.config.token, 'TRUSTED')},`
             + `\nBODY: ${JSON.stringify(request.body)}.`
         );
     });

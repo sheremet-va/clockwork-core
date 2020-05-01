@@ -31,7 +31,7 @@ export default function (modules: ModuleController[]) {
 
                 const options = {
                     method: method || 'GET',
-                    url: `/api/${path}`,
+                    url: `/api${path}`,
                     version,
                     handler: mod[handler as 'handler'],
                     ...(schema ? { schema } : {})

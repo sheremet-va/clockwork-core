@@ -32,8 +32,9 @@ export default class SubscriptionsModule extends Module {
         const {
             name = '',
             channelId = '0',
-            subject = ''
-        } = request.body as { name: string; channelId: string; subject: string };
+            subject = '',
+            type = 'channel'
+        } = request.body as { name: string; channelId: string; subject: string; type: string };
 
         const subs = request.subscriptions;
         const lang = request.settings.language;
@@ -60,7 +61,7 @@ export default class SubscriptionsModule extends Module {
 
         const nameAlias = this.core.translate(lang, 'subscriptions', 'aliases', subName) as string;
 
-        const render = { sub: nameAlias, subject };
+        const render = { sub: nameAlias, subject, type };
 
         this.validate(toSub, subs[subName], { channelId, render });
 
@@ -72,7 +73,7 @@ export default class SubscriptionsModule extends Module {
         subedChannels: string[],
         { channelId, render }: { channelId: string; render: RenderObject }
     ): void => {
-        const subject = render.subject === 'user' ? 'USER' : 'CHANNEL';
+        const subject = render.type === 'user' ? 'USER' : 'CHANNEL';
 
         if (toSub && subedChannels && subedChannels.includes(channelId)) {
             throw new CoreError(subject + '_ALREADY_SUBSCRIBED', render);

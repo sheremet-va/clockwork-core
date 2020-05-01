@@ -20,7 +20,7 @@ export default class SettingsModule extends Module {
 
     routes: Route[] = [
         { path: '/user', handler: 'get', method: 'GET' },
-        { path: '/settings/:type/:value', handler: 'set', method: 'POST' },
+        { path: '/settings', handler: 'set', method: 'POST' },
     ];
 
     constructor(core: Core) {
@@ -41,7 +41,7 @@ export default class SettingsModule extends Module {
         const {
             settings,
             info: { project, id },
-            params: { type: setting, value: encValue }
+            body: { type: setting, value: encValue }
         } = request;
 
         const foundType = Object.entries(types).find(([, types]) => types.includes(decodeURI(setting)));

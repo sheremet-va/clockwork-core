@@ -194,7 +194,7 @@ class BaseCore {
         reply: fastify.FastifyReply<HttpResponse>,
         lang: language,
         error: string,
-        render?: Record<string, RenderObject>
+        render?: Record<string, string>
     ): false {
         const description = this.translations.translate(lang, render || null, 'errors', 'errors', error);
 
@@ -207,7 +207,7 @@ class BaseCore {
         const request = reply.request;
 
         this.logger.error(
-            `Error occured with the code ${error} (${message}): ${request.query.project}\t${request.query.id}\t${request.ip}`
+            `External Error: ${error} ${request.query.project}\t${request.query.id}\t${request.ip}`
         );
 
         return false;
@@ -267,7 +267,7 @@ class BaseCore {
     translate(lang: language, type: string, category: string, tag: string): Tag | Item;
     translate(
         lang: language,
-        render: null | Record<string, RenderObject> | string,
+        render: null | Record<string, RenderObject> | Record<string, string> | string,
         type = '',
         category = '',
         tag = ''
@@ -284,7 +284,7 @@ class BaseCore {
 
         return this.translations.translate(
             lang,
-            render,
+            render as Record<string, string>,
             type,
             category,
             tag

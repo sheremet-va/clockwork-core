@@ -8,7 +8,7 @@ export default class TranslationsModule extends Module {
 
     api: Route[] = [
         { path: '/translations/:type/:category/:tag', handler: 'get', method: 'GET', version: '1.0.0' },
-        { path: '/translations/:type/:category', handler: 'sub', method: 'GET', version: '1.0.0' },
+        { path: '/translations/:type/:category', handler: 'get', method: 'GET', version: '1.0.0' },
     ];
 
     constructor(core: Core) {

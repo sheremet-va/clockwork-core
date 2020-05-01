@@ -45,10 +45,10 @@ class Translations {
 
     translate(lang: language, render: null | Record<string, RenderObject>, type: string): TranslatedType | null;
     translate(lang: language, render: null | Record<string, RenderObject>, type: string, category: string): TranslatedCategory | null;
-    translate(lang: language, render: null | Record<string, RenderObject>, type: string, category: string, tag: string): Tag | Item;
+    translate(lang: language, render: null | Record<string, string>, type: string, category: string, tag: string): Tag | Item;
     translate(
         lang: language,
-        render: null | Record<string, RenderObject>,
+        render: null | Record<string, RenderObject> | Record<string, string>,
         type: string,
         category?: string,
         tag?: string
@@ -63,7 +63,7 @@ class Translations {
             return Object.keys(tType).reduce((str, tCategory) => {
                 const translation = Object.keys(tType[tCategory]).reduce((strCat, tagName) => {
                     const translated = this.get(type, tCategory, tagName)[lang];
-                    const tag = translated.render(render ? render[tagName] : null);
+                    const tag = translated.render(render ? render[tagName] as Record<string, string> : null);
 
                     return { ...strCat, [tagName]: tag };
                 }, {});
@@ -79,14 +79,17 @@ class Translations {
         }
 
         if (tag) {
-            return this.get(type, category, tag)[lang] || tag;
+            // TODO think!
+            const tagRender = render as Record<string, string>;
+
+            return (this.get(type, category, tag)[lang] || tag).render(tagRender);
         }
 
         return Object.keys(tCategory).reduce((result, tagName) => {
             const translated = this.get(type, category, tagName)[lang];
             const tErrors = this.get(type, category)[lang];
 
-            const tag = (translated || tErrors).render(render ? render[tagName] : null);
+            const tag = (translated || tErrors).render(render ? render[tagName] as Record<string, string> : null);
 
             return { ...result, [!translated ? category : tagName]: tag };
         }, {});
