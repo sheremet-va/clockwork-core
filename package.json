@@ -28,6 +28,7 @@
         "cheerio": "^1.0.0-rc.3",
         "cron": "^1.8.2",
         "fastify": "^2.12.0",
+        "fastify-helmet": "^3.0.2",
         "fastify-plugin": "^1.6.0",
         "imgur-uploader": "^4.2.1",
         "jimp": "^0.10.3",
