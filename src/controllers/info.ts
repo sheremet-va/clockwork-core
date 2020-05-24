@@ -1,4 +1,4 @@
-import { Db } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 
 import { CoreError } from '../services/core';
 import { Maintenance } from '../subscriptions/status';
@@ -77,12 +77,12 @@ export declare interface WeeklyInfo {
 type Result = StatusItem | PatchInfo | GoldenInfo | WeeklyInfo | LuxuryInfo;
 
 export class InfoController {
-    #db: Db;
+    collection: Collection;
     drops: DropsController;
     store: StoreController;
 
     constructor(db: Db) {
-        this.#db = db;
+        this.collection = db.collection('info');
 
         this.drops = new DropsController(db);
         this.store = new StoreController(db);
@@ -90,8 +90,8 @@ export class InfoController {
 
     async get<T>(name: string): Promise<T> {
         try {
-            const result = this.#db.collection('info')
-                .findOne({ name }, { projection: { _id: 0, name: 0 } });
+            const result = await this.collection
+                .findOne<T>({ name }, { projection: { _id: 0, name: 0 } });
 
             if( !result ) {
                 throw new CoreError( `Can't get info with the name ${name}` );
@@ -108,7 +108,7 @@ export class InfoController {
 
     async set(name: string, params: object): Promise<object> {
         try {
-            await this.#db.collection('info')
+            await this.collection
                 .updateOne({ name }, {
                     $set: { name, ...params }
                 }, { upsert: true });

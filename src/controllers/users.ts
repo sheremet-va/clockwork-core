@@ -1,4 +1,4 @@
-import { Db } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 
 import { SubscriptionsConfig } from '../configs/subscriptions';
 import { defaults, SettingsConfig } from '../configs/settings';
@@ -26,14 +26,14 @@ export declare interface UsersObject {
 }
 
 class UsersController {
-    #db: Db;
     #project: project;
 
     type: string;
     default: Settings;
+    collection: Collection<User>;
 
     constructor(db: Db, project: project, type: string) {
-        this.#db = db;
+        this.collection = db.collection<User>('users');
         this.#project = project;
 
         this.default = defaults[this.#project];
@@ -50,7 +50,7 @@ class UsersController {
         };
 
         try {
-            const user = await this.#db.collection('users')
+            const user = await this.collection
                 .findOne(
                     {
                         ownerId,
@@ -76,7 +76,7 @@ class UsersController {
 
     async set<T>(ownerId: string, params: T): Promise<T> {
         try {
-            await this.#db.collection('users')
+            await this.collection
                 .updateOne({
                     ownerId,
                     project: this.#project
@@ -106,7 +106,7 @@ class UsersController {
         const field = `subscriptions.${name}`;
 
         try {
-            const docs = await this.#db.collection('users')
+            const docs = await this.collection
                 .find({
                     project: this.#project,
                     [field]: { $exists: true }
@@ -118,7 +118,7 @@ class UsersController {
                         [field]: 1
                     }
                 })
-                .toArray() as User[];
+                .toArray();
 
             return docs.reduce((all, doc) => {
                 const passed = condition({

@@ -1,4 +1,4 @@
-import { Db } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 
 import { CoreError } from '../services/core';
 
@@ -15,15 +15,15 @@ export declare interface DropItem {
 }
 
 export class DropsController {
-    #db: Db;
+    collection: Collection<DropItem>;
 
     constructor(db: Db) {
-        this.#db = db;
+        this.collection = db.collection<DropItem>('drops');
     }
 
     async get(now: number): Promise<DropItem[]> {
         try {
-            return this.#db.collection('drops')
+            return this.collection
                 .find({ endDate: { $gte: now } }, { projection: { _id: 0 } })
                 .toArray();
         }
@@ -34,7 +34,7 @@ export class DropsController {
 
     async set<Params extends DropItem>(params: Params): Promise<DropItem> {
         try {
-            await this.#db.collection('drops')
+            await this.collection
                 .updateOne({
                     startDate: params.startDate,
                     endDate: params.endDate
@@ -54,7 +54,7 @@ export class DropsController {
         endDate: End
     ): Promise<{ startDate: Start; endDate: End }> {
         try {
-            await this.#db.collection('drops')
+            await this.collection
                 .deleteOne({
                     startDate,
                     endDate

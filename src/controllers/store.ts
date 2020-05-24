@@ -1,4 +1,4 @@
-import { Db } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 import { CoreError } from '../services/core';
 
 export declare interface StoreItem {
@@ -9,10 +9,10 @@ export declare interface StoreItem {
 }
 
 export class StoreController {
-    #db: Db;
+    collection: Collection<StoreItem>;
 
     constructor(db: Db) {
-        this.#db = db;
+        this.collection = db.collection('store');
     }
 
     async set({
@@ -22,7 +22,7 @@ export class StoreController {
         active = true
     }: StoreItem): Promise<StoreItem> {
         try {
-            await this.#db.collection('store')
+            await this.collection
                 .updateOne({ storeId }, {
                     $set: {
                         storeId,
