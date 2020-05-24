@@ -11,7 +11,11 @@ const types = {
     merchantsLang: ['merchantsLang', 'торговцев', 'merchants'],
     pledgesLang: ['pledgesLang', 'обетов', 'pledges', 'триалов', 'trials', 'weekly', 'викли'],
     timezone: ['timezone', 'tz', 'время'],
+    newsLang: ['newsLang', 'новостей', 'news'],
+    patchLang: ['patchLang', 'патчей', 'обновлений', 'обновления', 'patch', 'patch-note']
 };
+
+const comboLanguages = ['merchantsLang', 'pledgesLang', 'newsLang', 'patchLang'] as const;
 
 export default class SettingsModule extends SettingsBase {
     constructor(core: Core) {
@@ -51,7 +55,7 @@ export default class SettingsModule extends SettingsBase {
         }
 
         // TODO add newsLang, patchLang
-        const langRender = type === 'pledgesLang' || type === 'merchantsLang'
+        const langRender = comboLanguages.includes(type as typeof comboLanguages[number])
             ? this.translateLang(value.split('+'), lang)
             : this.core.translate(lang, 'settings', 'languages', lang) as string;
 
@@ -124,10 +128,9 @@ export default class SettingsModule extends SettingsBase {
             }
         };
 
-        const compareType = type === 'pledgesLang' || type === 'merchantsLang'
-            ? 'comboLang' : type;
+        const compareType = comboLanguages.includes(type as typeof comboLanguages[number]) ? 'comboLang' : type;
 
-        const { error, render = {}, condition } = compare[compareType];
+        const { error, render = {}, condition } = compare[compareType as keyof typeof compare];
 
         if (condition) {
             return { error, render };
