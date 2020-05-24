@@ -10,15 +10,15 @@
         "ru": "Чтобы подписаться на рассылку, введите в соответствующем канале `{{ prefix }}подписаться название-рассылки`."
       },
       "no_subscriptions": {
-        "en": "no_subscriptions",
+        "en": "This channel has no subscriptions.",
         "ru": "Данный канал не подписан **ни на одну рассылку**."
       },
       "notice": {
-        "en": "notice",
+        "en": "To learn more about subscription, use it's name in a command.",
         "ru": "Укажите название рассылки, чтобы узнать о ней побольше."
       },
       "aliases": {
-        "en": "aliases",
+        "en": "Aliases",
         "ru": "Другие названия"
       },
       "subscription": {
@@ -54,14 +54,12 @@
         "ru": "Теперь вы отписаны от рассылки «{{ sub }}»."
       }
     },
-
     "patch": {
       "title": {
         "en": "Patch Notes",
         "ru": "Описание обновления"
       }
     },
-
     "status": {
       "title": {
         "en": "Server Status",
@@ -75,9 +73,9 @@
         "en": "DOWN",
         "ru": "Не работает"
       },
-      "maintence": {
+      "maintenance": {
         "en": "NA and EU megaservers for patch maintenance",
-        "ru": "Профилактика на серверах Америки и Европы"
+        "ru": "Техническое обслуживание на европейском и американском мегасерверах"
       },
       "time": {
         "en": "{{ start_day }}, from {{ start_time }}–{{ end_time }} ({{ abbr }})",
@@ -112,7 +110,6 @@
         "ru": "Состояние Xbox US"
       }
     },
-
     "pledges": {
       "today": {
         "en": "Today's Pledges",
@@ -131,19 +128,18 @@
         "ru": "Маска"
       },
       "maj": {
-        "en": "Maj",
+        "en": "Maj al-Ragath",
         "ru": "Мадж аль-Рагат"
       },
       "glirion": {
-        "en": "Glirion",
+        "en": "Glirion Redbeard",
         "ru": "Глирион Краснобородый"
       },
       "urgarlag": {
-        "en": "Urgarlag",
+        "en": "Urgarlag Chief-bane",
         "ru": "Ургарлаг Бич Вождей"
       }
     },
-
     "drops": {
       "title_closest": {
         "en": "Closest Twitch Drops",
@@ -158,7 +154,6 @@
         "ru": "Смотрите трансляцию не менее 5 минут и не забудьте [связать](https://vk.com/wall-145918036_253477) учётные записи ESO и Twitch!"
       }
     },
-
     "weekly": {
       "title": {
         "en": "Weekly Trials",
@@ -169,7 +164,6 @@
         "ru": "Предоставлено ESO Leaderboards"
       }
     },
-
     "lang": {
       "title": {
         "en": "Available Languages",
@@ -185,7 +179,6 @@
       }
     }
   },
-
   "help": {
     "subscriptions": {
       "name": {
@@ -206,7 +199,6 @@
       }
     }
   },
-
   "settings": {
     "language": {
       "success": {
@@ -226,18 +218,17 @@
     },
     "prefix": {
       "success": {
-        "en": "Prefix was changed to {{ prefix }}.",
+        "en": "Prefix was changed to '{{ prefix }}'.",
         "ru": "Префикс успешно изменён на «{{ prefix }}»."
       }
     },
     "timezone": {
       "success": {
         "en": "Timezone was changed to '{{ timezone }}'.",
-        "ru": "Часовой пояс изменён на '{{ timezone }}'"
+        "ru": "Часовой пояс изменён на «{{ timezone }}»"
       }
     }
   },
-
   "subscriptions": {
     "status": {
       "changed": {
@@ -439,10 +430,13 @@
       "SEND_MESSAGES": {
         "en": "Send messages",
         "ru": "Отправлять сообщения"
+      },
+      "VIEW_CHANNELS": {
+        "en": "View channels",
+        "ru": "Читать сообщения"
       }
     }
   },
-
   "instances": {
     "pledges": {
       "Elden Hollow": {
@@ -479,7 +473,6 @@
       }
     }
   },
-
   "merchants": {
     "golden": {
       "title": {
@@ -509,11 +502,8 @@
         "ru": "Предоставлено BenevolentBowd.ca"
       }
     },
-    "traits": {
-
-    }
+    "traits": {}
   },
-
   "drops": {
     "title": {
       "title_now": {
@@ -586,7 +576,6 @@
       }
     }
   },
-
   "errors": {
     "errors": {
       "UNKNOWN_ERROR": {
@@ -602,8 +591,8 @@
         "ru": "К сожалению, ZOS пока не сообщали о новых Twitch Drops."
       },
       "INCORRECT_PLEDGES_DATE": {
-        "en": "Please, enter number between 1 and 30. For example, type `-pledges 3`, if you want to see pledges after 3 days.",
-        "ru": "Пожалуйста, укажите целое число в диапазоне от 1 до 30. Например, введите `-обеты 3`, если хотите увидеть обеты, которые наступят через 3 дня."
+        "en": "Please, enter number between 1 and 30. For example, type `{{ prefix }}pledges 3`, if you want to see pledges after 3 days.",
+        "ru": "Пожалуйста, укажите целое число в диапазоне от 1 до 30. Например, введите `{{ prefix }}обеты 3`, если хотите увидеть обеты, которые наступят через 3 дня."
       },
       "UNEXPECTED_LUXURY_DATE": {
         "en": "Zanil Theran sells nothing today. Luxury furniture vendor appears in Coldharbour on Saturdays at 0:00 UTC.",
@@ -673,7 +662,7 @@
         "en": "Wrong timezone. Couldn't find timezone matching your query.",
         "ru": "Неверный часовой пояс. Не могу найти часовой пояс, подходящий под ваш запрос."
       },
-      "PERMISSION_SUBSCRIPTIONS_ERROR": {
+      "PERMISSION_SUBSCRIPTIONS": {
         "en": "There was an error while trying to post subscription message to '{{ channel }}' channel in '{{ guild }}' guild. Please, if you don't want to see this error anymore, cancel the subscription or give '{{ permission }}' permission to bot in '{{ channel }}' channel.",
         "ru": "Возникла ошибка при попытке отправить сообщение в канал «{{ channel }}» в гильдии «{{ guild }}». Пожалуйста, если вы не хотите больше видеть это сообщение, отмените подписку или дайте боту права «{{ permission }}» в канале «{{ channel }}»."
       }
