@@ -5,6 +5,7 @@ import { Db } from 'mongodb';
 
 import { User, SubscriptionsController, SettingsController } from '../controllers/users';
 import { InfoController } from '../controllers/info';
+import { GameItemsController, GameItem, Table } from '../controllers/gameItems';
 
 import { Translations, RenderObject, TranslatedCategory, TranslatedType, Tag, Item } from '../translation/translation';
 import { DropsManager } from '../services/drops';
@@ -101,6 +102,8 @@ class BaseCore {
     readonly users = {} as CoreUsers;
     readonly info!: InfoController;
 
+    private gameItems: GameItemsController;
+
     wait: (seconds: number) => Promise<void>;
 
     readonly media = {
@@ -116,6 +119,8 @@ class BaseCore {
         this.projects = Object.keys(this.config.projects) as project[];
 
         this.info = new InfoController(db);
+
+        this.gameItems = new GameItemsController(db);
 
         this.connect(db);
 
@@ -219,6 +224,10 @@ class BaseCore {
             .reduce((result, [key, value]) => ({ ...result, [key]: value }), {}) as Subscriptions;
 
         return this.subscriptions[project].set(id, rebuild);
+    }
+
+    async getItem<T = GameItem>(name: string, language: string, table: Table): Promise<T | null> {
+        return await this.gameItems.get<T>(name, language, table);
     }
 
     translate(lang: language, render: null | Record<string, RenderObject>, type: string): TranslatedType;
