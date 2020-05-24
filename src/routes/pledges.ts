@@ -2,8 +2,16 @@ import { Route } from '../services/router';
 import { types } from '../services/utils';
 
 const DataSchema = types.object({
-    pledges: types.array(types.item()),
-    masks: types.array(types.item()),
+    pledges: types.object({
+        maj: types.item(),
+        glirion: types.item(),
+        urgarlag: types.item()
+    }),
+    masks: types.object({
+        maj: types.item(),
+        glirion: types.item(),
+        urgarlag: types.item()
+    }),
 });
 
 const TranslationsSchema = types.strings([
@@ -41,8 +49,8 @@ export default [
             response: {
                 '2xx': types.object({
                     data: types.object({
-                        pledges: types.array(types.string),
-                        masks: types.array(types.string)
+                        pledges: types.strings(['maj', 'glirion', 'urgarlag']),
+                        masks: types.strings(['maj', 'glirion', 'urgarlag'])
                     })
                 })
             }

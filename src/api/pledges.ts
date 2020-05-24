@@ -32,14 +32,22 @@ export default class ApiPledges extends Pledges {
         return { translations, data };
     };
 
+    translateForApi(data: Record<string, Record<language, string>>, language: language): Record<string, string> {
+        return Object.entries(data).reduce((pledges, [trader, name]) => {
+            return { ...pledges, [trader]: name[language] };
+        }, {});
+    }
+
     apiPledges = async (request: CoreRequest): Promise<ReplyOptions> => {
+        const language = request.settings.language;
         const data = await this.get(request);
 
-        const translate = (instance: Record<language, string>): string => instance[request.settings.language];
+        const pledges = this.translateForApi(data.pledges, language);
+        const masks = this.translateForApi(data.masks, language);
 
         const translated = {
-            pledges: data.pledges.map( translate ),
-            masks: data.masks.map( translate ),
+            pledges,
+            masks,
         };
 
         return { data: translated };

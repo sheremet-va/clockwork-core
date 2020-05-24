@@ -13,10 +13,8 @@ export default class CronPledges extends Pledges {
         const today = this.getPledges();
         const tomorrow = this.getPledges(TOMORROW);
 
-        const todayMasks = today.map(pledge =>
-            this.getTranslations('masks', this.getMask(pledge.en)));
-        const tomorrowMasks = today.map(pledge =>
-            this.getTranslations('masks', this.getMask(pledge.en)));
+        const todayMasks = this.getMasks(today);
+        const tomorrowMasks = this.getMasks(tomorrow);
 
         const translations = this.core.translations.get('commands', 'pledges');
 

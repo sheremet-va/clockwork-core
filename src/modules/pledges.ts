@@ -1,9 +1,9 @@
 import { Module } from './module';
 import { CoreError } from '../services/core';
 
-import * as moment from 'moment';
+import { Table } from '../controllers/gameItems';
 
-import { Item } from '../translation/translation';
+import * as moment from 'moment';
 
 // засунуть в info?
 // const dungeons = {
@@ -21,7 +21,7 @@ export default class Pledges extends Module {
         super(core);
     }
 
-    getPledges(days = 0): Record<language, string>[] {
+    getPledges(days = 0): Record<string, string> {
         if (days < 0 || days > 31) {
             throw new CoreError('INCORRECT_PLEDGES_DATE');
         }
@@ -89,11 +89,11 @@ export default class Pledges extends Module {
         const GlirionPledge = trueDays % pledgesGlirion.length;
         const UrgarlagPledge = trueDays % pledgesUrgarlag.length;
 
-        return [
-            this.getTranslations('pledges', pledgesMaj[MajPledge]),
-            this.getTranslations('pledges', pledgesGlirion[GlirionPledge]),
-            this.getTranslations('pledges', pledgesUrgarlag[UrgarlagPledge])
-        ];
+        return {
+            maj: pledgesMaj[MajPledge],
+            glirion: pledgesGlirion[GlirionPledge],
+            urgarlag: pledgesUrgarlag[UrgarlagPledge]
+        };
 
     }
 
@@ -168,29 +168,55 @@ export default class Pledges extends Module {
         }, instances)[dungeon];
     }
 
-    translate(strings: Item[], lang: language = 'en'): { [key: string]: string }[] {
-        return strings.map(subject => ({
-            en: subject.en,
-            [lang]: subject[lang]
-        }));
+    async translate(strings: Record<string, string>, lang: language, type: Table): Promise<Record<string, Record<language, string>>> {
+        const promises = Object.entries(strings)
+            .map(async ([trader, name]) => ({
+                trader,
+                name: await this.core.getItem('^' + name + '$', 'en', type) || { [lang]: name }
+            }));
+
+        const results = await Promise.allSettled(promises);
+
+        return results.reduce((acc, result) => {
+            if( result.status === 'rejected' ) {
+                return acc;
+            }
+
+            const { trader, name } = result.value;
+
+            const original = strings[trader];
+
+            return {
+                ...acc,
+                [trader]: {
+                    en: original,
+                    [lang]: name[lang]
+                }
+            };
+        }, {});
+    }
+
+    getMasks(pledges: Record<string, string>): Record<string, string> {
+        return ['maj', 'glirion', 'urgarlag'].reduce((masks, trader) => {
+            return { ...masks, [trader]: this.getMask(pledges[trader]) };
+        }, {});
     }
 
     async get(
         { settings: { language: lang }, params }: CoreRequest
     ): Promise<{
-            pledges: Record<string, string>[];
-            masks: Record<string, string>[];
+            pledges: Record<string, Record<language, string>>;
+            masks: Record<string, Record<language, string>>;
         }> {
 
         const days = parseInt(params.days);
         const pledges = this.getPledges(days);
 
-        const masks = pledges.map(pledge =>
-            this.getTranslations('masks', this.getMask(pledge.en)));
+        const masks = this.getMasks(pledges);
 
         return {
-            pledges: this.translate(pledges, lang),
-            masks: this.translate(masks, lang)
+            pledges: await this.translate(pledges, lang, 'locations'),
+            masks: await this.translate(masks, lang, 'sets')
         };
     }
 }
