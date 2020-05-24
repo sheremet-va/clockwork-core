@@ -4,7 +4,6 @@ import { CoreError } from '../services/core';
 import * as moment from 'moment';
 
 import { Item } from '../translation/translation';
-import { Route } from '../services/router';
 
 // засунуть в info?
 // const dungeons = {
@@ -17,17 +16,12 @@ import { Route } from '../services/router';
 
 export default class Pledges extends Module {
     name = 'pledges';
-    cron = '25 00 9 * * *';
-
-    routes: Route[] = [
-        { path: '/pledges/:days', handler: 'get', method: 'GET' },
-    ];
 
     constructor(core: Core) {
         super(core);
     }
 
-    getPledges(days = 0): { [k in language]: string }[] {
+    getPledges(days = 0): Record<language, string>[] {
         if (days < 0 || days > 31) {
             throw new CoreError('INCORRECT_PLEDGES_DATE');
         }
@@ -181,56 +175,22 @@ export default class Pledges extends Module {
         }));
     }
 
-    get = async ({ settings: { language: lang }, params }: CoreRequest): Promise<ReplyOptions> => {
+    async get(
+        { settings: { language: lang }, params }: CoreRequest
+    ): Promise<{
+            pledges: Record<string, string>[];
+            masks: Record<string, string>[];
+        }> {
+
         const days = parseInt(params.days);
         const pledges = this.getPledges(days);
 
         const masks = pledges.map(pledge =>
             this.getTranslations('masks', this.getMask(pledge.en)));
 
-        const translations = this.core.translate(lang, {
-            after_days: {
-                days: this.core.dates.pluralize(days, lang)
-            }
-        }, 'commands', 'pledges');
-
-        const options = {
-            translations,
-            data: {
-                pledges: this.translate(pledges, lang),
-                masks: this.translate(masks, lang)
-            }
+        return {
+            pledges: this.translate(pledges, lang),
+            masks: this.translate(masks, lang)
         };
-
-        if (days > 0) {
-            const { day, date } = this.core.dates.pledges(days, lang);
-
-            options.translations.day = day;
-            options.translations.date = date;
-        }
-
-        return options;
-    };
-
-    send = async (): Promise<void> => {
-        const TOMORROW = 1;
-
-        const today = this.getPledges();
-        const tomorrow = this.getPledges(TOMORROW);
-
-        const todayMasks = today.map(pledge =>
-            this.getTranslations('masks', this.getMask(pledge.en)));
-        const tomorrowMasks = today.map(pledge =>
-            this.getTranslations('masks', this.getMask(pledge.en)));
-
-        const translations = this.core.translations.get('commands', 'pledges');
-
-        return this.notify('pledges', {
-            translations,
-            data: {
-                today: { pledges: today, masks: todayMasks },
-                tomorrow: { pledges: tomorrow, masks: tomorrowMasks }
-            }
-        });
-    };
+    }
 }

@@ -13,11 +13,14 @@ export class DropsManager {
     constructor(public core: Core) {
         this.drops = core.info.drops;
 
+        // new CronJob('*/15 * * * * *', this.work).start();
         new CronJob('0 0 12 */1 * *', this.work).start();
         new CronJob('0 0 0 */1 * *', this.remove).start();
     }
 
     work = async (): Promise<void> => {
+        this.core.logger.log('[SERVICE] Drops `work` service started.');
+
         const date = Math.round(new Date().valueOf() / 1000);
 
         const { data } = await this.core.request({
@@ -53,7 +56,7 @@ export class DropsManager {
             const { sendingDate, sending } = this.getSending(dates[3].trim());
 
             const details = $drop.find('.events-details').text();
-            const { where, info, url } = this.buildDetails(details);
+            const { where, info, url, details: description } = this.buildDetails(details);
 
             return {
                 startDate, endDate,
@@ -61,6 +64,8 @@ export class DropsManager {
                 url,
                 info,
                 image,
+                streamer: 'Bethesda',
+                description,
                 sending, sendingDate
             };
         }).get();
@@ -85,6 +90,8 @@ export class DropsManager {
     };
 
     remove = async (): Promise<void> => {
+        this.core.logger.log('[SERVICE] Drops `remove` service started.');
+
         const have = await this.drops.get(new Date().valueOf());
         const now = moment();
 
@@ -141,7 +148,7 @@ export class DropsManager {
         return new Date(cleanDate + (cleanDate.includes('EST') ? '' : ' EST')).valueOf();
     }
 
-    buildDetails(details: string): { where: string; info: string; url: string } {
+    buildDetails(details: string): { where: string; info: string; url: string; details: string } {
         const any: boolean = /ESO\sstream/i.test(details);
         const team: boolean = /Stream\sTeam/i.test(details);
 
@@ -149,7 +156,7 @@ export class DropsManager {
         const info = this.getInfo({ any, team });
         const url = this.getUrl({ any, team });
 
-        return { where, info, url };
+        return { where, info, url, details: details.trim() };
     }
 
     getUrl({ any = false, team = false, streamer = 'Bethesda' }): string {

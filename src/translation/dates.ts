@@ -2,11 +2,11 @@ import * as moment from 'moment-timezone';
 
 import { Translations } from './translation';
 import { CoreError } from '../services/core';
-import { Maintenance } from '../modules/status';
+import { Maintenance } from '../subscriptions/status';
 import { languages } from '../configs/main';
 import { Logger } from '../services/logger';
 
-type replaces = {
+export declare type replaces = {
     startDate: moment.Moment;
     endDate: moment.Moment;
     replaces: {
@@ -33,7 +33,7 @@ class Dates {
     }
 
     private replaces(
-        { start, end }: { start?: number; end?: number },
+        { start, end }: { start?: string | number; end?: string | number },
         { timezone, language }: { timezone: string; language: language }
     ): replaces {
         const abbr = this.zone(timezone).abbr(new Date().valueOf());
@@ -81,7 +81,7 @@ class Dates {
         return date.format(formats[format as keyof typeof formats][lang]);
     }
 
-    drops(start: number, end: number, timezone: string): { [key in language]: string } {
+    drops(start: string | number, end: string | number, timezone: string): { [key in language]: string } {
         const translations = this.translate.get('drops', 'dates');
 
         const result = languages.reduce((description, language) => {
@@ -95,7 +95,7 @@ class Dates {
 
             return {
                 ...description,
-                [language]: translations[trCode][language].render(replaces) as string
+                [language]: translations[trCode][language].render(replaces)
             };
         }, {}) as { [key in language]: string };
 
@@ -113,12 +113,12 @@ class Dates {
         };
     }
 
-    maintence(maintence: Maintenance, settings: Settings): { [key: string]: replaces } {
-        if (!Object.keys(maintence)) {
+    maintenance(maintenance: Maintenance, settings: Settings): { [key: string]: replaces } {
+        if (!Object.keys(maintenance)) {
             return {};
         }
 
-        return Object.entries(maintence).reduce((final, [platform, time]) => {
+        return Object.entries(maintenance).reduce((final, [platform, time]) => {
             const render = this.replaces(time, settings);
 
             return {
@@ -190,7 +190,7 @@ class Dates {
         }
 
         const date = match_date[0];
-        const month = match_date[0].slice(0, 3);
+        const month = match_month[0].slice(0, 3);
 
         return `${date} ${month}`;
     }

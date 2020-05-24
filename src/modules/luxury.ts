@@ -30,7 +30,7 @@ export default class Luxury extends Module {
     name = 'luxury';
 
     routes: Route[] = [
-        { path: '/luxury', handler: 'get', method: 'GET' },
+        { path: '/luxury', handler: 'get', method: 'GET', version: '1.0.0' },
     ];
 
     constructor(core: Core) {
@@ -69,7 +69,7 @@ export default class Luxury extends Module {
         return this.notify('luxury', { translations, data: { items: translated, image, link, date }, });
     };
 
-    get = async ({ settings: { language: lang } }: CoreRequest): Promise<ReplyOptions> => {
+    async get(): Promise<LuxuryInfo> {
         const now = moment().utc();
 
         if (now.day() !== 0 && now.day() !== 6) {
@@ -87,10 +87,8 @@ export default class Luxury extends Module {
             throw new CoreError('DONT_HAVE_ITEMS_YET');
         }
 
-        const translations = this.core.translate(lang, 'merchants', 'luxury');
-
-        return { translations, data: luxury };
-    };
+        return luxury;
+    }
 
     log = (
         fullName: string,

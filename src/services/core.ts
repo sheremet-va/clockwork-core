@@ -3,7 +3,7 @@ import * as fastify from 'fastify';
 
 import { Db } from 'mongodb';
 
-import { User, SubscriptionsController, SettingsController, UsersObject } from '../controllers/users';
+import { User, SubscriptionsController, SettingsController } from '../controllers/users';
 import { InfoController } from '../controllers/info';
 
 import { Translations, RenderObject, TranslatedCategory, TranslatedType, Tag, Item } from '../translation/translation';
@@ -17,7 +17,6 @@ import * as subsConfig from '../configs/subscriptions';
 
 const REPEAT_IN_SECONDS = 10000;
 
-const LIMIT_REPEAT_NOTIFY = 30;
 const LIMIT_REPEAT_GET = 10;
 
 function build(logger: Logger): void {
@@ -139,35 +138,6 @@ class BaseCore {
         });
     }
 
-    // TODO Subscriptions ErrorHandling
-    async post(project: project, options: PostOptions, limit = 1): Promise<PostResult> {
-        if (limit > LIMIT_REPEAT_NOTIFY) {
-            return Promise.reject({ project });
-        }
-
-        const url = this.config.projects[project].url + options.url;
-
-        options.data.token = this.config.token;
-
-        try {
-            const { data: { status } } = await axios({
-                method: 'POST',
-                data: options.data,
-                url
-            });
-
-            return { status, project };
-        } catch (err) {
-            this.logger.error(
-                `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
-            );
-
-            await this.wait(REPEAT_IN_SECONDS);
-
-            return this.post(project, options, ++limit);
-        }
-    }
-
     async request(options: string | PostOptions, tries = 1): Promise<RequestResult> {
         const url = typeof options === 'string' ? options : options.url;
 
@@ -175,7 +145,7 @@ class BaseCore {
             throw new CoreError(`Number of attempts to get "${url}" exceeded`);
         }
 
-        const config = typeof options === 'string' ? { url: options, method: 'GET' } : options;
+        const config = typeof options === 'string' ? { url: encodeURI(options), method: 'GET' } : options;
 
         return axios.request(config as AxiosRequestConfig)
             .then(({ data }) => ({ data }))
@@ -197,10 +167,11 @@ class BaseCore {
         render?: Record<string, string>
     ): false {
         const description = this.translations.translate(lang, render || null, 'errors', 'errors', error);
+        const unknown = this.translations.translate(lang, null, 'errors', 'errors', 'UNKNOWN_ERROR');
 
-        const descriptionFound = typeof description === 'string';
-        const code = descriptionFound ? 400 : 500;
-        const message = descriptionFound ? description : undefined;
+        const descriptionFound = description !== error;
+        const code = descriptionFound ? 406 : 500;
+        const message = descriptionFound ? description : unknown;
 
         reply.code(code).send({ error, message });
 
@@ -215,15 +186,6 @@ class BaseCore {
 
     async getUser(project: project, id: string): Promise<User> {
         return await this.users[project].get(id);
-    }
-
-    async getSubsByName(
-        project: project,
-        name: keyof Subscriptions,
-        condition: (user: User) => boolean,
-        settings: Settings
-    ): Promise<UsersObject> {
-        return await this.subscriptions[project].getSubsByName(name, settings, condition);
     }
 
     setSettings(
@@ -282,13 +244,15 @@ class BaseCore {
             );
         }
 
-        return this.translations.translate(
-            lang,
-            render as Record<string, string>,
-            type,
-            category,
-            tag
-        );
+        if(tag) {
+            return this.translations.translate(lang, render as Record<string, string>, type, category, tag);
+        }
+
+        if(category) {
+            return this.translations.translate(lang, render as Record<string, RenderObject>, type, category);
+        }
+
+        return this.translations.translate(lang, render as Record<string, RenderObject>, type);
     }
 }
 
@@ -300,16 +264,6 @@ declare interface PostOptions {
     headers?: {
         Cookie: string;
     };
-}
-
-declare interface PostResult {
-    status: string;
-    project: string;
-}
-
-declare interface PostResult {
-    status: string;
-    project: string;
 }
 
 declare interface RequestResult {
@@ -324,7 +278,7 @@ declare global {
     }
 
     interface String {
-        render(options?: RenderObject | null): RenderObject | string;
+        render(options?: RenderObject | null): string;
     }
 
     interface Object {

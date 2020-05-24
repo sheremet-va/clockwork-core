@@ -1,45 +1,64 @@
 import commands from './commands';
 
+import { Module } from '../modules/module';
+
 import * as fastify from 'fastify';
 
-export default function (modules: ModuleController[]) {
-    return (
+const defaultSchema = {
+    querystring: {
+        project: {
+            type: 'string',
+            enum: ['assistant']
+        },
+        id: { type: 'string' },
+        token: { type: 'string' },
+        language: { type: 'string' }
+    }
+};
+
+async function addRoutes(
+    app: fastify.FastifyInstance,
+    module: Module
+): Promise<void> {
+
+    const routes: Route[] = (await import('../routes/' + module.name)).default;
+
+    routes.forEach(api => {
+        const { method, path, version, handler, schema, api: isApi = false } = api;
+
+        const options = {
+            method: method || 'GET',
+            url: path,
+            version,
+            handler: module[handler as 'handler'],
+            ...(schema ? {
+                schema: {
+                    ...schema,
+                    querystring: { ...defaultSchema.querystring, ...(schema.querystring || {}) }
+                }
+            } : {}),
+            attachValidation: true,
+            config: { api: isApi }
+        };
+
+        app.route(options);
+    });
+}
+
+export default function ( modules: Module[]) {
+    return async (
         app: fastify.FastifyInstance,
         _: fastify.RegisterOptions<HttpServer, HttpRequest, HttpResponse>,
         done: (err?: fastify.FastifyError) => void
-    ): void => {
-        modules.forEach(mod => {
-            mod.routes.forEach(({ path, handler, method, schema }) => {
-                if (!path || !handler || !(handler in mod)) {
-                    return;
-                }
+    ): Promise<void> => {
+        const promises = modules.map(mod => addRoutes(app, mod));
 
-                const options = {
-                    method: method || 'GET',
-                    url: path,
-                    handler: mod[handler as 'handler'],
-                    ...(schema ? { schema } : {})
-                };
+        await Promise.all(promises)
+            .catch(err => {
+                console.error(err);
 
-                app.route(options);
+                process.exit(1);
             });
-
-            mod.api.forEach(({ path, handler, version, method, schema }) => {
-                if (!path || !handler || !version || !(handler in mod)) {
-                    return;
-                }
-
-                const options = {
-                    method: method || 'GET',
-                    url: `/api${path}`,
-                    version,
-                    handler: mod[handler as 'handler'],
-                    ...(schema ? { schema } : {})
-                };
-
-                app.route(options);
-            });
-        });
 
         app.get('/commands', commands);
 
@@ -51,6 +70,7 @@ export declare type Route = {
     path: string;
     handler: string;
     method?: 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT';
+    api?: boolean;
     version?: string;
     schema?: fastify.RouteSchema;
 }

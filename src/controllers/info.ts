@@ -1,7 +1,7 @@
 import { Db } from 'mongodb';
 
 import { CoreError } from '../services/core';
-import { Maintenance } from '../modules/status';
+import { Maintenance } from '../subscriptions/status';
 
 import { DropsController } from './drops';
 import { StoreController } from './store';
@@ -15,14 +15,14 @@ export declare interface StatusItem {
     pts?: 'UP' | 'DOWN';
     xbox_eu?: 'UP' | 'DOWN';
     xbox_us?: 'UP' | 'DOWN';
-    maintence?: Maintenance;
+    maintenance?: Maintenance;
 }
 
 export declare interface PatchInfo {
     name: string;
-    title: string;
-    description: string;
-    link: string;
+    title: Record<language, string>;
+    description: Record<language, string>;
+    link: Record<language, string>;
     image: string;
 }
 

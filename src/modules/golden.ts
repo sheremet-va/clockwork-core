@@ -3,20 +3,17 @@ import * as moment from 'moment-timezone';
 
 import { Module } from './module';
 import { CoreError } from '../services/core';
-import { Route } from '../services/router';
 
 import { GoldenInfo, GoldenItem } from '../controllers/info';
 
 export default class Golden extends Module {
     name = 'golden';
 
-    routes: Route[] = [
-        { path: '/golden', handler: 'get', method: 'GET' },
-    ];
-
     constructor(core: Core) {
         super(core);
     }
+
+    // TODO sets description
 
     send = async ({ link = '', date = '' }): Promise<void> => {
         const { data } = await this.core.request(link);
@@ -35,7 +32,7 @@ export default class Golden extends Module {
         return this.notify('golden', { translations, data: { items: translatedItems, link, date } });
     };
 
-    get = async ({ settings: { language: lang } }: CoreRequest): Promise<ReplyOptions> => {
+    get = async (): Promise<GoldenInfo> => {
         const now = moment().utc();
 
         if (now.day() !== 0 && now.day() !== 6) {
@@ -53,12 +50,10 @@ export default class Golden extends Module {
             throw new CoreError('DONT_HAVE_ITEMS_YET');
         }
 
-        const translations = this.core.translate(lang, 'merchants', 'golden');
-
-        return { translations, data: golden };
+        return golden;
     };
 
-    private prepare(text: string, match: RegExp, [what = /’/g, how = '\''] = []): string {
+    protected prepare(text: string, match: RegExp, [what = /’/g, how = '\''] = []): string {
         const matched = match.exec(text);
 
         if (!matched) {
@@ -74,7 +69,7 @@ export default class Golden extends Module {
         return what ? result.replace(what, how) : result;
     }
 
-    private items(body: string): GoldenItem[] {
+    protected items(body: string): GoldenItem[] {
         const $ = cheerio.load(body);
 
         return $('.entry-content > ul li').map((_, el) => {
@@ -88,13 +83,16 @@ export default class Golden extends Module {
             const name = this.prepare(fullName, /(^[^–]+)/);
             const trait = this.prepare(fullName, /([^–]+$)/);
 
-            const price = text.replace(fullName, '').trim();
+            const price = text.replace(fullName, '').split('/').map(str => +str.replace('*', '').trim()); // DIVIDE
             const canSell = /\*$/i.test(text);
             const hasTypes = trait.includes('(Light, Medium, Heavy)');
 
             return {
                 name,
-                price: price.replace('*', ''),
+                price: {
+                    gold: price[0],
+                    ap: price[1]
+                },
                 trait: trait.replace(' (Light, Medium, Heavy)', ''),
                 canSell,
                 hasTypes

@@ -1,64 +1,37 @@
 // Node 12.12 required (for Promise.allSettled)
 
-import { promisify } from 'util';
 import { MongoClient } from 'mongodb';
 
-import { readdir as readSync } from 'fs';
 import * as fastify from 'fastify';
-import * as Path from 'path';
+import * as helmet from 'fastify-helmet';
 
 import { CoreError, Core } from './services/core';
 
 import middleware from './services/middleware';
 
 import router from './services/router';
-import subscriptions from './services/subscriptions';
 
 import * as config from './configs/main';
 
-const readdir = promisify(readSync);
+import { init as initApi } from './api/init';
+import { init as initSubscriptions } from './subscriptions/init';
 
 const app = fastify();
 
 const init = async (core: Core): Promise<void> => {
     const { checkAccess, prepare } = middleware(core);
 
+    app.register(helmet);
     app.register(checkAccess);
     app.register(prepare);
 
-    const path = Path.resolve(__dirname, 'modules');
-
-    const moduleFiles = await readdir(path);
-
-    const promises = moduleFiles.map(async file => {
-        if (file.includes('module') || (!file.endsWith('.ts') && !file.endsWith('.js'))) {
-            return;
-        }
-
-        const module = await import(`./modules/${file}`);
-
-        if( !module.default ) {
-            return;
-        }
-
-        return new module.default(core);
-    }, {});
-
-    const modules = await Promise.all(promises)
-        .then((modules: ModuleController[]) => modules.filter(noFalse => noFalse))
-        .catch(err => {
-            core.logger.error(err.message);
-
-            console.log(err);
-
-            process.exit(1);
-        });
+    const modules = await initApi(core);
 
     const routes = router(modules);
 
     app.register(routes);
 
-    subscriptions(core, modules);
+    await initSubscriptions(core, app);
 
     app.setErrorHandler((
         err: CoreError | fastify.FastifyError,

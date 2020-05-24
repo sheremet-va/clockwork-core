@@ -19,7 +19,10 @@ declare global {
 }
 
 export declare interface UsersObject {
-    [key: string]: User[];
+    [key: string]: {
+        settins: Settings;
+        channels: string[];
+    };
 }
 
 class UsersController {
@@ -130,8 +133,9 @@ class UsersController {
                 const id = doc.ownerId;
                 const result = {
                     settings: doc.settings,
-                    subscriptions: doc.subscriptions[name]
+                    channels: doc.subscriptions[name]
                 };
+
                 return { ...all, [id]: result };
             }, {});
         }

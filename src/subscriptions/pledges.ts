@@ -1,0 +1,31 @@
+import Pledges from '../modules/pledges';
+
+export default class CronPledges extends Pledges {
+    cron = '25 00 9 * * *';
+
+    constructor(core: Core) {
+        super(core);
+    }
+
+    send = async (): Promise<void> => {
+        const TOMORROW = 1;
+
+        const today = this.getPledges();
+        const tomorrow = this.getPledges(TOMORROW);
+
+        const todayMasks = today.map(pledge =>
+            this.getTranslations('masks', this.getMask(pledge.en)));
+        const tomorrowMasks = today.map(pledge =>
+            this.getTranslations('masks', this.getMask(pledge.en)));
+
+        const translations = this.core.translations.get('commands', 'pledges');
+
+        return this.notify('pledges', {
+            translations,
+            data: {
+                today: { pledges: today, masks: todayMasks },
+                tomorrow: { pledges: tomorrow, masks: tomorrowMasks }
+            }
+        });
+    }
+}

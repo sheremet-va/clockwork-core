@@ -79,12 +79,6 @@ export class Merchants {
 
         const { data } = await this.core.request(benevolent_rss);
 
-        this.published(data as string, info).forEach(post => {
-            if (post.type === 'luxury') {
-                return this.luxury.send(post);
-            }
-
-            return this.golden.send(post);
-        });
+        this.published(data as string, info).forEach(post => this[post.type].send(post));
     };
 }

@@ -1,59 +1,86 @@
-import * as moment from 'moment-timezone';
-
 import { Module } from './module';
 
-import { User } from '../controllers/users';
+import { Item } from '../translation/translation';
 import { DropItem } from '../controllers/drops';
 
 import { CoreError } from '../services/core';
-import { Route } from '../services/router';
 
-const ONE_HOUR = 1;
-const SENDING_HOUR = 19;
+export declare type InfoTranslation =
+    | 'info_any'
+    | 'info_stream_team'
+    | 'info_watch_stream'
+    | 'info_watch_streamer'
+    | 'info_watch_streamers';
+
+export declare type SendingTranslation =
+    | 'sending_every_day'
+    | 'sending_one_day'
+    | 'sending_after_stream';
+
+export declare type WhereTranslation =
+    | 'where_stream_team'
+    | 'where_any'
+    | 'where_streamer';
+
+export declare interface DropInfo {
+    endDate: number;
+    startDate: number;
+    image: string;
+    info: InfoTranslation;
+    sending: SendingTranslation;
+    sendingDate: number;
+    url: string;
+    where: WhereTranslation;
+}
+
+export declare interface ApiDropItem {
+    image: string | null;
+    info: string;
+    sending: string;
+    url: string;
+    where: string;
+}
+
+export declare interface CronSchema {
+    translations: {
+        title: Item;
+        duration: Item;
+        where: Item;
+        when: Item;
+        notice: Item;
+        notice_description: Item;
+    };
+    data: {
+        endDate: number;
+        startDate: number;
+        image: string;
+        info: Item;
+        sending: Item;
+        sendingDate: number;
+        url: string;
+        where: Item;
+    };
+}
 
 export default class Drops extends Module {
     name = 'drops';
-    cron = '0 50 */1 * * *';
-
-    routes: Route[] = [
-        { path: '/drops', handler: 'get', method: 'GET' },
-    ];
-
-    api: Route[] = [
-        { path: '/drops/translate/when', handler: 'when', method: 'GET', version: '1.0.0' },
-        { path: '/drops/render/sending', handler: 'sending', method: 'GET', version: '1.0.0' }
-    ];
 
     constructor(core: Core) {
         super(core);
     }
 
-    drops = async (): Promise<DropItem[]> => {
+    async getDrops(): Promise<DropItem[]> {
         const now = new Date().valueOf();
 
         return this.core.info.drops.get(now);
     }
 
-    when = async ({ query: { start, end }, settings: { timezone } }: CoreRequest): Promise<ReplyOptions> => {
-        const translations = this.core.dates.drops(+start, parseInt(end), timezone);
-
-        return { translations };
-    }
-
-    sending = async ({ query: { start }, settings: { timezone, language } }: CoreRequest): Promise<ReplyOptions> => {
-        const data = this.core.dates.dropsSending(+start, language, timezone);
-
-        return { data };
-    }
-
-    get = async ({ settings: { language: lang, timezone } }: CoreRequest): Promise<ReplyOptions> => {
-        const drops = await this.drops();
+    async get({ settings: { language: lang, timezone } }: CoreRequest): Promise<ApiDropItem[]> {
+        const drops = await this.getDrops();
 
         if (drops.length === 0) {
             throw new CoreError('NO_DROPS_INFO');
         }
-
-        const translations = this.core.translate(lang, 'commands', 'drops');
         const description = this.core.translate(lang, 'drops', 'description');
 
         const formated = drops.map(drop => {
@@ -69,56 +96,6 @@ export default class Drops extends Module {
             };
         });
 
-        return { translations, data: formated };
-    }
-
-    send = async (): Promise<void> => {
-        const now = moment();
-
-        const drops = await this.drops();
-
-        // Checks if there is a stream in 10 minutes
-        const dropStart = drops.find(drop => {
-            const startDate = moment(drop.startDate);
-            const hourMore = moment().add(ONE_HOUR, 'hours');
-
-            return startDate.isSame(hourMore, 'hours');
-        });
-
-        // Checks if you can get drops right now.
-        const dropBetween = drops.find(drop => {
-            const startDate = moment(drop.startDate);
-            const endDate = moment(drop.endDate);
-
-            return now.isBetween(startDate, endDate);
-        });
-
-        const drop = dropStart || dropBetween;
-
-        if (!drop) {
-            return;
-        }
-
-        const translations = {
-            title: this.core.translations.get('drops', 'title', dropStart ? 'title_soon' : 'title_now'),
-            ...this.core.translations.get('subscriptions', 'drops')
-        };
-
-        const description = this.core.translations.get('drops', 'description');
-
-        const formatted = {
-            ...drop,
-            where: description[drop.where].render({ streamer: drop.streamer }),
-            info: description[drop.info].render({ streamer: drop.streamer }),
-            sending: description[drop.sending]
-        };
-
-        return this.notify('drops', { translations, data: formatted }, this.condition);
-    };
-
-    condition = (user: User): boolean => {
-        const tz = user.settings.timezone;
-
-        return moment(new Date()).tz(tz).hour() === SENDING_HOUR;
+        return formated;
     }
 }
