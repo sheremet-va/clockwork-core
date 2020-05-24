@@ -26,8 +26,8 @@ const types = {
     item: (): { type: 'object'; properties: Record<language, { type: 'string' }> } => ({
         type: 'object',
         properties: {
-            ru: { type: 'string' },
-            en: { type: 'string' }
+            en: { type: 'string' },
+            ru: { type: 'string' }
         }
     }),
     strings: (properties: string[], options = {}): { type: 'object'; properties: Strings } => {
