@@ -116,7 +116,16 @@ export abstract class Module {
                     project,
                     {
                         url: `/subscriptions/${name}`,
-                        data: { ...data, subscribers, settings }
+                        data: {
+                            ...data,
+                            translations: {
+                                ...data.translations,
+                                footer: this.core.translations.get('subscriptions', 'footer', 'title'),
+                                name: this.core.subscriptions.config.footerSubs[name]
+                            },
+                            subscribers,
+                            settings
+                        }
                     }
                 );
             });
