@@ -180,7 +180,7 @@ export default class Pledges extends Module {
         const results = await Promise.allSettled(promises);
 
         return results.reduce((acc, result) => {
-            if( result.status === 'rejected' ) {
+            if(result.status === 'rejected') {
                 return acc;
             }
 
