@@ -232,8 +232,8 @@ class Dates {
         }
 
         const [startResult, endResult] = [
-            `${startDay} ${curYear} ${start} +03:00`,
-            `${startDay} ${curYear} ${end.replace(' (МСК)', '')} +03:00`
+            `${startDay} ${curYear} ${start} +0300`,
+            `${startDay} ${curYear} ${end.replace(' (МСК)', '')} +0300`
         ];
 
         return {
