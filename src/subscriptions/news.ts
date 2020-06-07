@@ -35,7 +35,7 @@ export default class CronNews extends News {
         const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
 
         const title = $('h1[data-topic]').text().trim();
-        const description = $('.article-override').first().text().trim();
+        const description = $('.article-override p').first().text().trim().replace('&nbsp;', '');
 
         return { title, description };
     }
@@ -54,7 +54,7 @@ export default class CronNews extends News {
             const date = $news.find('pubDate').text();
             const link = $news.find('link').text();
 
-            return moment().isSame(date) && oldNews.link !== link;
+            return moment().isSame(date) && oldNews.link.en !== link;
         }).get()[0];
 
         if (!news) {
@@ -63,18 +63,21 @@ export default class CronNews extends News {
 
         const $news = $(news);
 
-        const link = $news.find('link').text();
+        const link = $news.find('link').text().trim();
 
         const russian = await this.translate(link);
 
         const description = {
-            link,
+            link: {
+                en: link,
+                ru: link.replace('/en-us/', '/ru/')
+            },
             title: {
-                en: $news.find('title').text(),
+                en: $news.find('title').text().trim(),
                 ru: russian.title
             },
             description: {
-                en: $news.find('description').text(),
+                en: $news.find('description').text().trim(),
                 ru: russian.description
             },
             image: await this.image(link)
