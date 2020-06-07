@@ -30,12 +30,20 @@ export default class CronWeekly extends Weekly {
             return;
         }
 
-        const changed = trials.reduce((obj, trial, i) => {
-            const region = i === 0 ? 'eu' : 'na';
+        const promises = trials.map(async (trial, order) => ({
+            trial,
+            order,
+            name: await this.core.getItem('^' + trial + '$', 'en', 'locations') || { en: trial }
+        }));
+
+        const result = await Promise.all(promises);
+
+        const changed = result.reduce((obj, trial) => {
+            const region = trial.order === 0 ? 'eu' : 'na';
 
             return {
                 ...obj,
-                [region]: this.core.translations.get('instances', 'trials', trial)
+                [region]: trial.name
             };
         }, {});
 
