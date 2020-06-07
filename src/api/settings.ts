@@ -8,14 +8,14 @@ import * as settingsConfig from '../configs/settings';
 
 const types = {
     language: ['language', 'язык', 'lang'],
-    merchantsLang: ['merchantsLang', 'торговцев', 'merchants'],
-    pledgesLang: ['pledgesLang', 'обетов', 'pledges', 'триалов', 'trials', 'weekly', 'викли'],
+    merchantsLang: ['merchantsLang', 'торговцев', 'вендоров', 'merchants', 'vendors'],
+    pledgesLang: ['pledgesLang', 'обетов', 'pledges', 'обеты', 'триалов', 'trials', 'weekly', 'викли'],
     timezone: ['timezone', 'tz', 'время'],
     newsLang: ['newsLang', 'новостей', 'news'],
     patchLang: ['patchLang', 'патчей', 'обновлений', 'обновления', 'patch', 'patch-note']
 };
 
-const comboLanguages = ['merchantsLang', 'pledgesLang', 'newsLang', 'patchLang'] as const;
+const comboLanguages = ['merchantsLang', 'pledgesLang', 'patchLang'] as const;
 
 export default class SettingsModule extends SettingsBase {
     constructor(core: Core) {
@@ -54,10 +54,9 @@ export default class SettingsModule extends SettingsBase {
             throw new CoreError(valid.error || 'UNKNOWN_ERROR', valid.render);
         }
 
-        // TODO add newsLang, patchLang
         const langRender = comboLanguages.includes(type as typeof comboLanguages[number])
             ? this.translateLang(value.split('+'), lang)
-            : this.core.translate(lang, 'settings', 'languages', lang) as string;
+            : this.core.translate(lang, 'settings', 'languages', type === 'newsLang' ? value : lang) as string;
 
         const zone = type === 'timezone' ? getTimezone(value) : null;
 
@@ -128,7 +127,9 @@ export default class SettingsModule extends SettingsBase {
             }
         };
 
-        const compareType = comboLanguages.includes(type as typeof comboLanguages[number]) ? 'comboLang' : type;
+        const compareType = comboLanguages.includes(type as typeof comboLanguages[number])
+            ? 'comboLang'
+            : type === 'newsLang' ? 'language' : type;
 
         const { error, render = {}, condition } = compare[compareType as keyof typeof compare];
 
