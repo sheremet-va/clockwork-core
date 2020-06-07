@@ -24,6 +24,10 @@
       "subscription": {
         "en": "Subscription",
         "ru": "Рассылка"
+      },
+      "subscribed_to": {
+        "en": "This channel subscribed to the following subscriptions",
+        "ru": "Данный канал подписан на следующие рассылки"
       }
     },
     "subscribe": {
@@ -74,8 +78,8 @@
         "ru": "Не работает"
       },
       "maintenance": {
-        "en": "NA and EU megaservers for patch maintenance",
-        "ru": "Техническое обслуживание на европейском и американском мегасерверах"
+        "en": "Patch maintenance",
+        "ru": "Техническое обслуживание"
       },
       "time": {
         "en": "{{ start_day }}, from {{ start_time }}–{{ end_time }} ({{ abbr }})",
