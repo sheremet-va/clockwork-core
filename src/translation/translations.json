@@ -64,6 +64,12 @@
         "ru": "Описание обновления"
       }
     },
+    "news": {
+      "provided": {
+        "en": "Provided By",
+        "ru": "Предоставлено"
+      }
+    },
     "status": {
       "title": {
         "en": "Server Status",
@@ -279,6 +285,10 @@
         "en": "Servers Status",
         "ru": "Состояние серверов"
       },
+      "statusPC": {
+        "en": "PC Server Status",
+        "ru": "Состояние сервера ПК/Mac"
+      },
       "statusEU": {
         "en": "EU Server Status",
         "ru": "Состояние сервера EU"
@@ -357,6 +367,10 @@
         "en": "Servers Status",
         "ru": "Уведомляет, если состояние каких-либо серверов обновилось."
       },
+      "statusPC": {
+        "en": "PC Server Status",
+        "ru": "Уведомляет, если состояние серверов EU, NA или PTS обновились (только ПК и Mac)."
+      },
       "statusEU": {
         "en": "EU Server Status",
         "ru": "Уведомляет, если состояние сервера EU обновилось (только ПК и Mac)."
@@ -424,6 +438,12 @@
       "weekly": {
         "en": "Weekly Trials",
         "ru": "Уведомляет о новых еженедельных испытаниях."
+      }
+    },
+    "footer": {
+      "title": {
+        "en": "Subscription",
+        "ru": "Рассылка"
       }
     },
     "permissions": {
@@ -506,7 +526,96 @@
         "ru": "Предоставлено BenevolentBowd.ca"
       }
     },
-    "traits": {}
+    "traits": {
+      "Infused": {
+        "en": "Infused",
+        "ru": "Насыщенность"
+      },
+      "Impenetrable": {
+        "en": "Impenetrable",
+        "ru": "Непробиваемость"
+      },
+      "Arcane": {
+        "en": "Arcane",
+        "ru": "Магический потенциал"
+      },
+      "Robust": {
+        "en": "Robust",
+        "ru": "Неутомимость"
+      },
+      "Healthy": {
+        "en": "Healthy",
+        "ru": "Крепкое здоровье"
+      },
+      "Bloodthirsty": {
+        "en": "Bloodthirsty",
+        "ru": "Жажда крови"
+      },
+      "Harmony": {
+        "en": "Harmony",
+        "ru": "Гармония"
+      },
+      "Triune": {
+        "en": "Triune",
+        "ru": "Триединство"
+      },
+      "Protective": {
+        "en": "Protective",
+        "ru": "Защита"
+      },
+      "Swift": {
+        "en": "Swift",
+        "ru": "Ускорение"
+      },
+      "Nirnhoned": {
+        "en": "Nirnhoned",
+        "ru": "Сила Нирна"
+      },
+      "Divines": {
+        "en": "Divines",
+        "ru": "Помощь богов"
+      },
+      "Invigorating": {
+        "en": "Invigorating",
+        "ru": "Бодрость"
+      },
+      "Training": {
+        "en": "Training",
+        "ru": "Развитие"
+      },
+      "Well-fitted": {
+        "en": "Well-fitted",
+        "ru": "Удобство"
+      },
+      "Sturdy": {
+        "en": "Sturdy",
+        "ru": "Стойкость"
+      },
+      "Decisive": {
+        "en": "Decisive",
+        "ru": "Воодушевление"
+      },
+      "Sharpened": {
+        "en": "Sharpened",
+        "ru": "Острота"
+      },
+      "Defending": {
+        "en": "Defending",
+        "ru": "Оберег"
+      },
+      "Precise": {
+        "en": "Precise",
+        "ru": "Точность"
+      },
+      "Charged": {
+        "en": "Charged",
+        "ru": "Сила стихий"
+      },
+      "Powered": {
+        "en": "Powered",
+        "ru": "Спасение"
+      }
+    }
   },
   "drops": {
     "title": {
