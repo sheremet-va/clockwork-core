@@ -19,7 +19,7 @@ export class DropsManager {
     }
 
     work = async (): Promise<void> => {
-        this.core.logger.log('[SERVICE] Drops `work` service started.');
+        this.core.logger.service('Drops `work` service started.');
 
         const date = Math.round(new Date().valueOf() / 1000);
 
@@ -70,6 +70,10 @@ export class DropsManager {
             };
         }).get();
 
+        if(!drops.length) {
+            this.core.logger.service('No drops were added.');
+        }
+
         Promise.allSettled(drops).then(drops => {
             drops.forEach(result => {
                 if (result.status !== 'fulfilled') {
@@ -82,7 +86,7 @@ export class DropsManager {
 
                 const drop = result.value as DropItem;
 
-                this.core.logger.log(`Drops added to db: start ${drop.startDate}, end ${drop.endDate}`);
+                this.core.logger.service(`Drops added to db: start ${drop.startDate}, end ${drop.endDate}`);
 
                 this.drops.set(drop);
             });
@@ -90,12 +94,18 @@ export class DropsManager {
     };
 
     remove = async (): Promise<void> => {
-        this.core.logger.log('[SERVICE] Drops `remove` service started.');
+        this.core.logger.service('Drops `remove` service started.');
 
-        const have = await this.drops.get(new Date().valueOf());
+        const weekAgo = moment().subtract(1, 'week').valueOf();
+
+        const have = await this.drops.get(weekAgo);
         const now = moment();
 
         const over = have.filter(drop => moment(drop.endDate).isBefore(now));
+
+        if(!over.length) {
+            this.core.logger.service('No drops were removed.');
+        }
 
         const promises = over.map(({ startDate, endDate }) => {
             this.drops.remove(startDate, endDate);
@@ -108,7 +118,7 @@ export class DropsManager {
                 if (result.status === 'fulfilled') {
                     const { startDate, endDate } = result.value;
 
-                    return this.core.logger.log(`Drop with params ${startDate} and ${endDate} was removed.`);
+                    return this.core.logger.service(`Drop with params ${startDate} and ${endDate} was removed.`);
                 }
 
                 this.core.logger.error('CAN\'T REMOVE DROP: ' + result.reason);
