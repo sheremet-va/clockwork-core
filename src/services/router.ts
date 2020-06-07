@@ -60,7 +60,13 @@ export default function ( modules: Module[]) {
                 process.exit(1);
             });
 
-        app.get('/commands', commands);
+        app.route({
+            method: 'GET',
+            url: '/commands',
+            version: '1.0.0',
+            handler: commands,
+            config: { api: false }
+        });
 
         done();
     };
