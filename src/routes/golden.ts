@@ -3,7 +3,10 @@ import { types } from '../services/utils';
 
 const GoldenItem = types.object({
     name: types.string,
-    price: types.string,
+    price: types.object({
+        gold: types.number,
+        ap: types.number
+    }),
     trait: types.string,
     canSell: types.boolean,
     hasTypes: types.boolean

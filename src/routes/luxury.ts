@@ -2,7 +2,10 @@ import { Route } from '../services/router';
 import { types } from '../services/utils';
 
 const LuxuryItem = types.object({
-    name: types.string,
+    name: types.object({
+        en: types.string,
+        ru: types.string
+    }),
     price: types.string,
     isNew: types.boolean
 });

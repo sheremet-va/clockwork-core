@@ -11,14 +11,7 @@ import { Module } from './module';
 import { LuxuryInfo, LuxuryItem } from '../controllers/info';
 
 import { CoreError } from '../services/core';
-import { Route } from '../services/router';
-
-const furnitureIcons = JSON.parse(
-    fs.readFileSync(
-        Path.resolve(__dirname, 'dependencies', 'furniture.json'), // TODO don't save "/esoui/art/icons/"
-        'utf8'
-    )
-);
+import { GameItem } from '../controllers/gameItems';
 
 type Item = {
     link: string;
@@ -29,10 +22,6 @@ type Item = {
 export default class Luxury extends Module {
     name = 'luxury';
 
-    routes: Route[] = [
-        { path: '/luxury', handler: 'get', method: 'GET', version: '1.0.0' },
-    ];
-
     constructor(core: Core) {
         super(core);
     }
@@ -40,12 +29,23 @@ export default class Luxury extends Module {
     send = async ({ link, date }: Item): Promise<void> => {
         const { data } = await this.core.request(link);
 
-        const items = this.items(data as string);
-        const translated = items.map(({ name, price, isNew }) => ({ name, price, isNew })); // core.translations.getFurniture( icon.item )
+        const items = await this.items(data as string);
+        const translatedPromises = items.map(async ({ name, price, isNew }) => ({
+            name: await this.core.getItem<GameItem & { icon: string }>(name, 'en', 'items') || { en: name },
+            price,
+            isNew
+        }));
 
-        const promises = items.map(item => {
-            if (item.icon) {
-                return this.downloadIcon(item.icon);
+        const translated = await Promise.allSettled(translatedPromises).then(result => {
+            return result.filter(
+                (item): item is PromiseFulfilledResult<LuxuryItem> => item.status === 'fulfilled'
+            )
+                .map( result => result.value );
+        });
+
+        const promises = translated.map(item => {
+            if (item.name.icon) {
+                return this.downloadIcon(item.name.icon);
             }
         });
 
@@ -63,7 +63,6 @@ export default class Luxury extends Module {
 
         await this.info.set('luxury', { items: translated, date, link, image });
 
-        // TODO добавить языковые настройки
         const translations = this.core.translations.get('merchants', 'luxury');
 
         return this.notify('luxury', { translations, data: { items: translated, image, link, date }, });
@@ -108,7 +107,7 @@ export default class Luxury extends Module {
         }
     }
 
-    items = (body: string): (LuxuryItem & { icon: string })[] => {
+    items = async (body: string): Promise<({ name: string; isNew: boolean; price: string })[]> => {
         const $ = cheerio.load(body);
 
         return $('.entry-content ul').first().children().map((i, el) => {
@@ -127,15 +126,8 @@ export default class Luxury extends Module {
             this.log( fullName, name_match, price_match );
 
             const isNew = fullName.search(/NEW/i) !== -1;
-            const icon = furnitureIcons[name]
-                ? furnitureIcons[name].replace('/esoui/art/icons/', '')
-                : null;
 
-            if( !icon ) {
-                this.core.logger.error( `Icon for "${name}" wasn't found.` );
-            }
-
-            return { name, price, icon, isNew };
+            return { name, price, isNew };
         }).get().filter((e: LuxuryItem & { icon: string } | 'URL') => e !== 'URL');
     };
 

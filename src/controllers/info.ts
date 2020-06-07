@@ -42,7 +42,13 @@ export declare interface GoldenInfo {
 }
 
 export declare type LuxuryItem = {
-    name: string;
+    name: {
+        en: string;
+        ru: string;
+        fr: string;
+        de: string;
+        icon: string;
+    };
     price: string;
     isNew: boolean;
 }
