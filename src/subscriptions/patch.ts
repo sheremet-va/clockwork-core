@@ -15,7 +15,7 @@ interface PatchNotify {
 }
 
 export default class CronPatch extends Patch {
-    cron = '20 */3 * * * *';
+    cron = '20 */5 * * * *';
 
     constructor(core: Core) {
         super(core);
