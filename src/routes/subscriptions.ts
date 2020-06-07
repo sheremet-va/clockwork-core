@@ -1,16 +1,6 @@
 import { Route } from '../services/router';
 import { types } from '../services/utils';
 
-const DataSchema = types.subscriptions();
-const TranslationsBaseSchema = types.strings([
-    'title',
-    'to_subscribe',
-    'no_subscriptions',
-    'notice',
-    'aliases',
-    'subscription'
-]);
-
 const SubDescriptions = types.object({
     title: types.string,
     description: types.string,
@@ -18,10 +8,17 @@ const SubDescriptions = types.object({
     aliases: types.array(types.string)
 });
 
-const TranslationsSchema = {
-    ...TranslationsBaseSchema,
+const DataSchema = types.subscriptions();
+const TranslationsBaseSchema = types.object({
+    title: types.string,
+    to_subscribe: types.string,
+    no_subscriptions: types.string,
+    notice: types.string,
+    aliases: types.string,
+    subscription: types.string,
+    subscribed_to: types.string,
     subscriptions: types.array(SubDescriptions)
-};
+});
 
 const BodySchema = types.object({
     name: types.string,
@@ -45,7 +42,7 @@ export default [
             response: {
                 '2xx': types.object({
                     data: DataSchema,
-                    translations: TranslationsSchema
+                    translations: TranslationsBaseSchema
                 })
             }
         },
