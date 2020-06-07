@@ -12,15 +12,18 @@ type Item = {
     type: 'luxury' | 'golden';
 }
 
-export class Merchants {
+export default class Merchants {
     name = 'merchants';
-    cron = '*/15 * * * * 6';
+    // cron = '*/50 * * * * *';
+    cron = '* */5 * * * 6';
 
-    constructor(
-        public core: Core,
-        public golden: Golden,
-        public luxury: Luxury
-    ) {}
+    golden: Golden;
+    luxury: Luxury;
+
+    constructor(public core: Core) {
+        this.golden = new Golden(core);
+        this.luxury = new Luxury(core);
+    }
 
     published = (
         body: string,
@@ -60,7 +63,8 @@ export class Merchants {
         }).get().filter(e => e !== NOT_ELIGIBLE);
     };
 
-    start = async (): Promise<void> => {
+    send = async (): Promise<void> => {
+        console.trace();
         const info = {
             golden: await this.core.info.get<GoldenInfo>('golden'), // { date: 'Fri, 18 Oct 2019 00:11:22 +0000' }
             luxury: await this.core.info.get<LuxuryInfo>('luxury') // { date: 'Fri, 18 Oct 2019 00:16:46 +0000' }
@@ -77,8 +81,16 @@ export class Merchants {
 
         const benevolent_rss = 'http://benevolentbowd.ca/feed/';
 
-        const { data } = await this.core.request(benevolent_rss);
+        // const { data } = await this.core.request(benevolent_rss);
 
-        this.published(data as string, info).forEach(post => this[post.type].send(post));
+        // const all = this.published(data as string, info);
+
+        const all = [{
+            link: 'http://benevolentbowd.ca/games/esotu/eso-golden-vendor-items-2020-06-05/',
+            date: 'Sat, 06 Jun 2020 00:11:26 +0000',
+            type: 'golden' as const
+        }];
+
+        all.forEach(post => this[post.type].send(post));
     };
 }
