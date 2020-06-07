@@ -13,23 +13,26 @@ export default class Golden extends Module {
         super(core);
     }
 
-    // TODO sets description
-
     send = async ({ link = '', date = '' }): Promise<void> => {
         const { data } = await this.core.request(link);
 
-        const items = this.items(data as string);
+        const promises = this.items(data as string).map( async item => {
+            const name = '^' + item.name.replace( 'Shoulders', '' ).trim();
+
+            return {
+                ...item,
+                name: await this.core.getItem(name, 'en', 'items') || { en: item.name },
+                trait: item.trait.map(trait => this.core.translations.get('merchants', 'traits', trait))
+            };
+        });
+
+        const items = await Promise.all(promises);
 
         await this.info.set('golden', { date, link, items });
 
-        const translatedItems = items.map(item => Object.assign(item, {
-            // items.getItem( name )
-            trait: this.core.translations.get('merchants', 'traits', item.trait)
-        }));
-
         const translations = this.core.translations.get('merchants', 'golden');
 
-        return this.notify('golden', { translations, data: { items: translatedItems, link, date } });
+        return this.notify('golden', { translations, data: { items, link, date } });
     };
 
     get = async (): Promise<GoldenInfo> => {
@@ -83,7 +86,7 @@ export default class Golden extends Module {
             const name = this.prepare(fullName, /(^[^–]+)/);
             const trait = this.prepare(fullName, /([^–]+$)/);
 
-            const price = text.replace(fullName, '').split('/').map(str => +str.replace('*', '').trim()); // DIVIDE
+            const price = text.replace(fullName, '').split('/').map(str => +str.replace(/\*|,|g|(AP)/g, '').trim()); // DIVIDE
             const canSell = /\*$/i.test(text);
             const hasTypes = trait.includes('(Light, Medium, Heavy)');
 
@@ -93,7 +96,7 @@ export default class Golden extends Module {
                     gold: price[0],
                     ap: price[1]
                 },
-                trait: trait.replace(' (Light, Medium, Heavy)', ''),
+                trait: trait.replace(' (Light, Medium, Heavy)', '').split(' / '),
                 canSell,
                 hasTypes
             };

@@ -94,13 +94,13 @@ export default class Luxury extends Module {
         name: RegExpExecArray | null,
         price: RegExpExecArray | null
     ): void => {
-        if( !name ) {
+        if(!name) {
             this.core.logger.error(
                 `Name from ${fullName} wasn't found.`
             );
         }
 
-        if( !price ) {
+        if(!price) {
             this.core.logger.error(
                 `Price from ${fullName} wasn't found.`
             );
@@ -125,9 +125,13 @@ export default class Luxury extends Module {
 
             this.log( fullName, name_match, price_match );
 
-            const isNew = fullName.search(/NEW/i) !== -1;
+            const isNew = Boolean($(el).find('strong').text());
 
-            return { name, price, isNew };
+            return {
+                name,
+                price: Number(price.replace(/g|,/g, '')),
+                isNew
+            };
         }).get().filter((e: LuxuryItem & { icon: string } | 'URL') => e !== 'URL');
     };
 
@@ -136,7 +140,7 @@ export default class Luxury extends Module {
             return Promise.reject('No icon');
         }
 
-        const url = 'http://esoicons.uesp.net/esoui/art/icons/' + icon;
+        const url = 'http://esoicons.uesp.net/esoui/art/icons/' + icon + '.png';
         const path = Path.resolve(__dirname, '../temp', icon);
         const writer = fs.createWriteStream(path);
 

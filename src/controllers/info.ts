@@ -5,6 +5,7 @@ import { Maintenance } from '../subscriptions/status';
 
 import { DropsController } from './drops';
 import { StoreController } from './store';
+import { Item } from '../translation/translation';
 
 export declare interface StatusItem {
     name: string;
@@ -29,7 +30,7 @@ export declare interface PatchInfo {
 export declare type GoldenItem = {
     name: string;
     price: string;
-    trait: string;
+    trait: string[];
     canSell: boolean;
     hasTypes: boolean;
 }
@@ -62,11 +63,11 @@ export declare interface LuxuryInfo {
 }
 
 export declare interface NewsInfo {
-    name: string;
-    title: string;
-    link: string;
+    name: Item;
+    title: Item;
+    link: Item;
     image: string;
-    description: string;
+    description: Item;
 }
 
 declare interface Weekly {
