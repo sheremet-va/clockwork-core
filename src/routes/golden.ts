@@ -2,12 +2,15 @@ import { Route } from '../services/router';
 import { types } from '../services/utils';
 
 const GoldenItem = types.object({
-    name: types.string,
+    name: types.object({
+        en: types.string,
+        ru: types.string
+    }),
     price: types.object({
         gold: types.number,
         ap: types.number
     }),
-    trait: types.string,
+    trait: types.array(types.item()),
     canSell: types.boolean,
     hasTypes: types.boolean
 });
