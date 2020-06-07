@@ -17,12 +17,14 @@ import * as moment from 'moment';
 export default class Pledges extends Module {
     name = 'pledges';
 
+    vendors = ['maj', 'glirion', 'urgarlag'];
+
     constructor(core: Core) {
         super(core);
     }
 
     getPledges(days = 0): Record<string, string> {
-        if (days < 0 || days > 31) {
+        if (isNaN(days) || days < 0 || days > 31) {
             throw new CoreError('INCORRECT_PLEDGES_DATE');
         }
 
@@ -197,7 +199,7 @@ export default class Pledges extends Module {
     }
 
     getMasks(pledges: Record<string, string>): Record<string, string> {
-        return ['maj', 'glirion', 'urgarlag'].reduce((masks, trader) => {
+        return this.vendors.reduce((masks, trader) => {
             return { ...masks, [trader]: this.getMask(pledges[trader]) };
         }, {});
     }
