@@ -50,6 +50,10 @@ class Logger {
     warn(...args: string[]): void {
         this.write(args.join(' '), 'warn');
     }
+
+    service(...args: string[]): void {
+        this.write(args.join(' '), 'service');
+    }
 }
 
 export { Logger };
