@@ -150,6 +150,8 @@ class BaseCore {
             throw new CoreError(`Number of attempts to get "${url}" exceeded`);
         }
 
+        this.logger.log(`[SEND] Requesting ${url}.`);
+
         const config = typeof options === 'string' ? { url: encodeURI(options), method: 'GET' } : options;
 
         return axios.request(config as AxiosRequestConfig)

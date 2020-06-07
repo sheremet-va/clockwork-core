@@ -9,12 +9,13 @@ const writeFile = promisify(fs.writeFile);
 class Logger {
     private async write(content: string, type = 'log'): Promise<void> {
         const now = moment();
+        const folder = type === 'req' || content.includes('[SEND]') ? 'requests' : 'logs';
 
         const timestamp = `[${now.format('YYYY-MM-DD HH:mm:ss')}]:`;
         const day = `${now.format('YYYY-MM-DD')}`;
 
         const message = `${timestamp} (${type.toUpperCase()}) ${content}`;
-        const path = `src/logs/${day}-logs.txt`;
+        const path = `src/${folder}/${day}-logs.txt`;
 
         try {
             await appendFile(path, `${message}\n`);
