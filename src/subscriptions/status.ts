@@ -14,7 +14,7 @@ interface Changed {
     xbox_us?: status;
 }
 
-type ChangedNotify = keyof Changed | 'ps' | 'xbox' | 'status';
+type ChangedNotify = keyof Changed | 'ps' | 'xbox' | 'status' | 'pc';
 
 type ZosResponseServers =
     | 'The Elder Scrolls Online (EU)'
@@ -73,6 +73,12 @@ const getChanged = (
     switch (name) {
         case 'status':
             return changed;
+        case 'pc':
+            return {
+                eu: changed.eu,
+                na: changed.na,
+                pts: changed.pts,
+            };
         case 'ps':
             return {
                 ps_eu: changed.ps_eu,
@@ -98,11 +104,15 @@ const getChanged = (
 const statusSubscriptions = (changed: Changed): { name: string; changed: Changed }[] => {
     const statuses = Object.keys(changed) as ChangedNotify[];
 
-    if (statuses.includes('ps_eu') || statuses.includes('ps_us')) {
+    if (statuses.some(status => ['pts', 'eu', 'na'].includes(status))) {
+        statuses.unshift('pc');
+    }
+
+    if (statuses.some(status => ['ps_eu', 'ps_us'].includes(status))) {
         statuses.unshift('ps');
     }
 
-    if (statuses.includes('xbox_eu') || statuses.includes('xbox_us')) {
+    if (statuses.some(status => ['xbox_us', 'xbox_eu'].includes(status))) {
         statuses.unshift('xbox');
     }
 
@@ -129,14 +139,15 @@ export default class CronStatus extends Status {
         // }
 
         try {
-            const { data } = await this.core.request('https://forums.elderscrollsonline.com/en/');
+            const { data } = await this.core.request('https://forums.elderscrollsonline.com/ru/');
 
             const $ = cheerio.load(data as string, { normalizeWhitespace: true });
 
+            // может не быть мейнтейнса
             const message = $('.DismissMessage').text().split('\n');
 
             const codes = {
-                'PC/Mac': 'pc',
+                'ПК/Mac': 'pc',
                 'Xbox One': 'xbox',
                 'PlayStation': 'ps'
             };
@@ -144,7 +155,13 @@ export default class CronStatus extends Status {
             return message.reduce((acc, body) => {
                 const matchName = Object.keys(codes).find(inf => body.search(inf) !== -1) as keyof typeof codes;
 
-                if (!matchName || /(Over|No maintenance)/i.test(body)) {
+                if (!matchName || /(Over|не будет)/i.test(body)) {
+                    return acc;
+                }
+
+                const rfc = this.core.dates.RFC(body);
+
+                if( !rfc.end || !rfc.start ) {
                     return acc;
                 }
 
@@ -154,6 +171,9 @@ export default class CronStatus extends Status {
                 };
             }, {}) as Maintenance;
         } catch (err) {
+            console.log( err );
+            this.core.logger.error( err.message );
+
             return {};
         }
     }

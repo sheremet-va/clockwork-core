@@ -25,7 +25,7 @@ class Dates {
     private zone(timezone: string): moment.MomentZone {
         const zone = moment.tz.zone(timezone);
 
-        if( !zone ) {
+        if(!zone) {
             throw new CoreError('Invalid timezone: ' + timezone);
         }
 
@@ -158,7 +158,7 @@ class Dates {
     }
 
     private time(time: string): string {
-        const match = /\(([0-9:]+) UTC\)/.exec(time);
+        const match = /([0-9:]+) \(МСК\)/.exec(time);
 
         if( !match ) {
             this.log(
@@ -179,7 +179,7 @@ class Dates {
 
     private day(day: string): string {
         const match_date = /\d+/.exec(day);
-        const match_month = /\w+/.exec(day);
+        const match_month = /[а-яА-Я]+/.exec(day);
 
         if( !match_date || !match_month ) {
             this.log(
@@ -189,24 +189,42 @@ class Dates {
             return '';
         }
 
+        const months = {
+            январь: 'Jan',
+            февраль: 'Feb',
+            март: 'Mar',
+            апрель: 'Apr',
+            май: 'May',
+            июнь: 'Jun',
+            июль: 'Jul',
+            август: 'Aug',
+            сентябрь: 'Sep',
+            октябрь: 'Oct',
+            ноябрь: 'Nov',
+            декабрь: 'Dec'
+        };
+
         const date = match_date[0];
-        const month = match_month[0].slice(0, 3);
+        const ruMonth = match_month[0] as keyof typeof months;
+
+        const month = months[ruMonth];
 
         return `${date} ${month}`;
     }
 
     RFC(string: string): { start: string; end: string } {
-        const [, date] = string.split(' – ');
+        const [, date] = string.split(' — ');
 
-        const [startDate, end] = date.split(' - ');
-        const [day, start] = startDate.split(', ');
+        // const [startDate, end] = date.split(' – ');
+        const [day, time] = date.split(', ');
+        const [start, end] = time.split('–');
 
-        const startTime = this.time(start);
-        const endTime = this.time(end);
+        // const startTime = this.time(start);
+        // const endTime = this.time(end);
         const startDay = this.day(day);
         const curYear = new Date().getFullYear();
 
-        if( !startTime || !endTime || !startDay ) {
+        if( !start || !end || !startDay ) {
             return {
                 start: '',
                 end: ''
@@ -214,8 +232,8 @@ class Dates {
         }
 
         const [startResult, endResult] = [
-            `${startDay} ${curYear} ${startTime} GMT`,
-            `${startDay} ${curYear} ${endTime} GMT`
+            `${startDay} ${curYear} ${start} +03:00`,
+            `${startDay} ${curYear} ${end.replace(' (МСК)', '')} +03:00`
         ];
 
         return {
