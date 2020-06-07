@@ -21,8 +21,15 @@ export default class CronPledges extends Pledges {
         return this.notify('pledges', {
             translations,
             data: {
-                today: { pledges: today, masks: todayMasks },
-                tomorrow: { pledges: tomorrow, masks: tomorrowMasks }
+                today: {
+                    // REDO with more languages
+                    pledges: await this.translate(today, 'ru', 'locations'),
+                    masks: await this.translate(todayMasks, 'ru', 'sets')
+                },
+                tomorrow: {
+                    pledges: await this.translate(tomorrow, 'ru', 'locations'),
+                    masks: await this.translate(tomorrowMasks, 'ru', 'sets')
+                }
             }
         });
     }
