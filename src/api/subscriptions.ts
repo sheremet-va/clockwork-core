@@ -78,14 +78,15 @@ export default class SubscriptionsModule extends SubscriptionsBase {
     get = async ({ settings: { language: lang }, subscriptions: data }: CoreRequest): Promise<ReplyOptions> => {
         const {
             subsByLanguages: { [lang]: subsByLang, en: defaultSubs },
-            subsAliases: aliases
+            subsAliases: aliases,
+            subsByGroups: groups
         } = this.core.subscriptions.config;
 
         const descriptions = this.core.translate(lang, 'subscriptions', 'descriptions');
 
         const subscriptions = Object.entries(descriptions)
-            .filter( ([name]) => subsByLang.includes(name) || defaultSubs.includes(name) )
-            .map( ([subName, description]) => {
+            .filter(([name]) => subsByLang.includes(name) || defaultSubs.includes(name))
+            .map(([subName, description]) => {
                 const name = subName as keyof typeof aliases;
                 const [defaultAlias] = aliases[name].en;
 
@@ -103,7 +104,8 @@ export default class SubscriptionsModule extends SubscriptionsBase {
 
         const translations = {
             ...this.core.translate(lang, 'commands', 'subscriptions'),
-            subscriptions
+            subscriptions,
+            groups
         };
 
         return { data, translations };
