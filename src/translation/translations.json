@@ -504,16 +504,16 @@
         "ru": "Новые поступления Адазаби Золотой — {{ date }}"
       },
       "provided": {
-        "en": "Provided by BenevolentBowd.ca",
-        "ru": "Предоставлено BenevolentBowd.ca"
+        "en": "By BenevolentBowd.ca",
+        "ru": "By BenevolentBowd.ca"
       },
       "can_sell": {
-        "en": "Underlined items are tradeable.",
-        "ru": "Товары, которые можно обменять, подчеркнуты."
+        "en": "This items are tradeable.",
+        "ru": "Товары, которые можно обменять."
       },
       "has_types": {
         "en": "Light, Medium, Heavy",
-        "ru": "легкие, средние, тяжелые"
+        "ru": "легк., ср., тяж."
       }
     },
     "luxury": {
@@ -522,8 +522,8 @@
         "ru": "Новые поступления у Занила Терана — {{ date }}"
       },
       "provided": {
-        "en": "Provided by BenevolentBowd.ca",
-        "ru": "Предоставлено BenevolentBowd.ca"
+        "en": "By BenevolentBowd.ca",
+        "ru": "By BenevolentBowd.ca"
       }
     },
     "traits": {
