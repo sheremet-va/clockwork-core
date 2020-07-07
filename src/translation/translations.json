@@ -778,6 +778,18 @@
       "PERMISSION_SUBSCRIPTIONS": {
         "en": "There was an error while trying to post subscription message to '{{ channel }}' channel in '{{ guild }}' guild. Please, if you don't want to see this error anymore, cancel the subscription or give '{{ permission }}' permission to bot in '{{ channel }}' channel.",
         "ru": "Возникла ошибка при попытке отправить сообщение в канал «{{ channel }}» в гильдии «{{ guild }}». Пожалуйста, если вы не хотите больше видеть это сообщение, отмените подписку или дайте боту права «{{ permission }}» в канале «{{ channel }}»."
+      },
+      "TRANSLATE_TOO_SHORT_QUERY": {
+        "en": "TRANSLATE_TOO_SHORT_QUERY",
+        "ru": "Пожалуйста, введите запрос длиной больше 3 символов (не считая категории)."
+      },
+      "TRANSLATE_NO_RESULTS": {
+        "en": "TRANSLATE_NO_RESULTS",
+        "ru": "К сожалению, по запросу «{{ query }}» ничего не найдено."
+      },
+      "TRANSLATE_NO_RESULTS_TABLE": {
+        "en": "TRANSLATE_NO_RESULTS_TABLE",
+        "ru": "К сожалению, по запросу «{{ query }}» в таблице «{{ table }}» ничего не найдено."
       }
     }
   }
