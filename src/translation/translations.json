@@ -189,6 +189,10 @@
       }
     },
     "help": {
+      "title": {
+        "en": "Help for '{{ command }}'",
+        "ru": "Справка по команде «{{ command }}»"
+      },
       "description": {
         "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. SPecial thanks to RuESO for translationg the game. For detailed information about command, type `{{ prefix }}help command-name`.",
         "ru": "Вся документация на странице бота в [Имперской библиотеке](http://online.elderscrolls.net/Clockwork_Assistant). Отдельное спасибо команде RuESO за перевод игры. Чтобы узнать подробную справку о команде, введите `{{ prefix }}справка название-команды`."
@@ -200,6 +204,14 @@
       "click": {
         "en": "Click here",
         "ru": "Нажмите здесь"
+      },
+      "usage": {
+        "en": "Usage",
+        "ru": "Использование"
+      },
+      "aliases": {
+        "en": "Aliases",
+        "ru": "Другое написание"
       }
     }
   },
