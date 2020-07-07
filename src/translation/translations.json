@@ -187,14 +187,24 @@
         "en": "You can use this combination of languages for selected setting: {{ langs }}.",
         "ru": "Вы можете использовать следующие комбинации языков: {{ langs }}"
       }
+    },
+    "help": {
+      "description": {
+        "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. SPecial thanks to RuESO for translationg the game. For detailed information about command, type `{{ prefix }}help command-name`.",
+        "ru": "Вся документация на странице бота в [Имперской библиотеке](http://online.elderscrolls.net/Clockwork_Assistant). Отдельное спасибо команде RuESO за перевод игры. Чтобы узнать подробную справку о команде, введите `{{ prefix }}справка название-команды`."
+      },
+      "add_bot": {
+        "en": "Add bot to your server",
+        "ru": "Добавить бота на сервер"
+      },
+      "click": {
+        "en": "Click here",
+        "ru": "Нажмите здесь"
+      }
     }
   },
   "help": {
-    "subscriptions": {
-      "name": {
-        "en": "subscribe",
-        "ru": "подписаться"
-      },
+    "subscribe": {
       "category": {
         "en": "Subscriptions",
         "ru": "Рассылки"
@@ -206,6 +216,188 @@
       "usage": {
         "en": "subscribe [subscription]",
         "ru": "подписаться [рассылка]"
+      }
+    },
+    "subscriptions": {
+      "category": {
+        "en": "Subscriptions",
+        "ru": "Рассылки"
+      },
+      "description": {
+        "en": "Shows current subscriptions.",
+        "ru": "Показывает текущие рассылки."
+      },
+      "usage": {
+        "en": "subscriptions",
+        "ru": "рассылки"
+      }
+    },
+    "unsubscribe": {
+      "category": {
+        "en": "Subscriptions",
+        "ru": "Рассылки"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Отписывает от рассылки."
+      },
+      "usage": {
+        "en": "unsub [subscription]",
+        "ru": "отписаться [рассылка]"
+      }
+    },
+    "translate": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Присылает перевод в соответствии с запросом."
+      },
+      "usage": {
+        "en": "translate [query]",
+        "ru": "перевод [запрос]"
+      }
+    },
+    "drops": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Пишет, когда можно получить ящики уробороса."
+      },
+      "usage": {
+        "en": "drops",
+        "ru": "ящики"
+      }
+    },
+    "golden": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Выдает список текущих товаров Адазаби Золотой в Сиродиле."
+      },
+      "usage": {
+        "en": "golden",
+        "ru": "золотая"
+      }
+    },
+    "luxury": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Выдает список текущих товаров Занила Терана в Хладной Гавани."
+      },
+      "usage": {
+        "en": "luxury",
+        "ru": "роскошь"
+      }
+    },
+    "patch": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Присылает последнее обновление ESO."
+      },
+      "usage": {
+        "en": "patch",
+        "ru": "обновление"
+      }
+    },
+    "pledges": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Выдает информацию о сегодняшних и завтрашних обетах."
+      },
+      "usage": {
+        "en": "pledges [days]",
+        "ru": "обеты [дни]"
+      }
+    },
+    "status": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Выдает информацию о состоянии серверов ESO на ПК и Mac."
+      },
+      "usage": {
+        "en": "status [server]",
+        "ru": "статус [сервер]"
+      }
+    },
+    "trials": {
+      "category": {
+        "en": "ESO Info",
+        "ru": "Информация о ESO"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Выдает информацию о текущих еженедельных испытаниях."
+      },
+      "usage": {
+        "en": "trials",
+        "ru": "испытания"
+      }
+    },
+    "help": {
+      "category": {
+        "en": "System",
+        "ru": "Системное"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Отображает все доступные команды."
+      },
+      "usage": {
+        "en": "help [command-name]",
+        "ru": "справка [название-команды]"
+      }
+    },
+    "lang": {
+      "category": {
+        "en": "System",
+        "ru": "Системное"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Позволяет изменять язык бота или конкретных команд."
+      },
+      "usage": {
+        "en": "lang [type | lang] [lang]",
+        "ru": "язык [тип | язык] [язык]"
+      }
+    },
+    "prefix": {
+      "category": {
+        "en": "System",
+        "ru": "Системное"
+      },
+      "description": {
+        "en": "Unsubscribes a channel.",
+        "ru": "Изменяет префикс сервера. Чтобы напомнить префикс, @упомяните бота."
+      },
+      "usage": {
+        "en": "prefix [symbol]",
+        "ru": "префикс [символ]"
       }
     }
   },
