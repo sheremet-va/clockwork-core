@@ -5,6 +5,7 @@ import { Db } from 'mongodb';
 
 import { User, SubscriptionsController, SettingsController } from '../controllers/users';
 import { InfoController } from '../controllers/info';
+import { LogsController } from '../controllers/logs';
 import { GameItemsController, GameItem, Table } from '../controllers/gameItems';
 
 import { Translations, RenderObject, TranslatedCategory, TranslatedType, Tag, Item } from '../translation/translation';
@@ -65,8 +66,8 @@ function build(logger: Logger): void {
 
     process.on('uncaughtException', (err: Error) =>
         logger.error(`Uncaught Exception: ${
-            ( err.stack || err.message ).replace(new RegExp(`${__dirname}/`, 'g'), './')
-        }`));
+            (err.stack || err.message).replace(new RegExp(`${__dirname}/`, 'g'), './')
+            }`));
 
     process.on('unhandledRejection', (err: unknown) => {
         logger.error(`Unhandled rejection: ${err instanceof Error ? err.stack : err}`);
@@ -101,6 +102,7 @@ class BaseCore {
     readonly settings = {} as CoreSettings;
     readonly users = {} as CoreUsers;
     readonly info!: InfoController;
+    readonly logs: LogsController;
 
     private gameItems: GameItemsController;
 
@@ -121,6 +123,7 @@ class BaseCore {
         this.info = new InfoController(db);
 
         this.gameItems = new GameItemsController(db);
+        this.logs = new LogsController(db);
 
         this.connect(db);
 
@@ -245,7 +248,7 @@ class BaseCore {
         category = '',
         tag = ''
     ): TranslatedType | TranslatedCategory | Tag | Item | null {
-        if( typeof render === 'string' ) {
+        if (typeof render === 'string') {
             return this.translations.translate(
                 lang,
                 {},
@@ -255,11 +258,11 @@ class BaseCore {
             );
         }
 
-        if(tag) {
+        if (tag) {
             return this.translations.translate(lang, render as Record<string, string>, type, category, tag);
         }
 
-        if(category) {
+        if (category) {
             return this.translations.translate(lang, render as Record<string, RenderObject>, type, category);
         }
 
@@ -282,7 +285,7 @@ declare interface RequestResult {
 }
 
 declare global {
-    class Core extends BaseCore {}
+    class Core extends BaseCore { }
 
     interface Number {
         pluralize(variants: string[], lang: language): string;
