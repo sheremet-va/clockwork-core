@@ -194,7 +194,7 @@
         "ru": "Справка по команде «{{ command }}»"
       },
       "description": {
-        "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. SPecial thanks to RuESO for translationg the game. For detailed information about command, type `{{ prefix }}help command-name`.",
+        "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. Special thanks to RuESO for translationg the game. For detailed information about command, type `{{ prefix }}help command-name`.",
         "ru": "Вся документация на странице бота в [Имперской библиотеке](http://online.elderscrolls.net/Clockwork_Assistant). Отдельное спасибо команде RuESO за перевод игры. Чтобы узнать подробную справку о команде, введите `{{ prefix }}справка название-команды`."
       },
       "add_bot": {
@@ -216,35 +216,35 @@
     }
   },
   "help": {
-    "subscribe": {
+    "sub": {
       "category": {
         "en": "Subscriptions",
         "ru": "Рассылки"
       },
       "description": {
         "en": "Subscribes a channel.",
-        "ru": "Подписывает на рассылку."
+        "ru": "Подписывает на рассылку или показывает доступные рассылки."
       },
       "usage": {
-        "en": "subscribe [subscription]",
-        "ru": "подписаться [рассылка]"
+        "en": "subscribe [subscription]\nsubscribe news",
+        "ru": "подписаться [рассылка]\nподписаться новости"
       }
     },
-    "subscriptions": {
+    "subs": {
       "category": {
         "en": "Subscriptions",
         "ru": "Рассылки"
       },
       "description": {
         "en": "Shows current subscriptions.",
-        "ru": "Показывает текущие рассылки."
+        "ru": "Показывает рассылки текущего канала."
       },
       "usage": {
         "en": "subscriptions",
         "ru": "рассылки"
       }
     },
-    "unsubscribe": {
+    "unsub": {
       "category": {
         "en": "Subscriptions",
         "ru": "Рассылки"
@@ -254,8 +254,8 @@
         "ru": "Отписывает от рассылки."
       },
       "usage": {
-        "en": "unsub [subscription]",
-        "ru": "отписаться [рассылка]"
+        "en": "unsub [subscription]\nunsub news",
+        "ru": "отписаться [рассылка]\nотписаться новости"
       }
     },
     "translate": {
@@ -269,7 +269,7 @@
       },
       "usage": {
         "en": "translate [query]",
-        "ru": "перевод [запрос]"
+        "ru": "перевод [запрос]\nперевод Cornflower"
       }
     },
     "drops": {
@@ -314,7 +314,7 @@
         "ru": "роскошь"
       }
     },
-    "patch": {
+    "patchnotes": {
       "category": {
         "en": "ESO Info",
         "ru": "Информация о ESO"
@@ -338,8 +338,8 @@
         "ru": "Выдает информацию о сегодняшних и завтрашних обетах."
       },
       "usage": {
-        "en": "pledges [days]",
-        "ru": "обеты [дни]"
+        "en": "pledges [days]\npledges 4",
+        "ru": "обеты [дни]\nобеты 4"
       }
     },
     "status": {
@@ -352,21 +352,21 @@
         "ru": "Выдает информацию о состоянии серверов ESO на ПК и Mac."
       },
       "usage": {
-        "en": "status [server]",
-        "ru": "статус [сервер]"
+        "en": "status [server]\nstatus pc\nstatus eu\nstatus ps",
+        "ru": "статус [сервер]\nстатус пк\nстатус еу\nстатус ps"
       }
     },
-    "trials": {
+    "weekly": {
       "category": {
         "en": "ESO Info",
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Sends current weekly info.",
         "ru": "Выдает информацию о текущих еженедельных испытаниях."
       },
       "usage": {
-        "en": "trials",
+        "en": "weekly",
         "ru": "испытания"
       }
     },
@@ -380,8 +380,8 @@
         "ru": "Отображает все доступные команды."
       },
       "usage": {
-        "en": "help [command-name]",
-        "ru": "справка [название-команды]"
+        "en": "help [command-name]\nhelp pledges",
+        "ru": "справка [название-команды]\nсправка обеты"
       }
     },
     "lang": {
@@ -394,8 +394,8 @@
         "ru": "Позволяет изменять язык бота или конкретных команд."
       },
       "usage": {
-        "en": "lang [type | lang] [lang]",
-        "ru": "язык [тип | язык] [язык]"
+        "en": "lang [lang]\nlang ru",
+        "ru": "язык [тип | язык] [язык]\nязык обетов en+ru\nязык торговцев en\nязык новостей en\nязык en"
       }
     },
     "prefix": {
@@ -408,8 +408,36 @@
         "ru": "Изменяет префикс сервера. Чтобы напомнить префикс, @упомяните бота."
       },
       "usage": {
-        "en": "prefix [symbol]",
-        "ru": "префикс [символ]"
+        "en": "prefix [symbol]\nprefix !",
+        "ru": "префикс [символ]\nпрефикс !"
+      }
+    },
+    "timezone": {
+      "category": {
+        "en": "System",
+        "ru": "Системное"
+      },
+      "description": {
+        "en": "Sets a timezone.",
+        "ru": "Меняет часовой пояс всех дат, которые присылает бот (например, у ящиков)."
+      },
+      "usage": {
+        "en": "timezone [timezone]\ntimezone Europe/Moscow\ntimezone UTC",
+        "ru": "время [часовой пояс]\nвремя Europe/Moscow\nвремя UTC"
+      }
+    },
+    "buy": {
+      "category": {
+        "en": "System",
+        "ru": "Системное"
+      },
+      "description": {
+        "en": "Unavailable in English.",
+        "ru": "Позволяет купить товары кронного магазина за золото."
+      },
+      "usage": {
+        "en": "buy [item]",
+        "ru": "купить [предмет]"
       }
     }
   },
@@ -444,6 +472,32 @@
     }
   },
   "subscriptions": {
+    "categories": {
+      "status": {
+        "en": "Servers Status",
+        "ru": "Сервера"
+      },
+      "status_ps": {
+        "en": "PlayStation Servers",
+        "ru": "Сервера PlayStation"
+      },
+      "status_xbox": {
+        "en": "Xbox Servers",
+        "ru": "Сервера Xbox"
+      },
+      "merchants": {
+        "en": "Merchants",
+        "ru": "Торговцы"
+      },
+      "news": {
+        "en": "News",
+        "ru": "Новости"
+      },
+      "other": {
+        "en": "Other",
+        "ru": "Другое"
+      }
+    },
     "status": {
       "changed": {
         "en": "Server status has changed",
@@ -983,6 +1037,10 @@
         "en": "There was an error while trying to post subscription message to '{{ channel }}' channel in '{{ guild }}' guild. Please, if you don't want to see this error anymore, cancel the subscription or give '{{ permission }}' permission to bot in '{{ channel }}' channel.",
         "ru": "Возникла ошибка при попытке отправить сообщение в канал «{{ channel }}» в гильдии «{{ guild }}». Пожалуйста, если вы не хотите больше видеть это сообщение, отмените подписку или дайте боту права «{{ permission }}» в канале «{{ channel }}»."
       },
+      "PERMISSION_MESSAGE": {
+        "en": "There was an error while trying to post subscription message to '{{ channel }}' channel in '{{ guild }}' guild. Please, if you don't want to see this error anymore, give '{{ permission }}' permission to bot in '{{ channel }}' channel.",
+        "ru": "Возникла ошибка при попытке отправить сообщение в канал «{{ channel }}» в гильдии «{{ guild }}». Пожалуйста, если вы не хотите больше видеть это сообщение, выдайте боту права «{{ permission }}» в канале «{{ channel }}»."
+      },
       "TRANSLATE_TOO_SHORT_QUERY": {
         "en": "TRANSLATE_TOO_SHORT_QUERY",
         "ru": "Пожалуйста, введите запрос длиной больше 3 символов (не считая категории)."
@@ -994,6 +1052,10 @@
       "TRANSLATE_NO_RESULTS_TABLE": {
         "en": "TRANSLATE_NO_RESULTS_TABLE",
         "ru": "К сожалению, по запросу «{{ query }}» в таблице «{{ table }}» ничего не найдено."
+      },
+      "SUBSCRIPTION_UNSUPPORTED_LANGUAGE": {
+        "en": "This subscription doesn't support your language.",
+        "ru": "Данная рассылка не поддерживает ваш язык."
       }
     }
   }
