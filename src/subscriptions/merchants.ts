@@ -14,8 +14,7 @@ type Item = {
 
 export default class Merchants {
     name = 'merchants';
-    // cron = '*/50 * * * * *';
-    cron = '* */5 * * * 6';
+    cron = '20 */5 * * * 6';
 
     golden: Golden;
     luxury: Luxury;
@@ -82,14 +81,7 @@ export default class Merchants {
 
         const { data } = await this.core.request(benevolent_rss);
 
-        const all = this.published(data as string, info);
-
-        // const all = [{
-        //     link: 'http://benevolentbowd.ca/games/esotu/eso-golden-vendor-items-2020-06-05/',
-        //     date: 'Sat, 06 Jun 2020 00:11:26 +0000',
-        //     type: 'golden' as const
-        // }];
-
-        all.forEach(post => this[post.type].send(post));
+        this.published(data as string, info)
+            .forEach(post => this[post.type].send(post));
     };
 }
