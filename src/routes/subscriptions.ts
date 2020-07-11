@@ -17,6 +17,12 @@ const TranslationsBaseSchema = types.object({
     aliases: types.string,
     subscription: types.string,
     subscribed_to: types.string,
+    status: types.string,
+    status_ps: types.string,
+    status_xbox: types.string,
+    merchants: types.string,
+    news: types.string,
+    other: types.string,
     subscriptions: types.array(SubDescriptions),
     groups: types.object({
         status: types.array(types.string),

@@ -50,6 +50,12 @@ export default class SubscriptionsModule extends SubscriptionsBase {
             throw new CoreError('INCORRECT_SUBSCRIPTION_NAME', { sub: name });
         }
 
+        const subsByLanguages = this.core.subscriptions.config.subsByLanguages;
+
+        if(!subsByLanguages[lang].includes(subName) && !subsByLanguages.en.includes(subName)) {
+            throw new CoreError('SUBSCRIPTION_UNSUPPORTED_LANGUAGE');
+        }
+
         const nameAlias = this.core.translate(lang, 'subscriptions', 'aliases', subName) as string;
 
         const render = { sub: nameAlias, subject, type };
@@ -104,6 +110,7 @@ export default class SubscriptionsModule extends SubscriptionsBase {
 
         const translations = {
             ...this.core.translate(lang, 'commands', 'subscriptions'),
+            ...this.core.translate(lang, 'subscriptions', 'categories'),
             subscriptions,
             groups
         };
