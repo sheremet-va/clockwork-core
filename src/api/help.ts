@@ -14,7 +14,9 @@ export default class ApiHelp extends Help {
             .map(({ name, aliases }) => {
                 const help = helps[name] || {};
 
-                return { name, aliases, ...help };
+                const [title] = (help.usage || '').split(' ');
+
+                return { name, aliases, title, ...help };
             });
 
         const translations = this.core.translate(settings.language, 'commands', 'help');
