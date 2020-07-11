@@ -19,7 +19,7 @@
       },
       "aliases": {
         "en": "Aliases",
-        "ru": "Другие названия"
+        "ru": "Другое написание"
       },
       "subscription": {
         "en": "Subscription",
@@ -184,13 +184,13 @@
         "ru": "Вы можете выбрать следующие языки: {{ langs }}."
       },
       "available_combo": {
-        "en": "You can use this combination of languages for selected setting: {{ langs }}.",
+        "en": "You can use this combination of languages: {{ langs }}.",
         "ru": "Вы можете использовать следующие комбинации языков: {{ langs }}"
       }
     },
     "help": {
       "title": {
-        "en": "Help for '{{ command }}'",
+        "en": "Help Page for '{{ command }}'",
         "ru": "Справка по команде «{{ command }}»"
       },
       "description": {
@@ -222,7 +222,7 @@
         "ru": "Рассылки"
       },
       "description": {
-        "en": "Subscribes a channel.",
+        "en": "Subscribes a channel or shows available subscriptions.",
         "ru": "Подписывает на рассылку или показывает доступные рассылки."
       },
       "usage": {
@@ -236,7 +236,7 @@
         "ru": "Рассылки"
       },
       "description": {
-        "en": "Shows current subscriptions.",
+        "en": "Shows subscriptions for current channel.",
         "ru": "Показывает рассылки текущего канала."
       },
       "usage": {
@@ -264,7 +264,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Shows translations that match query.",
         "ru": "Присылает перевод в соответствии с запросом."
       },
       "usage": {
@@ -278,7 +278,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Sends the list of future and current Twitch Drops.",
         "ru": "Пишет, когда можно получить ящики уробороса."
       },
       "usage": {
@@ -292,7 +292,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Shows what Adhazabi the Goldenn from Cyrodiil sells right now.",
         "ru": "Выдает список текущих товаров Адазаби Золотой в Сиродиле."
       },
       "usage": {
@@ -306,7 +306,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Shows what Zanil Theran from Coldharbour sells right now.",
         "ru": "Выдает список текущих товаров Занила Терана в Хладной Гавани."
       },
       "usage": {
@@ -320,7 +320,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Show the latest ESO path notes.",
         "ru": "Присылает последнее обновление ESO."
       },
       "usage": {
@@ -334,7 +334,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Shows today's and yesterday's pledges.",
         "ru": "Выдает информацию о сегодняшних и завтрашних обетах."
       },
       "usage": {
@@ -348,8 +348,8 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
-        "ru": "Выдает информацию о состоянии серверов ESO на ПК и Mac."
+        "en": "Sends the current server status.",
+        "ru": "Выдает информацию о состоянии серверов."
       },
       "usage": {
         "en": "status [server]\nstatus pc\nstatus eu\nstatus ps",
@@ -362,7 +362,7 @@
         "ru": "Информация о ESO"
       },
       "description": {
-        "en": "Sends current weekly info.",
+        "en": "Sends the current weekly trials.",
         "ru": "Выдает информацию о текущих еженедельных испытаниях."
       },
       "usage": {
@@ -376,7 +376,7 @@
         "ru": "Системное"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Shows the commands you can use.",
         "ru": "Отображает все доступные команды."
       },
       "usage": {
@@ -390,7 +390,7 @@
         "ru": "Системное"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Allows you to change language of the bot or certain commands.",
         "ru": "Позволяет изменять язык бота или конкретных команд."
       },
       "usage": {
@@ -404,7 +404,7 @@
         "ru": "Системное"
       },
       "description": {
-        "en": "Unsubscribes a channel.",
+        "en": "Changes the server's prefix. To remind you your prefix, @mention bot",
         "ru": "Изменяет префикс сервера. Чтобы напомнить префикс, @упомяните бота."
       },
       "usage": {
@@ -418,8 +418,8 @@
         "ru": "Системное"
       },
       "description": {
-        "en": "Sets a timezone.",
-        "ru": "Меняет часовой пояс всех дат, которые присылает бот (например, у ящиков)."
+        "en": "Changes server's timezone.",
+        "ru": "Меняет часовой пояс всех дат, которые присылает бот."
       },
       "usage": {
         "en": "timezone [timezone]\ntimezone Europe/Moscow\ntimezone UTC",
@@ -719,42 +719,6 @@
       }
     }
   },
-  "instances": {
-    "pledges": {
-      "Elden Hollow": {
-        "en": "Elden Hollow",
-        "ru": "Элденская лощина"
-      },
-      "Spindleclutch": {
-        "en": "Spindleclutch",
-        "ru": "Спиндлклатч"
-      },
-      "Direfrost Keep": {
-        "en": "Direfrost Keep",
-        "ru": "крепость Лютых Морозов"
-      },
-      "Cradle of Shadows": {
-        "en": "Cradle of Shadows",
-        "ru": "Колыбель Теней"
-      }
-    },
-    "masks": {
-      "Nightflame": {
-        "en": "Nightflame",
-        "ru": "Nightflame"
-      }
-    },
-    "trials": {
-      "Maw of Lorkhaj": {
-        "en": "Maw of Lorkhaj",
-        "ru": "Пасть Лорхаджа"
-      },
-      "Aetherian Archive": {
-        "en": "Aetherian Archive",
-        "ru": "Этерианский архив"
-      }
-    }
-  },
   "merchants": {
     "golden": {
       "title": {
@@ -882,7 +846,7 @@
         "ru": "Не забудьте получить Twitch Drops с трянсляции!"
       },
       "title_soon": {
-        "en": "Stream Starts in 10 Minutes! Don't Miss a Twitch Drop!",
+        "en": "Stream Starts In 10 Minutes! Don't Miss a Twitch Drop!",
         "ru": "Трансляция через 10 минут! Не пропустите Twitch Drop!"
       }
     },
@@ -1042,15 +1006,15 @@
         "ru": "Возникла ошибка при попытке отправить сообщение в канал «{{ channel }}» в гильдии «{{ guild }}». Пожалуйста, если вы не хотите больше видеть это сообщение, выдайте боту права «{{ permission }}» в канале «{{ channel }}»."
       },
       "TRANSLATE_TOO_SHORT_QUERY": {
-        "en": "TRANSLATE_TOO_SHORT_QUERY",
+        "en": "Pleasy, use query that is longer than 3 characters (exluding category).",
         "ru": "Пожалуйста, введите запрос длиной больше 3 символов (не считая категории)."
       },
       "TRANSLATE_NO_RESULTS": {
-        "en": "TRANSLATE_NO_RESULTS",
+        "en": "Unfortunately, there are no items that fit query '{{ query }}'.",
         "ru": "К сожалению, по запросу «{{ query }}» ничего не найдено."
       },
       "TRANSLATE_NO_RESULTS_TABLE": {
-        "en": "TRANSLATE_NO_RESULTS_TABLE",
+        "en": "Unfortunately, there are no items that fit query '{{ query }}' in '{{ table }}' table.",
         "ru": "К сожалению, по запросу «{{ query }}» в таблице «{{ table }}» ничего не найдено."
       },
       "SUBSCRIPTION_UNSUPPORTED_LANGUAGE": {

@@ -148,28 +148,6 @@ export default class Pledges extends Module {
         return name in masks ? masks[name] : name;
     }
 
-    getTranslations(subcat: string, dungeon: string): { [k in language]: string } {
-        const matches = /( I| II)$/.exec(dungeon);
-        const level = matches ? matches[0] : '';
-
-        const instance = dungeon.replace(level, '');
-        const translated = this.core.translations.get('instances', subcat, instance);
-
-        const instances = {} as Record<string, Record<language, string>>;
-
-        return Object.entries(translated).reduce((instances, [langCode, inst]) => {
-            const newName = level ? inst + level : inst;
-
-            return {
-                ...instances,
-                [dungeon]: {
-                    ...instances[dungeon],
-                    [langCode]: newName
-                }
-            };
-        }, instances)[dungeon];
-    }
-
     async translate(strings: Record<string, string>, lang: language, type: Table): Promise<Record<string, Record<language, string>>> {
         const promises = Object.entries(strings)
             .map(async ([trader, name]) => ({
