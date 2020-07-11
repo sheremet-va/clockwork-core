@@ -1,6 +1,6 @@
 import { Db, Collection } from 'mongodb';
 
-import { SubscriptionsConfig } from '../configs/subscriptions';
+import { SubscriptionsConfig, subsByLanguages } from '../configs/subscriptions';
 import { defaults, SettingsConfig } from '../configs/settings';
 
 import { CoreError } from '../services/core';
@@ -100,7 +100,7 @@ class UsersController {
 
     async getSubsByName(
         name: keyof Subscriptions,
-        settings: Settings,
+        defaultSettings: Settings,
         condition: (user: User) => boolean
     ): Promise<UsersObject> {
         const field = `subscriptions.${name}`;
@@ -121,9 +121,18 @@ class UsersController {
                 .toArray();
 
             return docs.reduce((all, doc) => {
+                const settings = { ...defaultSettings, ...(doc.settings || {}) };
+                const subName = name as string;
+
+                if( !subsByLanguages[settings.language].includes(subName) &&
+                    !subsByLanguages.en.includes(subName)
+                ) {
+                    return all;
+                }
+
                 const passed = condition({
                     ...doc,
-                    settings: { ...settings, ...doc.settings }
+                    settings
                 });
 
                 if (!passed) {
