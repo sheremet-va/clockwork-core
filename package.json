@@ -1,6 +1,6 @@
 {
     "name": "clockwork-core",
-    "version": "0.2.8",
+    "version": "1.0.0",
     "description": "Core Module for Clockwork Bots",
     "scripts": {
         "start": "npm run build && node dist/index.js",
