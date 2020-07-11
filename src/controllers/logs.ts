@@ -31,16 +31,12 @@ export class LogsController {
     }
 
     async set(action: Action, body: Log): Promise<void> {
-        if ('ts' in body) {
-            body.ts = new Date(body.ts);
-        }
-
         if ('date' in body) {
             body.date = new Date(body.date);
         }
 
         try {
-            await this.#db.collection(`logs_${action}`).insert(body);
+            await this.#db.collection(`logs_${action}`).insertOne(body);
         }
         catch (err) {
             throw new CoreError(`An error ocured while trying to set a ${action} log: ${err.message}`);
