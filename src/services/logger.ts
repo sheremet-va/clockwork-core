@@ -15,7 +15,12 @@ class Logger {
         const day = `${now.format('YYYY-MM-DD')}`;
 
         const message = `${timestamp} (${type.toUpperCase()}) ${content}`;
-        const path = `${__dirname}/../${folder}/${day}-logs.txt`;
+        const folderPath = `${__dirname}/../${folder}`;
+        const path = `${folderPath}/${day}-logs.txt`;
+
+        if (!fs.existsSync(folderPath)){
+            fs.mkdirSync(folderPath);
+        }
 
         try {
             await appendFile(path, `${message}\n`);
