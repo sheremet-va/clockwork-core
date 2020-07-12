@@ -15,7 +15,7 @@ class Logger {
         const day = `${now.format('YYYY-MM-DD')}`;
 
         const message = `${timestamp} (${type.toUpperCase()}) ${content}`;
-        const path = `src/${folder}/${day}-logs.txt`;
+        const path = `${__dirname}/../${folder}/${day}-logs.txt`;
 
         try {
             await appendFile(path, `${message}\n`);
