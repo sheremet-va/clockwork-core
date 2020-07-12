@@ -18,10 +18,6 @@ class Logger {
         const folderPath = `${__dirname}/../${folder}`;
         const path = `${folderPath}/${day}-logs.txt`;
 
-        if (!fs.existsSync(folderPath)){
-            fs.mkdirSync(folderPath);
-        }
-
         try {
             await appendFile(path, `${message}\n`);
         } catch (e) {

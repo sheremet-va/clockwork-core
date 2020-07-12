@@ -8,8 +8,8 @@ import * as helmet from 'fastify-helmet';
 import { CoreError, Core } from './services/core';
 
 import middleware from './services/middleware';
-
 import router from './services/router';
+import initiator from './services/initiator';
 
 import * as config from './configs/main';
 
@@ -56,6 +56,8 @@ const init = async (core: Core): Promise<void> => {
 
     app.listen(core.config.PORT, () => core.logger.log(`Listening ${core.config.PORT} port.`));
 };
+
+initiator.run();
 
 MongoClient
     .connect(config.db.url, { useUnifiedTopology: true })
