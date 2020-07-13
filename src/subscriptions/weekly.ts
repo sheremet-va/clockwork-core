@@ -5,7 +5,7 @@ import * as cheerio from 'cheerio';
 import Weekly from '../modules/weekly';
 
 export default class CronWeekly extends Weekly {
-    cron = '35 */10 * * * 1-2';
+    cron = '35 */10 * * * *';
 
     constructor(core: Core) {
         super(core);
