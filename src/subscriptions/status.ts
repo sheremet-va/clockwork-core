@@ -97,7 +97,7 @@ const getChanged = (
         case 'xbox_eu':
         case 'xbox_us':
         default:
-            return { ...changed, [name]: changed[name] };
+            return { [name]: changed[name] };
     }
 };
 
