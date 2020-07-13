@@ -194,8 +194,8 @@
         "ru": "Справка по команде «{{ command }}»"
       },
       "description": {
-        "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. Special thanks to RuESO for translationg the game. For detailed information about command, type `{{ prefix }}help command-name`.",
-        "ru": "Вся документация на странице бота в [Имперской библиотеке](http://online.elderscrolls.net/Clockwork_Assistant). Отдельное спасибо команде RuESO за перевод игры. Чтобы узнать подробную справку о команде, введите `{{ prefix }}справка название-команды`."
+        "en": "You can find documentation in [Imperial Library](http://online.elderscrolls.net/Clockwork_Assistant) in Russian. For detailed information about command, type `{{ prefix }}help command-name`.",
+        "ru": "Вся документация на странице бота в [Имперской библиотеке](http://online.elderscrolls.net/Clockwork_Assistant). Чтобы узнать подробную справку о команде, введите `{{ prefix }}справка название-команды`."
       },
       "add_bot": {
         "en": "Add bot to your server",
@@ -607,6 +607,10 @@
         "en": "Patch Notes",
         "ru": "Описания обновлений"
       },
+      "pts": {
+        "en": "PTS Patch Notes",
+        "ru": "Описания обновлений PTS"
+      },
       "drops": {
         "en": "Twitch Drops (ouroboros crates)",
         "ru": "Twitch Drops (ящики уробороса)"
@@ -688,6 +692,10 @@
       "patch": {
         "en": "Patch Notes",
         "ru": "Присылает описание обновления с официального сайта."
+      },
+      "pts": {
+        "en": "PTS Patch Notes",
+        "ru": "Присылает описание обновления PTS-сервера с официального сайта."
       },
       "drops": {
         "en": "Twitch Drops (ouroboros crates)",
