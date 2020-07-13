@@ -26,7 +26,7 @@ export default class CronWeekly extends Weekly {
             .get()
             .filter((name: string) => name.search('Megaserver') === -1);
 
-        if (trials[0] === old.eu.en || trials[1] === old.na.en) {
+        if (trials[0] === old.eu.en && trials[1] === old.na.en) {
             return;
         }
 
