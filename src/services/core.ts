@@ -67,7 +67,7 @@ function build(logger: Logger): void {
     process.on('uncaughtException', (err: Error) =>
         logger.error(`Uncaught Exception: ${
             (err.stack || err.message).replace(new RegExp(`${__dirname}/`, 'g'), './')
-            }`));
+        }`));
 
     process.on('unhandledRejection', (err: unknown) => {
         logger.error(`Unhandled rejection: ${err instanceof Error ? err.stack : err}`);
@@ -152,8 +152,6 @@ class BaseCore {
         if (tries > LIMIT_REPEAT_GET) {
             throw new CoreError(`Number of attempts to get "${url}" exceeded`);
         }
-
-        this.logger.log(`[SEND] Requesting ${url}.`);
 
         const config = typeof options === 'string' ? { url: encodeURI(options), method: 'GET' } : options;
 
