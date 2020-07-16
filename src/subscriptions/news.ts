@@ -11,9 +11,11 @@ interface RussianNews {
 }
 
 // TODO TESTING!
+// TODO разделить на 2 подпискиsubscrit
 
 export default class CronNews extends News {
-    cron = '15 */2 * * * *';
+    cron = '*/15 * * * * *';
+    // cron = '15 */2 * * * *';
 
     constructor(core: Core) {
         super(core);
@@ -27,17 +29,21 @@ export default class CronNews extends News {
         return $('.lead-img', '.container').attr('src');
     }
 
-    async translate(url: string): Promise<RussianNews> {
-        const ruPath = url.replace('/en-us/', '/ru/');
+    async translate(url: string): Promise<RussianNews | false> {
+        try {
+            const ruPath = url.replace('/en-us/', '/ru/');
 
-        const { data } = await this.core.request(ruPath);
+            const { data } = await this.core.request(ruPath);
 
-        const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
+            const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
 
-        const title = $('h1[data-topic]').text().trim();
-        const description = $('.article-override p').first().text().trim().replace('&nbsp;', '');
+            const title = $('h1[data-topic]').text().trim();
+            const description = $('.article-override p').first().text().trim().replace('&nbsp;', '');
 
-        return { title, description };
+            return { title, description };
+        } catch(err) {
+            return false;
+        }
     }
 
     send = async (): Promise<void> => {
@@ -52,9 +58,9 @@ export default class CronNews extends News {
             const $news = $(news);
 
             const date = $news.find('pubDate').text();
-            const link = $news.find('link').text();
+            const link = $news.find('link').text().trim();
 
-            return moment().isSame(date) && oldNews.link.en !== link;
+            return moment().isSame(date, 'day') && oldNews.link.en !== link;
         }).get()[0];
 
         if (!news) {
@@ -66,6 +72,10 @@ export default class CronNews extends News {
         const link = $news.find('link').text().trim();
 
         const russian = await this.translate(link);
+
+        if(!russian) {
+            return;
+        }
 
         const description = {
             link: {
