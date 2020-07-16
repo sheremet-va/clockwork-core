@@ -14,8 +14,8 @@ interface RussianNews {
 // TODO разделить на 2 подпискиsubscrit
 
 export default class CronNews extends News {
-    cron = '*/15 * * * * *';
-    // cron = '15 */2 * * * *';
+    // cron = '*/15 * * * * *';
+    cron = '15 */2 * * * *';
 
     constructor(core: Core) {
         super(core);
