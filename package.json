@@ -5,7 +5,8 @@
     "scripts": {
         "start": "npm run build && node dist/index.js",
         "start:watch": "nodemon",
-        "build": "rimraf ./dist && tsc"
+        "build": "rimraf ./dist && tsc && npm run copy",
+        "copy": "copyfiles -u 1 src/**/**/*.jpg src/**/**/*.png dist"
     },
     "repository": {
         "type": "git",
@@ -25,6 +26,7 @@
         "@typescript-eslint/parser": "^2.34.0",
         "axios": "^0.19.2",
         "cheerio": "^1.0.0-rc.3",
+        "copyfiles": "^2.3.0",
         "cron": "^1.8.2",
         "fastify": "^2.15.1",
         "fastify-helmet": "^3.0.2",
