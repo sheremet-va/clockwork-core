@@ -22,9 +22,9 @@ export default class CronDrops extends Drops {
         // Checks if there is a stream in 10 minutes
         const dropStart = drops.find(drop => {
             const startDate = moment(drop.startDate);
-            const hourMore = moment().add(ONE_HOUR, 'hours');
+            const hourMore = moment().add(ONE_HOUR, 'h');
 
-            return startDate.isSame(hourMore, 'hours');
+            return startDate.isSame(hourMore, 'h');
         });
 
         // Checks if you can get drops right now.
