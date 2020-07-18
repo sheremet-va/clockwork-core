@@ -55,7 +55,13 @@ export default class CronDrops extends Drops {
             sending: description[drop.sending]
         };
 
-        return this.notify('drops', { translations, data: formatted }, this.condition);
+        const startCondition = (): boolean => true;
+
+        return this.notify(
+            'drops',
+            { translations, data: formatted },
+            dropStart ? startCondition : this.condition
+        );
     }
 
     condition(user: User): boolean {
