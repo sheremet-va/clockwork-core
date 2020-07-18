@@ -32,7 +32,10 @@ export default class CronDrops extends Drops {
             const startDate = moment(drop.startDate);
             const endDate = moment(drop.endDate);
 
-            return now.isBetween(startDate, endDate);
+            return (
+                now.isBetween(startDate, endDate) &&
+                !startDate.isSame(now, 'day')
+            );
         });
 
         const drop = dropStart || dropBetween;
