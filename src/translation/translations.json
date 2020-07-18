@@ -422,8 +422,8 @@
         "ru": "Меняет часовой пояс всех дат, которые присылает бот."
       },
       "usage": {
-        "en": "timezone [timezone]\ntimezone Europe/Moscow\ntimezone UTC",
-        "ru": "время [часовой пояс]\nвремя Europe/Moscow\nвремя UTC"
+        "en": "timezone [timezone]\ntimezone Europe/Moscow\ntimezone UTC\ntimezone +03",
+        "ru": "время [часовой пояс]\nвремя Europe/Moscow\nвремя UTC\nвремя +03"
       }
     },
     "buy": {
@@ -721,8 +721,8 @@
         "en": "Send messages",
         "ru": "Отправлять сообщения"
       },
-      "VIEW_CHANNELS": {
-        "en": "View channels",
+      "VIEW_CHANNEL": {
+        "en": "View channel",
         "ru": "Читать сообщения"
       }
     }
@@ -738,7 +738,7 @@
         "ru": "By BenevolentBowd.ca"
       },
       "can_sell": {
-        "en": "This items are tradeable.",
+        "en": "This items are tradable.",
         "ru": "Товары, которые можно обменять."
       },
       "has_types": {
