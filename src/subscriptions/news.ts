@@ -67,7 +67,7 @@ export default class CronNews extends News {
 
             return (
                 moment().isSame(date, 'day')
-                && !published.news?.includes(link)
+                && !(published.news || []).includes(link)
             );
         }).get()[0];
 
