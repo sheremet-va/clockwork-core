@@ -57,6 +57,8 @@ export default class CronPatch extends Patch {
 
         const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
 
+        const sixMinutes = moment().subtract(6, 'minutes');
+
         const patch = $('item').filter((_, news) => {
             const $news = $(news);
 
@@ -72,6 +74,7 @@ export default class CronPatch extends Patch {
                 ( isPatchEn || isPatchRu ) &&
                 author.startsWith('ZOS') &&
                 moment().isSame(date, 'day') &&
+                moment(date).isBetween(sixMinutes, moment()) &&
                 old.link[lang] !== link
             );
         }).get()[0];
