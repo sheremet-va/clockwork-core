@@ -8,7 +8,7 @@ const ONE_HOUR = 1;
 const SENDING_HOUR = 19;
 
 export default class CronDrops extends Drops {
-    cron = '0 */30 * * * *';
+    cron = '0 50 */1 * * *';
 
     constructor(core: Core) {
         super(core);
