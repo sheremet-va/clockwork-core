@@ -66,7 +66,8 @@ export class DropsManager {
                 image,
                 streamer: 'Bethesda',
                 description,
-                sending, sendingDate
+                sending,
+                sendingDate: sendingDate === 0 ? sendingDate : endDate
             };
         }).get();
 
@@ -131,14 +132,18 @@ export class DropsManager {
             return 'sending_every_day';
         }
 
+        if(dates[0].includes('after the str')) {
+            return 'sending_after_stream';
+        }
+
         return 'sending_one_day';
     }
 
     getSending(dates: string): { sendingDate: number; sending: string } {
         const goOutDates = dates.split(dates.includes(',') ? ',' : ' - ');
 
-        const sendingDate = this.buildDate(goOutDates[0]);
         const sending = this.getSendingString(goOutDates);
+        const sendingDate = sending === 'sending_after_stream' ? 0 : this.buildDate(goOutDates[0]);
 
         return { sendingDate, sending };
     }
