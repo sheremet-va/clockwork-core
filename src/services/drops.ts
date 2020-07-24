@@ -14,7 +14,7 @@ export class DropsManager {
         this.drops = core.info.drops;
 
         // new CronJob('*/15 * * * * *', this.work).start();
-        new CronJob('0 */15 * * * *', this.work).start();
+        new CronJob('0 */10 * * * *', this.work).start();
         new CronJob('0 0 0 */1 * *', this.remove).start();
     }
 
