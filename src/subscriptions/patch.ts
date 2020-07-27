@@ -57,7 +57,7 @@ export default class CronPatch extends Patch {
 
         const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
 
-        const sixMinutes = moment().subtract(6, 'minutes');
+        const safePeriod = moment().subtract(5, 'minutes');
 
         const patch = $('item').filter((_, news) => {
             const $news = $(news);
