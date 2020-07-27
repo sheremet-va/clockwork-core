@@ -53,7 +53,7 @@ export default class CronNews extends News {
 
         const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
 
-        const threeMinutes = moment().subtract(3, 'minutes');
+        const safePeriod = moment().subtract(2, 'minutes');
 
         const news = $('item').filter((_, news) => {
             const $news = $(news);
@@ -62,7 +62,7 @@ export default class CronNews extends News {
 
             return (
                 moment().isSame(date, 'day')
-                && moment(date).isBetween(threeMinutes, moment())
+                && moment(date).isBetween(safePeriod, moment())
             );
         }).get()[0];
 

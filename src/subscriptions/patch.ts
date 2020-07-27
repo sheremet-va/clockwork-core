@@ -74,7 +74,7 @@ export default class CronPatch extends Patch {
                 ( isPatchEn || isPatchRu ) &&
                 author.startsWith('ZOS') &&
                 moment().isSame(date, 'day') &&
-                moment(date).isBetween(sixMinutes, moment()) &&
+                moment(date).isBetween(safePeriod, moment()) &&
                 old.link[lang] !== link
             );
         }).get()[0];
