@@ -144,7 +144,7 @@ export default class CronStatus extends Status {
             const $ = cheerio.load(data as string, { normalizeWhitespace: true });
 
             // может не быть мейнтейнса
-            const message = $('.DismissMessage').text().split('\n');
+            const message = $('.DismissMessage').first().text().split('\n');
 
             const codes = {
                 'ПК/Mac': 'pc',
