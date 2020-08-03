@@ -98,7 +98,7 @@ export default class CronNews extends News {
             },
             description: {
                 en: $news.find('description').text().trim(),
-                ru: russian.description
+                ru: russian.description.replace(/&nbsp;/g, ' ')
             },
             image: await this.image(link)
         };
