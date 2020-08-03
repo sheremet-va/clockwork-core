@@ -79,13 +79,13 @@ export default class CronNews extends News {
 
         const link = $news.find('link').text().trim();
 
-        published.news.push(link);
-
         const russian = await this.translate(link);
 
-        if(!russian) {
+        if(!russian || !russian.title) {
             return;
         }
+
+        published.news.push(link);
 
         const description = {
             link: {
