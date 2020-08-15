@@ -17,7 +17,7 @@ export default class Golden extends Module {
         const { data } = await this.core.request(link);
 
         const promises = this.items(data as string).map( async item => {
-            const name = '^' + item.name.replace( 'Shoulders', '' ).trim();
+            const name = '^' + item.name.replace( 'Shoulders', 'Pauldrons' ).trim();
 
             return {
                 ...item,
