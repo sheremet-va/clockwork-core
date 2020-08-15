@@ -15,7 +15,7 @@ interface StatusReply {
     maintenance?: Record<string, replaces>;
 }
 
-export default class Pledges extends Module {
+export default class Status extends Module {
     name = 'status';
 
     constructor(core: Core) {
