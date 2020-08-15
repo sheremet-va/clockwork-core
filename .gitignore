@@ -8,5 +8,7 @@ src/services/middleware.ts
 
 configs/
 
+.idea/
+
 .eslintrc.json
 .DS_Store
