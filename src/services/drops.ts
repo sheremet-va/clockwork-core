@@ -19,8 +19,6 @@ export class DropsManager {
     }
 
     work = async (): Promise<void> => {
-        this.core.logger.service('Drops `work` service started.');
-
         const date = Math.round(new Date().valueOf() / 1000);
 
         const { data } = await this.core.request({
@@ -70,10 +68,6 @@ export class DropsManager {
                 sendingDate: sendingDate === 0 ? sendingDate : endDate
             };
         }).get();
-
-        if(!drops.length) {
-            this.core.logger.service('No drops were added.');
-        }
 
         Promise.allSettled(drops).then(drops => {
             drops.forEach(result => {
