@@ -60,22 +60,24 @@ export default class Pledges extends Module {
         ];
 
         const pledgesUrgarlag = [
-            /*  0 */ 'Unhallowed Grave',
-            /*  1 */ 'Imperial City Prison',
-            /*  2 */ 'Ruins of Mazzatun',
-            /*  3 */ 'White-Gold Tower',
-            /*  4 */ 'Cradle of Shadows',
-            /*  5 */ 'Bloodroot Forge',
-            /*  6 */ 'Falkreath Hold',
-            /*  7 */ 'Fang Lair',
-            /*  8 */ 'Scalecaller Peak',
-            /*  9 */ 'Moon Hunter Keep',
-            /* 10 */ 'March of Sacrifices',
-            /* 11 */ 'Depths of Malatar',
-            /* 12 */ 'Frostvault',
-            /* 13 */ 'Moongrave Fane',
-            /* 14 */ 'Lair of Maarselok',
-            /* 15 */ 'Icereach'
+            /*  0 */ 'Cradle of Shadows',
+            /*  1 */ 'Bloodroot Forge',
+            /*  2 */ 'Falkreath Hold',
+            /*  3 */ 'Fang Lair',
+            /*  4 */ 'Scalecaller Peak',
+            /*  5 */ 'Moon Hunter Keep',
+            /*  6 */ 'March of Sacrifices',
+            /*  7 */ 'Depths of Malatar',
+            /*  8 */ 'Frostvault',
+            /*  9 */ 'Moongrave Fane',
+            /* 10 */ 'Lair of Maarselok',
+            /* 11 */ 'Icereach',
+            /* 12 */ 'Unhallowed Grave',
+            /* 13 */ 'Stone Garden',
+            /* 14 */ 'Castle Thorn',
+            /* 15 */ 'Imperial City Prison',
+            /* 16 */ 'Ruins of Mazzatun',
+            /* 17 */ 'White-Gold Tower',
         ];
 
         const knownDate = moment([2019, 2, 12]);
@@ -140,7 +142,9 @@ export default class Pledges extends Module {
             'Moongrave Fane': 'Grundwulf',
             'Lair of Maarselok': 'Maarselok',
             'Icereach': 'Mother Ciannait',
-            'Unhallowed Grave': 'Kjalnar\'s Nightmare'
+            'Unhallowed Grave': 'Kjalnar\'s Nightmare',
+            'Stone Garden': 'Stone Husk',
+            'Castle Thorn': 'Lady Thorn'
         };
 
         const name = pledge as keyof typeof masks;
