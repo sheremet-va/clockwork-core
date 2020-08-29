@@ -9,9 +9,10 @@ import { LogsController } from '../controllers/logs';
 import { GameItemsController, GameItem, Table } from '../controllers/gameItems';
 
 import { Translations, RenderObject, TranslatedCategory, TranslatedType, Tag, Item } from '../translation/translation';
-import { DropsManager } from '../services/drops';
+import { DropsManager } from './drops';
+import { StoreManager } from './store';
 import { Dates } from '../translation/dates';
-import { Logger } from '../services/logger';
+import { Logger } from './logger';
 
 import * as config from '../configs/main';
 import * as settingsConfig from '../configs/settings';
@@ -103,6 +104,8 @@ class BaseCore {
     readonly users = {} as CoreUsers;
     readonly info!: InfoController;
     readonly logs: LogsController;
+    readonly store: StoreController;
+    // readonly sellers: SellersController;
 
     private gameItems: GameItemsController;
 
@@ -124,6 +127,8 @@ class BaseCore {
 
         this.gameItems = new GameItemsController(db);
         this.logs = new LogsController(db);
+        this.store = new StoreController(db);
+        // this.sellers = new SellersController(db);
 
         this.connect(db);
 
@@ -134,6 +139,7 @@ class BaseCore {
 
     private connect(db: Db): void {
         new DropsManager(this);
+        new StoreManager(this);
 
         this.projects.forEach(project => {
             this.subscriptions[project] = new SubscriptionsController(db, project);
