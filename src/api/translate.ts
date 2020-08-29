@@ -10,7 +10,7 @@ type Tables = Record<string, {
     results: { ru: string; en: string }[];
 }>;
 
-type TranslationsApiResult = {
+export declare type TranslationsApiResult = {
     tableName: string;
     textRuOff: string;
     textFr: string;
