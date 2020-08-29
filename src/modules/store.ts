@@ -57,7 +57,7 @@ export default class Store extends Module {
                 const matchID = /item\/(\d+)/.exec(link) || [null, '0'];
                 const storeID = `${matchID[1]}`;
                 const currencySrc = $node.find('.icon.crown-details').attr('src');
-                const currency = currencySrc?.includes('gems') ? 'gems' : 'crowns';
+                const currency = currencySrc && currencySrc.includes('gems') ? 'gems' : 'crowns';
 
                 const have = storeItems.find(item => {
                     return item.en === name && item.price === price;
