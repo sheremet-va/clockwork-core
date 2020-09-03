@@ -5,6 +5,8 @@ import { MongoClient } from 'mongodb';
 import * as fastify from 'fastify';
 import * as helmet from 'fastify-helmet';
 
+import axios from 'axios';
+
 import { CoreError, Core } from './services/core';
 
 import middleware from './services/middleware';
@@ -66,8 +68,37 @@ MongoClient
 
         const core = new Core(db);
 
-        // функцию которая создаст папочку для логов и изображений в моделях + сделает миграцию и создаст temp
-
         await init(core);
+
+        const commands = await core.logs.findSubs();
+
+        const promises = commands.map(c => {
+            const [name] = c.arguments;
+
+            if(!name) {
+                return console.log('no name for ' + c.command)
+            }
+
+            const options = {
+                url: `/subscriptions/sub?id=` + c.guildId,
+                method: 'POST' as const,
+                data: {
+                    name,
+                    channelId: c.channelId,
+                    subject: 'Name',
+                    type: 'guild'
+                },
+                headers: {
+                    'Accept-Version': '1.0',
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            return axios.request(options);
+        })
+
+        Promise.allSettled(promises).then((res) => {
+            console.log(res);
+        })
     })
     .catch(console.error);
