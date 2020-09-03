@@ -45,36 +45,4 @@ export class LogsController {
             throw new CoreError(`An error ocured while trying to set a ${action} log: ${err.message}`);
         }
     }
-
-    findSubs() {
-        // {
-            // "_id" : ObjectId("5f0becb6714f4d49decdc639"),
-            // "guildId" : "547516303716646945",
-            // "authorId" : "215358861647806464",
-            // "command" : "pledges",
-            // "arguments" : [ ],
-            // "date" : ISODate("2020-07-13T05:10:14.023Z"),
-            // "project" : "assistant"
-        // }
-
-        const names = [
-            'sub',
-            'subscribe',
-            'подписаться',
-            'подписать',
-            'подписка'
-        ];
-
-        const start = moment('2020-08-29 12:12:00+0300');
-        const end = moment('2020-09-03 11:00:00+0300');
-
-        return this.#db.collection('logs_command').find<CommandLog>({
-            name: { $in: names },
-            channelId: { $exists: true },
-            date: {
-                $gt: start.toDate(),
-                $lt: end.toDate()
-            }
-        }).toArray();
-    }
 }

@@ -69,36 +69,5 @@ MongoClient
         const core = new Core(db);
 
         await init(core);
-
-        const commands = await core.logs.findSubs();
-
-        const promises = commands.map(c => {
-            const [name] = c.arguments;
-
-            if(!name) {
-                return console.log('no name for ' + c.command)
-            }
-
-            const options = {
-                url: `/subscriptions/sub?id=` + c.guildId,
-                method: 'POST' as const,
-                data: {
-                    name,
-                    channelId: c.channelId,
-                    subject: 'Name',
-                    type: 'guild'
-                },
-                headers: {
-                    'Accept-Version': '1.0',
-                    'Content-Type': 'application/json',
-                }
-            };
-
-            return axios.request(options);
-        })
-
-        Promise.allSettled(promises).then((res) => {
-            console.log(res);
-        })
     })
     .catch(console.error);
