@@ -30,7 +30,7 @@ const init = async (core: Core): Promise<void> => {
             fastifyCors,
             {
                 methods: ['GET', 'POST', 'OPTIONS'],
-                origin: 'http://localhost:3030'
+                origin: core.seht.origin
             }
         ),
         app.register(helmet),
