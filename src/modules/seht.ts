@@ -30,8 +30,8 @@ type IdentifierData = {
 
 type DiscordDbUser = DiscordAccessTokenResponse & { identifiers: IdentifierData[]; id: string; };
 
-export default class Seth {
-    name = 'seth';
+export default class Seht {
+    name = 'seht';
 
     private db: mongodb.Db | null = null;
 
@@ -43,7 +43,7 @@ export default class Seth {
         }
 
         const client = await mongodb.connect(this.core.config.db.url, { useUnifiedTopology: true });
-        const db = client.db('seth');
+        const db = client.db('seht');
 
         return db.collection(name);
     }

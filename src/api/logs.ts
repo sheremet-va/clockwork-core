@@ -6,10 +6,10 @@ export const bridge = new Bridge();
 export default class ApiLogs {
     name = 'logs';
 
-    seth: Seht;
+    seht: Seht;
 
     constructor(private core: Core) {
-        this.seth = new Seht(core);
+        this.seht = new Seht(core);
     }
 
     log = async (request: CoreRequest): Promise<ReplyOptions> => {
@@ -37,9 +37,9 @@ export default class ApiLogs {
     }
 
     async validate(request: CoreRequest): Promise<boolean> {
-        const user = await this.seth.getUserByIdentifier(request.headers.authorization!);
+        const user = await this.seht.getUserByIdentifier(request.headers.authorization!);
 
-        return Boolean(user && this.core.seth.ownerId === user.id);
+        return Boolean(user && this.core.seht.ownerId === user.id);
     }
 
     getErrors = async (request: CoreRequest, reply: CoreReply): Promise<ReplyOptions> => {

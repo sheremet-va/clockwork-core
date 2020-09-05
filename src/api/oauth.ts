@@ -22,10 +22,10 @@ export default class Oauth2 extends Seht {
 
     discordAuthorize = async (request: CoreRequest) => {
         const data = {
-            client_id: this.core.config.clientId,
-            client_secret: this.core.config.secret,
+            client_id: this.core.seht.clientId,
+            client_secret: this.core.seht.secret,
             grant_type: 'authorization_code',
-            redirect_uri: 'http://localhost:3030/oauth',
+            redirect_uri: this.core.seht.redirect,
             code: `${request.query.code}`,
             scope: this.scope,
         };
@@ -84,11 +84,11 @@ export default class Oauth2 extends Seht {
             url: this.authorizeUrl,
             method: 'POST',
             data: {
-                client_id: this.core.config.clientId,
-                client_secret: this.core.config.secret,
+                client_id: this.core.seht.clientId,
+                client_secret: this.core.seht.secret,
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
-                redirect_uri: 'http://localhost:3030/oauth', // TODO
+                redirect_uri: this.core.seht.redirect, // TODO
                 scope: this.scope
             }
         });

@@ -18,7 +18,7 @@ import { Logger } from './logger';
 import * as config from '../configs/main';
 import * as settingsConfig from '../configs/settings';
 import * as subsConfig from '../configs/subscriptions';
-import * as sethConfig from '../configs/seth';
+import * as sehtConfig from '../configs/seht';
 
 import * as util from 'util';
 
@@ -105,7 +105,7 @@ class BaseCore {
     readonly logger: Logger;
     readonly config: config.MainConfig;
     readonly projects: project[];
-    readonly seth: typeof sethConfig;
+    readonly seht: typeof sehtConfig;
 
     readonly subscriptions = {} as CoreSubscriptions;
     readonly settings = {} as CoreSettings;
@@ -128,7 +128,7 @@ class BaseCore {
         this.translations = new Translations();
         this.logger = new Logger(this);
         this.config = config;
-        this.seth = sethConfig;
+        this.seht = sehtConfig;
 
         this.projects = Object.keys(this.config.projects) as project[];
 
