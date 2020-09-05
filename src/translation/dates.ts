@@ -1,10 +1,9 @@
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 import { Translations } from './translation';
 import { CoreError } from '../services/core';
 import { Maintenance } from '../subscriptions/status';
 import { languages } from '../configs/main';
-import { Logger } from '../services/logger';
 
 export declare type replaces = {
     startDate: moment.Moment;
@@ -20,7 +19,6 @@ export declare type replaces = {
 
 class Dates {
     translate = new Translations();
-    logger = new Logger();
 
     private zone(timezone: string): moment.MomentZone {
         const zone = moment.tz.zone(timezone);
@@ -147,23 +145,11 @@ class Dates {
         return day.pluralize(days[lang], lang);
     }
 
-    private log(message: string): void {
-        try {
-            throw new Error();
-        } catch(err) {
-            this.logger.error(
-                `${message}\n` + err.stack
-            );
-        }
-    }
-
     private time(time: string): string {
         const match = /([0-9:]+) \(МСК\)/.exec(time);
 
         if( !match ) {
-            this.log(
-                `Error while parsing ${time} time. Empty string returned.`
-            );
+            console.error(`Error while parsing ${time} time. Empty string returned.`);
 
             return '';
         }
@@ -182,13 +168,14 @@ class Dates {
         const match_month = /[а-яА-Я]+/.exec(day);
 
         if( !match_date || !match_month ) {
-            this.log(
+            console.error(
                 `Can't parse ${day} day. (Date: ${match_date}, Month: ${match_month}) Empty string returned.`
             );
 
             return '';
         }
 
+        // TODO redo
         const months = {
             января: 'Jan',
             февраля: 'Feb',

@@ -73,7 +73,7 @@ export default class SettingsModule extends SettingsBase {
 
         const cleanConfig = type === 'language' ? this.cleanSettings(settings, project) : settings;
 
-        this.core.setSettings(project, cleanConfig, { id, type, value: zone || value });
+        void this.core.setSettings(project, cleanConfig, { id, type, value: zone || value });
 
         return { translations };
     };

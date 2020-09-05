@@ -26,7 +26,7 @@ export declare interface UsersObject {
 }
 
 class UsersController {
-    #project: project;
+    readonly #project: project;
 
     type: string;
     default: Settings;
@@ -51,13 +51,13 @@ class UsersController {
 
         try {
             const user = await this.collection
-                .findOne(
-                    {
-                        ownerId,
-                        project: this.#project
-                    },
-                    { projection: { _id: 0 } }
-                ) as User;
+                .findOne<User>(
+                {
+                    ownerId,
+                    project: this.#project
+                },
+                { projection: { _id: 0 } }
+            );
 
             if( !user ) {
                 return defaults;
@@ -107,17 +107,17 @@ class UsersController {
 
         try {
             const docs = await this.collection
-                .find({
-                    project: this.#project,
-                    [field]: { $exists: true }
-                }, {
-                    projection: {
-                        _id: 0,
-                        ownerId: 1,
-                        settings: 1,
-                        [field]: 1
-                    }
-                })
+                .find<User>({
+                project: this.#project,
+                [field]: { $exists: true }
+            }, {
+                projection: {
+                    _id: 0,
+                    ownerId: 1,
+                    settings: 1,
+                    [field]: 1
+                }
+            })
                 .toArray();
 
             return docs.reduce((all, doc) => {

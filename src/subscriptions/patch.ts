@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { PatchInfo } from '../controllers/info';
 
@@ -15,6 +15,7 @@ interface PatchNotify {
 }
 
 export default class CronPatch extends Patch {
+    // cron = '*/15 * * * * *';
     cron = '20 */5 * * * *';
 
     constructor(core: Core) {
@@ -70,6 +71,10 @@ export default class CronPatch extends Patch {
             const isPatchEn = !!/^(PC\/Mac|PTS) Patch Notes/.exec(title);
             const isPatchRu = !!/^Описание обновления/.exec(title);
 
+            // if(storage === 'pts') {
+            //     console.log(title);
+            // }
+
             return (
                 ( isPatchEn || isPatchRu ) &&
                 author.startsWith('ZOS') &&
@@ -102,10 +107,11 @@ export default class CronPatch extends Patch {
             const category = rssCategory[storage][lang];
             const url = `https://forums.elderscrollsonline.com/${lang}/categories/${category}/feed.rss`;
 
+            // console.log(url);
             const info = await this.getPatch(url, lang, storage);
 
             if(!info) {
-                return Promise.reject( 'NO_PATCH' );
+                return;
             }
 
             const $patch = info.$(info.patch);
@@ -125,6 +131,14 @@ export default class CronPatch extends Patch {
             const patches = await Promise.all(promises);
 
             const description = patches.reduce((result, description) => {
+                if(!description) {
+                    return result;
+                }
+
+                if(!result) {
+                    return {} as PatchNotify;
+                }
+
                 return {
                     title: { ...result.title, ...description.title },
                     link: { ...result.link, ...description.link },
@@ -133,7 +147,9 @@ export default class CronPatch extends Patch {
                 };
             }, {} as PatchNotify);
 
-            console.log(description);
+            if(!description || !Object.keys(description).length) {
+                throw new Error('NO_PATCH');
+            }
 
             this.core.info.set(storage, description);
 
@@ -141,13 +157,13 @@ export default class CronPatch extends Patch {
 
             return this.notify(storage, { translations, data: description });
         } catch(error) {
-            if( error === 'NO_PATCH' ) {
+            if( error.message === 'NO_PATCH' ) {
                 // console.log(error);
 
                 return;
             }
 
-            this.core.logger.error(`[SUB][PATCH] Error: ${error.message}`);
+            this.core.logger.error('CoreInternalError',`[SUB][PATCH] Error: ${error.message}`);
         }
     }
 

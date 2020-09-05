@@ -172,7 +172,7 @@ export default class CronStatus extends Status {
             }, {}) as Maintenance;
         } catch (err) {
             console.log( err );
-            this.core.logger.error( err.message );
+            this.core.logger.error('CoreInternalError', err );
 
             return {};
         }

@@ -12,6 +12,7 @@ export default class CronWeekly extends Weekly {
     }
 
     send = async (): Promise<void> => {
+        return;
         const translations = this.core.translations.get('commands', 'weekly');
 
         const url = 'https://esoleaderboards.com/trial/weekly';

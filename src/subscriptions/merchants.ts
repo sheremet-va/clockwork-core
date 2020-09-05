@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 import * as cheerio from 'cheerio';
 
 import { GoldenInfo, LuxuryInfo } from '../controllers/info';

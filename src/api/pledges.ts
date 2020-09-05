@@ -8,7 +8,7 @@ export default class ApiPledges extends Pledges {
     pledges = async (request: CoreRequest): Promise<ReplyOptions> => {
         const data = await this.get(request);
 
-        const days = parseInt(request.params.days);
+        const days = parseInt((request.params as any).days);
         const lang = request.settings.language;
 
         const translations = this.core.translate(lang, {

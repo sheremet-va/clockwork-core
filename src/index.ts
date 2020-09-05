@@ -2,10 +2,9 @@
 
 import { MongoClient } from 'mongodb';
 
-import * as fastify from 'fastify';
-import * as helmet from 'fastify-helmet';
-
-import axios from 'axios';
+import fastify, { FastifyError, FastifyRequest, FastifyReply, RawServerBase } from 'fastify';
+import helmet from 'fastify-helmet';
+import websocketPlugin from 'fastify-websocket';
 
 import { CoreError, Core } from './services/core';
 
@@ -17,39 +16,63 @@ import * as config from './configs/main';
 
 import { init as initApi } from './api/init';
 import { init as initSubscriptions } from './subscriptions/init';
+import { init as initWebsockets } from './websockets/init';
 
 const app = fastify();
+
+import fastifyCors from 'fastify-cors';
 
 const init = async (core: Core): Promise<void> => {
     const { checkAccess, prepare } = middleware(core);
 
-    app.register(helmet);
-    app.register(checkAccess);
-    app.register(prepare);
+    await Promise.all([
+        app.register(
+            fastifyCors,
+            {
+                methods: ['GET', 'POST', 'OPTIONS'],
+                origin: 'http://localhost:3030'
+            }
+        ),
+        app.register(helmet),
+        app.register(checkAccess),
+        app.register(prepare),
+        app.register(
+            websocketPlugin,
+            {
+                handle: conn => conn.pipe(conn),
+                options: { maxPayload: 1048576 }
+            }
+        )
+    ]);
 
     const modules = await initApi(core);
 
     const routes = router(modules);
 
-    app.register(routes);
+    await app.register(routes);
 
     await initSubscriptions(core, app);
 
-    app.setErrorHandler((
-        err: CoreError | fastify.FastifyError,
-        request: CoreRequest | fastify.FastifyRequest,
-        reply: CoreReply | fastify.FastifyReply<HttpResponse>
-    ): void => {
+    const websockets = initWebsockets();
+
+    await app.register(websockets);
+
+    app.setErrorHandler(async(
+        err: CoreError | FastifyError,
+        request: CoreRequest | FastifyRequest,
+        reply: CoreReply | FastifyReply<RawServerBase>
+    ): Promise<void> => {
         if (err instanceof CoreError && 'error' in reply) {
             reply.error(err.message, err.renderObject);
 
             return;
         }
 
-        reply.code(500).send({ code: 'SERVER_ERROR', message: 'Something terrible happend...' });
+        await reply.code(500).send({ code: 'SERVER_ERROR', message: 'Something terrible happend...' });
 
         core.logger.error(
-            `Error from ${request.ip}: \n${err.stack}`
+            'CoreInternalError',
+            `Error from ${request.ip}: \n${err.stack || ''}`
             + `\n\nPARAMS: ${JSON.stringify(request.params)},`
             + `\nQUERY: ${JSON.stringify(request.query).replace(core.config.token, 'TRUSTED')},`
             + `\nBODY: ${JSON.stringify(request.body)}.`

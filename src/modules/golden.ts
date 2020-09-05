@@ -1,10 +1,15 @@
 import * as cheerio from 'cheerio';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 import { Module } from './module';
 import { CoreError } from '../services/core';
 
 import { GoldenInfo, GoldenItem } from '../controllers/info';
+
+enum Day {
+    Sunday = 0,
+    Saturday = 6
+}
 
 export default class Golden extends Module {
     name = 'golden';
@@ -17,7 +22,7 @@ export default class Golden extends Module {
         const { data } = await this.core.request(link);
 
         const promises = this.items(data as string).map( async item => {
-            const name = '^' + item.name.replace( 'Shoulders', 'Pauldrons' ).trim();
+            const name = '^' + item.name.replace( 'Shoulders', 'Pauldrons' ).replace('Helm', 'Visage').trim();
 
             return {
                 ...item,
@@ -38,7 +43,7 @@ export default class Golden extends Module {
     get = async (): Promise<GoldenInfo> => {
         const now = moment().utc();
 
-        if (now.day() !== 0 && now.day() !== 6) {
+        if (now.day() !== Day.Sunday && now.day() !== Day.Saturday) {
             throw new CoreError('UNEXPECTED_GOLDEN_DATE');
         }
 
@@ -61,6 +66,7 @@ export default class Golden extends Module {
 
         if (!matched) {
             this.core.logger.error(
+                'ParsingError',
                 `${match} wasn't found in ${text}.`
             );
 
@@ -86,7 +92,9 @@ export default class Golden extends Module {
             const name = this.prepare(fullName, /(^[^–]+)/);
             const trait = this.prepare(fullName, /([^–]+$)/);
 
-            const price = text.replace(fullName, '').split('/').map(str => +str.replace(/\*|,|g|(AP)/g, '').trim()); // DIVIDE
+            const price = text.replace(fullName, '')
+                .split('/')
+                .map(str => +str.replace(/\*|,|g|(AP)/g, '').trim()); // TODO DIVIDE
             const canSell = /\*$/i.test(text);
             const hasTypes = trait.includes('(Light, Medium, Heavy)');
 

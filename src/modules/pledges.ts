@@ -3,7 +3,7 @@ import { CoreError } from '../services/core';
 
 import { Table } from '../controllers/gameItems';
 
-import * as moment from 'moment';
+import moment from 'moment';
 
 // засунуть в info?
 // const dungeons = {
@@ -17,7 +17,7 @@ import * as moment from 'moment';
 export default class Pledges extends Module {
     name = 'pledges';
 
-    vendors = ['maj', 'glirion', 'urgarlag'];
+    readonly vendors = ['maj', 'glirion', 'urgarlag'];
 
     constructor(core: Core) {
         super(core);
@@ -193,7 +193,7 @@ export default class Pledges extends Module {
             masks: Record<string, Record<language, string>>;
         }> {
 
-        const days = parseInt(params.days);
+        const days = parseInt((params).days);
         const pledges = this.getPledges(days);
 
         const masks = this.getMasks(pledges);

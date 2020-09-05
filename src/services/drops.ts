@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 import * as cheerio from 'cheerio';
 
 import { CronJob } from 'cron';
@@ -116,7 +116,7 @@ export class DropsManager {
                     return this.core.logger.service(`Drop with params ${startDate} and ${endDate} was removed.`);
                 }
 
-                this.core.logger.error('CAN\'T REMOVE DROP: ' + result.reason);
+                this.core.logger.error('CoreInternalError','CAN\'T REMOVE DROP: ' + result.reason);
             });
         });
     };

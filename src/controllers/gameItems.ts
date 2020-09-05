@@ -23,12 +23,12 @@ export class GameItemsController {
 
         try {
             return await this.#db.collection(table)
-                .findOne(
-                    {
-                        [by]: { $regex: regExpName }
-                    },
-                    { projection: { _id: 0 } }
-                ) as T;
+                .findOne<T>(
+                {
+                    [by]: { $regex: regExpName }
+                },
+                { projection: { _id: 0 } }
+            );
         }
         catch (err) {
             throw new CoreError(`An error ocured while trying to get a ${name} (${by}) game item: ${err.message}`);

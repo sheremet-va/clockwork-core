@@ -4,9 +4,6 @@ import { InfoController } from '../controllers/info';
 import { User, UsersObject } from '../controllers/users';
 import { Category, Item } from '../translation/translation';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { RequestHandler } from 'fastify';
-
 declare interface NotifyOptions {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
@@ -45,10 +42,9 @@ export abstract class Module {
     public name = '';
     public cron = '';
 
-    // TODO REDO
-    public handler!: RequestHandler;
-
     info: InfoController;
+
+    handler!: () => void;
 
     constructor(public core: Core) {
         this.info = this.core.info;
@@ -85,6 +81,7 @@ export abstract class Module {
             return { status, project };
         } catch (err) {
             this.core.logger.error(
+                'CoreRequestError',
                 `[${limit} try] Error while attempting to post ${options.url} to ${project}: ${err.message}`
             );
 
@@ -130,7 +127,7 @@ export abstract class Module {
                 );
             });
 
-        Promise.allSettled(promises)
+        void Promise.allSettled(promises)
             .then(result =>
                 result.forEach(res => {
                     if (res.status === 'fulfilled') {
@@ -146,24 +143,19 @@ export abstract class Module {
                     }
 
                     const messages = {
-                        EMPTY_SUBSCRIBERS: {
-                            type: 'warn' as const,
-                            message: `No one is subscribed to "${name}" at ${res.reason.project}.`
-                        },
-                        LIMIT_EXCEEDED: {
-                            type: 'error' as const,
-                            message: `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
-                        }
+                        EMPTY_SUBSCRIBERS: `No one is subscribed to "${name}" at ${res.reason.project}.`,
+                        LIMIT_EXCEEDED: `Number of attempts while trying to post "${name}" subscription to ${res.reason.project} exceeded.`
                     };
 
                     const message = messages[code as keyof typeof messages];
 
                     if (message) {
-                        return this.core.logger[message.type](message.message);
+                        return this.core.logger.warn(message);
                     }
 
                     // Отправить сообщение в дискорд/телеграм, что не смог отправить
                     return this.core.logger.error(
+                        'CoreInternalError',
                         `Unknown error in "${name}" subscription: ${JSON.stringify(res.reason)}`
                     );
                 })
@@ -183,7 +175,7 @@ declare global {
         when?(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
         sending?(request?: CoreRequest, reply?: CoreReply): Promise<ReplyOptions>;
 
-        handler: RequestHandler;
+        handler: () => void;
     }
 
     type Modules = {

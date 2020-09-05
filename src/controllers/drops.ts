@@ -24,7 +24,7 @@ export class DropsController {
     async get(now: number): Promise<DropItem[]> {
         try {
             return this.collection
-                .find({ endDate: { $gte: now } }, { projection: { _id: 0 } })
+                .find<DropItem>({ endDate: { $gte: now } }, { projection: { _id: 0 } })
                 .toArray();
         }
         catch (err) {

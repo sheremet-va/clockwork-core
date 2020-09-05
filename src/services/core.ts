@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import * as fastify from 'fastify';
 
 import { Db } from 'mongodb';
 
@@ -7,7 +6,7 @@ import { User, SubscriptionsController, SettingsController } from '../controller
 import { InfoController } from '../controllers/info';
 import { LogsController } from '../controllers/logs';
 import { StoreController } from '../controllers/store';
-// import { SellersController } from '../controllers/sellers';
+import { SellersController } from '../controllers/sellers';
 import { GameItemsController, GameItem, Table } from '../controllers/gameItems';
 
 import { Translations, RenderObject, TranslatedCategory, TranslatedType, Tag, Item } from '../translation/translation';
@@ -19,10 +18,15 @@ import { Logger } from './logger';
 import * as config from '../configs/main';
 import * as settingsConfig from '../configs/settings';
 import * as subsConfig from '../configs/subscriptions';
+import * as sethConfig from '../configs/seth';
 
-const REPEAT_IN_SECONDS = 10000;
+import * as util from 'util';
 
-const LIMIT_REPEAT_GET = 10;
+import { FastifyReply, RawServerBase } from 'fastify';
+
+const REPEAT_IN_SECONDS = 2000;
+
+const LIMIT_REPEAT_GET = 1;
 
 function build(logger: Logger): void {
     Object.defineProperty(String.prototype, 'render', {
@@ -67,17 +71,18 @@ function build(logger: Logger): void {
         }
     });
 
-    process.on('uncaughtException', (err: Error) =>
-        logger.error(`Uncaught Exception: ${
-            (err.stack || err.message).replace(new RegExp(`${__dirname}/`, 'g'), './')
-        }`));
-
-    process.on('unhandledRejection', (err: unknown) => {
-        logger.error(`Unhandled rejection: ${err instanceof Error ? err.stack : err}`);
+    process.on('uncaughtException', (err: Error) => {
+        logger.error('Uncaught Exception', err);
     });
 
-    process.on('warning', (err: Error) =>
-        logger.error(`warning: ${err.stack}`));
+    // TODO remove any
+    process.on('unhandledRejection', (err: any) => {
+        logger.error('Unhandled rejection', err);
+    });
+
+    process.on('warning', (err: Error) => {
+        logger.error('warning', err);
+    });
 }
 
 export class CoreError extends Error {
@@ -100,6 +105,7 @@ class BaseCore {
     readonly logger: Logger;
     readonly config: config.MainConfig;
     readonly projects: project[];
+    readonly seth: typeof sethConfig;
 
     readonly subscriptions = {} as CoreSubscriptions;
     readonly settings = {} as CoreSettings;
@@ -107,7 +113,7 @@ class BaseCore {
     readonly info!: InfoController;
     readonly logs: LogsController;
     readonly store: StoreController;
-    // readonly sellers: SellersController;
+    readonly sellers: SellersController;
 
     private gameItems: GameItemsController;
 
@@ -120,8 +126,9 @@ class BaseCore {
     constructor(db: Db) {
         this.dates = new Dates();
         this.translations = new Translations();
-        this.logger = new Logger();
+        this.logger = new Logger(this);
         this.config = config;
+        this.seth = sethConfig;
 
         this.projects = Object.keys(this.config.projects) as project[];
 
@@ -130,11 +137,11 @@ class BaseCore {
         this.gameItems = new GameItemsController(db);
         this.logs = new LogsController(db);
         this.store = new StoreController(db);
-        // this.sellers = new SellersController(db);
+        this.sellers = new SellersController(db);
 
         this.connect(db);
 
-        this.wait = require('util').promisify(setTimeout);
+        this.wait = util.promisify(setTimeout);
 
         build(this.logger);
     }
@@ -154,7 +161,7 @@ class BaseCore {
         });
     }
 
-    async request(options: string | PostOptions, tries = 1): Promise<RequestResult> {
+    async request<T>(options: string | PostOptions, tries = 1): Promise<{ data: T }> {
         const url = typeof options === 'string' ? options : options.url;
 
         if (tries > LIMIT_REPEAT_GET) {
@@ -163,21 +170,22 @@ class BaseCore {
 
         const config = typeof options === 'string' ? { url: encodeURI(options), method: 'GET' } : options;
 
-        return axios.request(config as AxiosRequestConfig)
+        return axios.request<T>(config as AxiosRequestConfig)
             .then(({ data }) => ({ data }))
             .catch(async err => {
-                this.logger.error(
-                    `[${tries} try] Error at core.request "${url}": ${err.message}`
+                void this.logger.error(
+                    'CoreRequestError',
+                    `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response.data}`
                 );
 
                 await this.wait(REPEAT_IN_SECONDS);
 
-                return this.request(options, ++tries);
+                return this.request<T>(options, ++tries);
             });
     }
 
     sendError(
-        reply: fastify.FastifyReply<HttpResponse>,
+        reply: FastifyReply<RawServerBase>,
         lang: language,
         error: string,
         render?: Record<string, string>
@@ -189,12 +197,17 @@ class BaseCore {
         const code = descriptionFound ? 406 : 500;
         const message = descriptionFound ? description : unknown;
 
-        reply.code(code).send({ error, message });
+        void reply.code(code).send({ error, message });
 
         const request = reply.request;
+        const query = request.query as {
+            project: string;
+            id: string;
+        };
 
         this.logger.error(
-            `External Error: ${error} ${request.query.project}\t${request.query.id}\t${request.ip}`
+            'ExternalError',
+            `${error}\t${query.project}\t${query.id}\t${request.ip}`
         );
 
         return false;
@@ -282,12 +295,13 @@ declare interface PostOptions {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: any;
     headers?: {
-        Cookie: string;
+        [name: string]: string;
     };
 }
 
-declare interface RequestResult {
-    data: object | string;
+declare interface RequestResult<T> {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    data: T | string;
 }
 
 declare global {

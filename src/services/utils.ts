@@ -1,4 +1,4 @@
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { zones } from 'moment-timezone/data/packed/latest.json';
 
 import { readdir as readSync } from 'fs';

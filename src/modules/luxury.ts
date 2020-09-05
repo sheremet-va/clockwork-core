@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import * as imgurUploader from 'imgur-uploader';
-import * as moment from 'moment-timezone';
+import imgurUploader from 'imgur-uploader';
+import moment from 'moment-timezone';
 import * as cheerio from 'cheerio';
 import * as Jimp from 'jimp';
 import * as Path from 'path';
@@ -96,12 +96,14 @@ export default class Luxury extends Module {
     ): void => {
         if(!name) {
             this.core.logger.error(
+                'ParsingError',
                 `Name from ${fullName} wasn't found.`
             );
         }
 
         if(!price) {
             this.core.logger.error(
+                'ParsingError',
                 `Price from ${fullName} wasn't found.`
             );
         }
@@ -212,7 +214,10 @@ export default class Luxury extends Module {
 
                 wholeImage.composite(iconWithBg, x, y);
             } catch (err) {
-                this.core.logger.error(`An errror occured while trying to add an icon "${icon}" on image: ${err.message}`);
+                this.core.logger.error(
+                    'DependencyError',
+                    `An errror occured while trying to add an icon "${icon}" on image: ${err.message}`
+                );
             }
 
             fs.unlink(icon, () => this.core.logger.log(`File "${icon}" was deleted.`));

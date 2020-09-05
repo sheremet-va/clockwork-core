@@ -1,7 +1,7 @@
 // import { NewsInfo } from '../controllers/info';
 
 import * as cheerio from 'cheerio';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import News from '../modules/news';
 

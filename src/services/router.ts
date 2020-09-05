@@ -3,6 +3,7 @@ import commands from './commands';
 import { Module } from '../modules/module';
 
 import * as fastify from 'fastify';
+import {FastifySchema} from 'fastify';
 
 const defaultSchema = {
     querystring: {
@@ -34,7 +35,7 @@ async function addRoutes(
             ...(schema ? {
                 schema: {
                     ...schema,
-                    querystring: { ...defaultSchema.querystring, ...(schema.querystring || {}) }
+                    querystring: { ...defaultSchema.querystring, ...((schema.querystring as any) || {}) }
                 }
             } : {}),
             attachValidation: true,
@@ -48,7 +49,7 @@ async function addRoutes(
 export default function ( modules: Module[]) {
     return async (
         app: fastify.FastifyInstance,
-        _: fastify.RegisterOptions<HttpServer, HttpRequest, HttpResponse>,
+        _: any,
         done: (err?: fastify.FastifyError) => void
     ): Promise<void> => {
         const promises = modules.map(mod => addRoutes(app, mod));
@@ -78,5 +79,5 @@ export declare type Route = {
     method?: 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT';
     api?: boolean;
     version?: string;
-    schema?: fastify.RouteSchema;
+    schema?: FastifySchema;
 }

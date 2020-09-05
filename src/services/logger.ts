@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 import * as fs from 'fs';
 import { promisify } from 'util';
@@ -6,7 +6,11 @@ import { promisify } from 'util';
 const appendFile = promisify(fs.appendFile);
 const writeFile = promisify(fs.writeFile);
 
+import { bridge } from '../api/logs';
+
 class Logger {
+    constructor(private core: Core) {}
+
     private async write(content: string, type = 'log'): Promise<void> {
         const now = moment();
         const folder = type === 'req' || content.includes('[SEND]') ? 'requests' : 'logs';
@@ -45,8 +49,23 @@ class Logger {
         );
     }
 
-    error(...args: string[]): void {
-        this.write(args.join(' '), 'error');
+    async error(type: string, error: Error | string): Promise<void> {
+        const content = error instanceof Error ? error.message : error;
+        const stack = error instanceof Error ? (error.stack || null) : null;
+
+        const log = {
+            project: 'core' as const,
+            message: content,
+            type,
+            stack,
+            date: new Date()
+        };
+
+        await this.core.logs.set('error', log);
+
+        bridge.$emit('log', log);
+
+        console.log('ERROR:', content);
     }
 
     warn(...args: string[]): void {
