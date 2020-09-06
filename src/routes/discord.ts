@@ -16,5 +16,13 @@ export default [
         version: '1.0.0',
         rights: ['owner'],
         api: true
+    },
+    {
+        path: '/seht/discord/users/:userId',
+        handler: 'getUserById',
+        method: 'GET',
+        version: '1.0.0',
+        rights: ['owner'],
+        api: true
     }
 ] as Route[];

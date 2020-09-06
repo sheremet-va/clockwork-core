@@ -29,4 +29,12 @@ export default class ApiDiscord extends Seht {
 
         return { data: guild };
     };
+
+    getUserById = async (request: CoreRequest): Promise<ReplyOptions> => {
+        const userId = request.params.userId;
+
+        const user = await this.request(`/users/${userId}`);
+
+        return { data: user };
+    };
 }
