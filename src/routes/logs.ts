@@ -8,17 +8,27 @@ export default [
         version: '1.0.0'
     },
     {
-        path: '/api/logs/errors',
+        path: '/seht/logs/errors',
         handler: 'getErrors',
         method: 'GET',
         version: '1.0.0',
+        rights: ['owner'],
         api: true
     },
     {
-        path: '/api/logs/types',
+        path: '/seht/logs/commands',
+        handler: 'getCommands',
+        method: 'GET',
+        version: '1.0.0',
+        rights: ['owner'],
+        api: true
+    },
+    {
+        path: '/seht/logs/types',
         handler: 'getErrorTypes',
         method: 'GET',
         version: '1.0.0',
+        rights: ['owner'],
         api: true
     }
 ] as Route[];

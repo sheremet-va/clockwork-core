@@ -6,8 +6,6 @@ import { promisify } from 'util';
 const appendFile = promisify(fs.appendFile);
 const writeFile = promisify(fs.writeFile);
 
-import { bridge } from '../api/logs';
-
 class Logger {
     constructor(private core: Core) {}
 
@@ -63,9 +61,7 @@ class Logger {
 
         await this.core.logs.set('error', log);
 
-        bridge.$emit('log', log);
-
-        console.log('ERROR:', content);
+        console.log('ERROR:', content, stack);
     }
 
     warn(...args: string[]): void {

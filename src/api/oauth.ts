@@ -47,6 +47,7 @@ export default class Oauth2 extends Seht {
             const user = await this.getUser(userInfo.id);
 
             const identifier = crypto.randomBytes(16).toString('hex');
+            // сбрасывать если такой user-agent уже есть
             const identifierData = {
                 token: identifier,
                 type: 'Discord',

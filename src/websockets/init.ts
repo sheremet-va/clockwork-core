@@ -1,6 +1,6 @@
 import * as fastify from 'fastify';
 
-import { bridge } from '../api/logs';
+import { bridge } from '../controllers/logs';
 
 export function init() {
     return async (

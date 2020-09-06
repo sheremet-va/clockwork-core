@@ -99,7 +99,9 @@ export default class Seht {
         return user;
     }
 
-    static async replyError(reply: CoreReply): Promise<void> {
-        await reply.code(401).send({ error: 'AUTHORIZATION_FAILED' });
+    async validateOwner(request: CoreRequest): Promise<boolean> {
+        const user = await this.getUserByIdentifier(request.headers.authorization!);
+
+        return Boolean(user && this.core.seht.ownerId === user.id);
     }
 }

@@ -3,7 +3,7 @@ import commands from './commands';
 import { Module } from '../modules/module';
 
 import * as fastify from 'fastify';
-import {FastifySchema} from 'fastify';
+import { FastifySchema } from 'fastify';
 
 const defaultSchema = {
     querystring: {
@@ -25,7 +25,7 @@ async function addRoutes(
     const routes: Route[] = (await import('../routes/' + module.name)).default;
 
     routes.forEach(api => {
-        const { method, path, version, handler, schema, api: isApi = false } = api;
+        const { method, path, version, handler, schema, api: isApi = false, rights = [] } = api;
 
         const options = {
             method: method || 'GET',
@@ -39,7 +39,7 @@ async function addRoutes(
                 }
             } : {}),
             attachValidation: true,
-            config: { api: isApi }
+            config: { api: isApi, rights }
         };
 
         app.route(options);
@@ -69,6 +69,14 @@ export default function ( modules: Module[]) {
             config: { api: false }
         });
 
+        app.route({
+            method: 'GET',
+            url: '/seht/commands',
+            version: '1.0.0',
+            handler: commands,
+            config: { api: true }
+        });
+
         done();
     };
 }
@@ -80,4 +88,5 @@ export declare type Route = {
     api?: boolean;
     version?: string;
     schema?: FastifySchema;
+    rights?: string[];
 }

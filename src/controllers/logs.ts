@@ -2,9 +2,9 @@ import { Db } from 'mongodb';
 
 import { CoreError } from '../services/core';
 
-type Action = 'error' | 'command';
+import { Bridge } from '../services/bridge';
 
-import moment from 'moment';
+type Action = 'error' | 'command';
 
 export declare interface ErrorLog {
     project: project | 'core';
@@ -25,7 +25,7 @@ export declare interface CommandLog {
     date: Date;
 }
 
-type Filters = {
+type LogsFilters = {
     offset?: number;
     limit?: number;
     date_from?: Date;
@@ -35,12 +35,25 @@ type Filters = {
     project?: string;
 }
 
+type CommandsFilters = {
+    offset?: number;
+    limit?: number;
+    date_from?: Date;
+    date_to?: Date;
+    command?: string;
+    guildId?: string;
+    project?: string;
+}
+
 export declare type Log = ErrorLog | CommandLog;
+
+export const bridge = new Bridge();
 
 export class LogsController {
     readonly #db: Db;
 
     private readonly ERRORS_COLLECTION = 'logs_error';
+    private readonly COMMANDS_COLLECTION = 'logs_command';
 
     constructor(db: Db) {
         this.#db = db;
@@ -50,6 +63,8 @@ export class LogsController {
         if ('date' in body) {
             body.date = new Date(body.date);
         }
+
+        bridge.$emit('log', { action, ...body });
 
         try {
             await this.#db.collection(`logs_${action}`).insertOne(body);
@@ -65,7 +80,7 @@ export class LogsController {
         return collection.distinct('type');
     }
 
-    async getErrors(filters: Filters): Promise<{ data: ErrorLog[]; count: number }> {
+    async getErrors(filters: LogsFilters): Promise<{ data: ErrorLog[]; count: number }> {
         const offset = Number(filters.offset) || 0;
         const limit = Number(filters.limit) || 30;
 
@@ -102,6 +117,51 @@ export class LogsController {
 
         const cursor = this.#db.collection(this.ERRORS_COLLECTION)
             .find<ErrorLog>(query)
+            .skip(offset)
+            .limit(limit)
+            .sort({ _id: -1 });
+
+        return {
+            data: await cursor.toArray(),
+            count: await cursor.count()
+        };
+    }
+
+    async getCommands(filters: CommandsFilters): Promise<{ data: CommandLog[]; count: number }> {
+        const offset = Number(filters.offset) || 0;
+        const limit = Number(filters.limit) || 30;
+
+        type Query = {
+            // date: {
+            //     $gte: Date;
+            //     $lt: Date;
+            // };
+            command?: string;
+            project?: string;
+            guildId?: string | null;
+        }
+
+        const query: Query = {
+            // date: {
+            //     $gte: filters.date_from || moment().subtract(1, 'year').toDate(),
+            //     $lt: filters.date_to || new Date()
+            // }
+        };
+
+        if(filters.command) {
+            query.command = filters.command;
+        }
+
+        if(filters.project) {
+            query.project = filters.project;
+        }
+
+        if(filters.guildId) {
+            query.guildId = filters.guildId === 'null' ? null : filters.guildId;
+        }
+
+        const cursor = this.#db.collection(this.COMMANDS_COLLECTION)
+            .find<CommandLog>(query)
             .skip(offset)
             .limit(limit)
             .sort({ _id: -1 });

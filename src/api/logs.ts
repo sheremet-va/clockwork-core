@@ -1,7 +1,4 @@
 import Seht from '../modules/seht';
-import { Bridge } from '../services/bridge';
-
-export const bridge = new Bridge();
 
 export default class ApiLogs {
     name = 'logs';
@@ -17,41 +14,23 @@ export default class ApiLogs {
 
         await this.core.logs.set((params).type, { ...body, project });
 
-        bridge.$emit('log', { ...body, project });
-
         return {};
     };
 
-    getErrorTypes = async (request: CoreRequest, reply: CoreReply) => {
-        const valid = await this.validate(request);
-
-        if(!valid) {
-            await Seht.replyError(reply);
-
-            return {};
-        }
-
+    getErrorTypes = async () => {
         const types = await this.core.logs.getErrorTypes();
 
         return { data: types };
     }
 
-    async validate(request: CoreRequest): Promise<boolean> {
-        const user = await this.seht.getUserByIdentifier(request.headers.authorization!);
+    getErrors = async (request: CoreRequest): Promise<ReplyOptions> => {
+        const logs = await this.core.logs.getErrors(request.query);
 
-        return Boolean(user && this.core.seht.ownerId === user.id);
+        return { data: logs };
     }
 
-    getErrors = async (request: CoreRequest, reply: CoreReply): Promise<ReplyOptions> => {
-        const valid = await this.validate(request);
-
-        if(!valid) {
-            await Seht.replyError(reply);
-
-            return {};
-        }
-
-        const logs = await this.core.logs.getErrors(request.query);
+    getCommands = async (request: CoreRequest): Promise<ReplyOptions> => {
+        const logs = await this.core.logs.getCommands(request.query);
 
         return { data: logs };
     }
