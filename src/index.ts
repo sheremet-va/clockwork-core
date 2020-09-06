@@ -23,6 +23,29 @@ const app = fastify({ trustProxy: true });
 import fastifyCors from 'fastify-cors';
 
 const init = async (core: Core): Promise<void> => {
+    app.setErrorHandler(async(
+        err: CoreError | FastifyError,
+        request: CoreRequest | FastifyRequest,
+        reply: CoreReply | FastifyReply<RawServerBase>
+    ): Promise<void> => {
+        console.log('tut');
+        if (err instanceof CoreError && 'error' in reply) {
+            reply.error(err.message, err.renderObject);
+
+            return;
+        }
+
+        await reply.code(500).send({ code: 'SERVER_ERROR', message: 'Something terrible happend...' });
+
+        core.logger.error(
+            'CoreInternalError',
+            `Error from ${request.ip}: \n${err.stack || ''}`
+            + `\n\nPARAMS: ${JSON.stringify(request.params)},`
+            + `\nQUERY: ${JSON.stringify(request.query).replace(core.config.token, 'TRUSTED')},`
+            + `\nBODY: ${JSON.stringify(request.body)}.`
+        );
+    });
+
     const { checkAccess, prepare } = middleware(core);
 
     await Promise.all([
@@ -56,28 +79,6 @@ const init = async (core: Core): Promise<void> => {
     const websockets = initWebsockets();
 
     await app.register(websockets);
-
-    app.setErrorHandler(async(
-        err: CoreError | FastifyError,
-        request: CoreRequest | FastifyRequest,
-        reply: CoreReply | FastifyReply<RawServerBase>
-    ): Promise<void> => {
-        if (err instanceof CoreError && 'error' in reply) {
-            reply.error(err.message, err.renderObject);
-
-            return;
-        }
-
-        await reply.code(500).send({ code: 'SERVER_ERROR', message: 'Something terrible happend...' });
-
-        core.logger.error(
-            'CoreInternalError',
-            `Error from ${request.ip}: \n${err.stack || ''}`
-            + `\n\nPARAMS: ${JSON.stringify(request.params)},`
-            + `\nQUERY: ${JSON.stringify(request.query).replace(core.config.token, 'TRUSTED')},`
-            + `\nBODY: ${JSON.stringify(request.body)}.`
-        );
-    });
 
     app.listen(core.config.PORT, '::', (e, address) => core.logger.log(`Listening ${address} port.`));
 };
