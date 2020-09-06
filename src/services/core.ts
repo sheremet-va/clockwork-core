@@ -87,7 +87,7 @@ function build(logger: Logger): void {
 
 export class CoreError extends Error {
     public result = 'error';
-    public code = 500;
+    public code = 406;
     public name = 'CoreError';
 
     constructor(public message: string, public renderObject = {}) {
@@ -175,7 +175,7 @@ class BaseCore {
             .catch(async err => {
                 void this.logger.error(
                     'CoreRequestError',
-                    `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response.data}`
+                    `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response ? err.response.data : ''}`
                 );
 
                 await this.wait(REPEAT_IN_SECONDS);
