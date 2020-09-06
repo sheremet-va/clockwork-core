@@ -18,7 +18,7 @@ import { init as initApi } from './api/init';
 import { init as initSubscriptions } from './subscriptions/init';
 import { init as initWebsockets } from './websockets/init';
 
-const app = fastify();
+const app = fastify({ trustProxy: true });
 
 import fastifyCors from 'fastify-cors';
 
@@ -29,7 +29,7 @@ const init = async (core: Core): Promise<void> => {
         app.register(
             fastifyCors,
             {
-                methods: ['GET', 'POST', 'OPTIONS'],
+                methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
                 origin: core.seht.origin
             }
         ),
@@ -79,7 +79,7 @@ const init = async (core: Core): Promise<void> => {
         );
     });
 
-    app.listen(core.config.PORT, () => core.logger.log(`Listening ${core.config.PORT} port.`));
+    app.listen(core.config.PORT, '::', (e, address) => core.logger.log(`Listening ${address} port.`));
 };
 
 initiator.run();
