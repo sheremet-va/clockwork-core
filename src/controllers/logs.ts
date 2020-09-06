@@ -70,20 +70,20 @@ export class LogsController {
         const limit = Number(filters.limit) || 30;
 
         type Query = {
-            date: {
-                $gte: Date;
-                $lt: Date;
-            };
+            // date: {
+            //     $gte: Date;
+            //     $lt: Date;
+            // };
             $text?: { $search: string };
             type?: string;
             project?: string;
         }
 
         const query: Query = {
-            date: {
-                $gte: filters.date_from || moment().subtract(1, 'year').toDate(),
-                $lt: filters.date_to || new Date()
-            }
+            // date: {
+            //     $gte: filters.date_from || moment().subtract(1, 'year').toDate(),
+            //     $lt: filters.date_to || new Date()
+            // }
         };
 
         if(filters.contains) {
