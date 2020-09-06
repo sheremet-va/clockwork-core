@@ -32,6 +32,27 @@ export default class ApiLogs {
     getCommands = async (request: CoreRequest): Promise<ReplyOptions> => {
         const logs = await this.core.logs.getCommands(request.query);
 
-        return { data: logs };
+        const users = logs.data.map(({ authorId }) => authorId);
+
+        const { data: usersInfo } = await this.core.request<{ id: string; tag: string; avatar: string }[]>({
+            url: 'http://localhost:3033/users?ids=' + users.join(','),
+            method: 'GET'
+        });
+
+        const formatted = logs.data.map(log => {
+            const user = usersInfo.find(({ id }) => log.authorId === id);
+
+            return {
+                ...log,
+                user
+            };
+        });
+
+        return {
+            data: {
+                data: formatted,
+                count: logs.count
+            }
+        };
     }
 }
