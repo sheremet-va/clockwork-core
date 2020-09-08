@@ -176,25 +176,25 @@ class Dates {
         }
 
         // TODO redo
-        const months = {
-            января: 'Jan',
-            февраля: 'Feb',
-            марта: 'Mar',
-            апреля: 'Apr',
+        const months: Record<string, string> = {
+            янв: 'Jan',
+            фев: 'Feb',
+            мар: 'Mar',
+            апр: 'Apr',
             мая: 'May',
-            июня: 'Jun',
-            июля: 'Jul',
-            августа: 'Aug',
-            сентября: 'Sep',
-            октября: 'Oct',
-            ноября: 'Nov',
-            декабря: 'Dec'
+            июн: 'Jun',
+            июл: 'Jul',
+            авг: 'Aug',
+            сен: 'Sep',
+            окт: 'Oct',
+            ноя: 'Nov',
+            дек: 'Dec'
         };
 
         const date = match_date[0];
-        const ruMonth = match_month[0] as keyof typeof months;
+        const ruMonth = match_month[0];
 
-        const month = months[ruMonth];
+        const month = months[ruMonth.substr(0, 3)];
 
         return `${date} ${month}`;
     }
