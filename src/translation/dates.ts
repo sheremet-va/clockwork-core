@@ -181,6 +181,7 @@ class Dates {
             фев: 'Feb',
             мар: 'Mar',
             апр: 'Apr',
+            май: 'May',
             мая: 'May',
             июн: 'Jun',
             июл: 'Jul',
