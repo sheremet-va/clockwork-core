@@ -52,7 +52,7 @@ export default class Store extends Module {
 
                 const link = $node.find('a').attr('href') || '';
                 const image = $node.find('.slot > img').attr('data-lazy-src');
-                const price = parseFloat($node.find('span.bright').text().trim().replace(/,/g, '')) || 0;
+                const price = parseFloat($node.find('span.bright').first().text().trim().replace(/,/g, '')) || 0;
                 const name = $node.find('.crown-title').text();
                 const matchID = /item\/(\d+)/.exec(link) || [null, '0'];
                 const storeID = `${matchID[1]}`;
