@@ -60,7 +60,7 @@ export default class Store extends Module {
                 const currency = currencySrc && currencySrc.includes('gems') ? 'gems' : 'crowns';
 
                 const have = storeItems.find(item => {
-                    return item.en === name && item.price === price;
+                    return item.storeID == storeID && item.price === price;
                 });
 
                 if(have || haveIDs.includes(storeID)) {
@@ -69,7 +69,7 @@ export default class Store extends Module {
 
                 haveIDs.push(storeID);
 
-                const ruName = (await this.getItem(name, category.category) || name);
+                const ruName = (await this.getItem(name, category.category)) || name;
 
                 return {
                     category: category.category,
@@ -142,11 +142,15 @@ export default class Store extends Module {
     }
 
     async getItem(origName: string, category: string): Promise<string> {
-        if(origName === 'Murkmire') {
-            return 'Мрачные Трясины';
-        }
-        if(origName === 'Orsinium') {
-            return 'Орсиниум';
+        switch (origName) {
+            case 'Thief':
+                return 'Вор';
+            case 'Murkmire':
+                return 'Мрачные Трясины';
+            case 'Orsinium':
+                return 'Орсиниум';
+            default:
+                break;
         }
 
         const [name, count] = origName.split('(');
