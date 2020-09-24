@@ -173,10 +173,12 @@ class BaseCore {
         return axios.request<T>(config as AxiosRequestConfig)
             .then(({ data }) => ({ data }))
             .catch(async err => {
-                void this.logger.error(
-                    'CoreRequestError',
-                    `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response ? err.response.data : ''}`
-                );
+                if(!err.message || !err.message.includes('performing maintenance')) {
+                    void this.logger.error(
+                        'CoreRequestError',
+                        `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response ? err.response.data : ''}`
+                    );
+                }
 
                 await this.wait(REPEAT_IN_SECONDS);
 
