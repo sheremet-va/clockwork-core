@@ -173,7 +173,7 @@ class BaseCore {
         return axios.request<T>(config as AxiosRequestConfig)
             .then(({ data }) => ({ data }))
             .catch(async err => {
-                if(!err.message || !err.message.includes('технические работы')) {
+                if(!err.response || !err.response.data.includes('технические работы')) {
                     void this.logger.error(
                         'CoreRequestError',
                         `[${tries} try] Error at core.request "${url}": ${err.message}\n${err.response ? err.response.data : ''}`
