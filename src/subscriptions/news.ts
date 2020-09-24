@@ -4,6 +4,7 @@ import * as cheerio from 'cheerio';
 import moment from 'moment';
 
 import News from '../modules/news';
+import {CoreError} from '../services/core';
 
 interface RussianNews {
     title: string;
@@ -54,10 +55,18 @@ export default class CronNews extends News {
         if(!('news' in published) || !published.news) {
             published.news = [];
         }
+        
+        let data = '';
+        
+        try {
+            const { data: page } = await this.core.request(url);
 
-        const { data } = await this.core.request(url);
+            data = page as string;
+        } catch (e) {
+            return;
+        }
 
-        const $ = cheerio.load(data as string, { normalizeWhitespace: true, xmlMode: true });
+        const $ = cheerio.load(data, { normalizeWhitespace: true, xmlMode: true });
 
         const news = $('item').filter((_, news) => {
             const $news = $(news);
