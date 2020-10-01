@@ -18,8 +18,12 @@ export default class ApiStore extends Store {
 
             const data = await this.store.find(filter);
 
-            const filtered = data.filter(({ active, price, currency, category }) => {
-                return active && price > 0 && currency === 'crowns' && category !== 'ESO Plus Deals';
+            const filtered = data.filter(({ active, price, currency, category, storeID }, index, self) => {
+                return active
+                    && price > 0
+                    && currency === 'crowns'
+                    && category !== 'ESO Plus Deals'
+                    && index === self.findIndex(t => t.storeID === storeID);
             });
 
             return { data: filtered };
