@@ -112,7 +112,7 @@ export default class Store extends Module {
 
             const deactivated = storeItems.filter(item => {
                 return !items.some(({ en }) => en === item.en);
-            }).map(({ en }) => en);
+            }).map(({ storeID }) => storeID);
 
             await this.core.store.deactivate(deactivated);
 
