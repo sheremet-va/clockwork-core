@@ -45,7 +45,7 @@ export default class Store extends Module {
 
             const $ = cheerio.load(data as string);
 
-            const haveNames: string[] = [];
+            // const haveNames: string[] = [];
 
             const itemsPromises = $('.news-snip').map(async(_, node) => {
                 const $node = $(node);
@@ -63,11 +63,11 @@ export default class Store extends Module {
                 //     return item.en == name && item.price === price;
                 // });
 
-                if(haveNames.includes(name)) {
-                    return false;
-                }
-
-                haveNames.push(name);
+                // if(haveNames.includes(name)) {
+                //     return false;
+                // }
+                //
+                // haveNames.push(name);
 
                 const ruName = (await this.getItem(name, category.category)) || name;
 
@@ -93,7 +93,7 @@ export default class Store extends Module {
             const items = res.map(({ items }) => items).flat() as StoreItem[];
 
             const oldItems = items.filter(item => {
-                return storeItems.some(({ en }) => en === item.en);
+                return storeItems.some(({ storeID }) => storeID === item.storeID);
             }).map(({ storeID }) => storeID);
 
             this.core.logger.log(oldItems.length + ' Store Items were removed from db: ' + oldItems.join(', '));
