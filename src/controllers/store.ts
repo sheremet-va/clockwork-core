@@ -34,6 +34,14 @@ export class StoreController {
         return this.collection.find<StoreItem>({ $text: { $search: name } }, { projection: { _id: 0 } }).toArray();
     }
 
+    getByCategory(category: string): Promise<StoreItem[]> {
+        return this.collection.find<StoreItem>({ category }, { projection: { _id: 0 } }).toArray();
+    }
+
+    getCategories(): Promise<string[]> {
+        return  this.collection.distinct('category');
+    }
+
     async set(item: StoreItem): Promise<StoreItem> {
         try {
             await this.collection

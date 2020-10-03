@@ -7,15 +7,6 @@ export default class ApiDiscord extends Seht {
         super(core);
     }
 
-    async request(path: string) {
-        const res = await this.core.request({
-            url: 'http://localhost:3033' + path,
-            method: 'GET'
-        });
-
-        return res.data;
-    }
-
     guilds = async (): Promise<ReplyOptions> => {
         const guilds = await this.request('/guilds');
 

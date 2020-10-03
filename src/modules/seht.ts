@@ -48,6 +48,15 @@ export default class Seht {
         return db.collection(name);
     }
 
+    protected async request(path: string) {
+        const res = await this.core.request({
+            url: 'http://localhost:3033' + path,
+            method: 'GET'
+        });
+
+        return res.data;
+    }
+
     async addUser(user: DiscordDbUser) {
         const collection = await this.connect('users');
 
@@ -103,5 +112,12 @@ export default class Seht {
         const user = await this.getUserByIdentifier(request.headers.authorization!);
 
         return Boolean(user && this.core.seht.ownerId === user.id);
+    }
+
+    async validateManagers(request: CoreRequest): Promise<boolean> {
+        const user = await this.getUserByIdentifier(request.headers.authorization!);
+        const managers = await this.request('/managers') as string[];
+
+        return Boolean(user && managers.includes(user.id));
     }
 }

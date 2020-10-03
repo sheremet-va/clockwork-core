@@ -39,4 +39,17 @@ export default class ApiStore extends Store {
 
         return { data: res };
     };
+
+    getByCategory = async (request: CoreRequest): Promise<ReplyOptions> => {
+        const category = request.params.category;
+        const items = await this.store.getByCategory(category);
+
+        return { data: items };
+    }
+
+    getCategories = async (): Promise<ReplyOptions> => {
+        const categories = await this.store.getCategories();
+
+        return { data: categories };
+    }
 }
