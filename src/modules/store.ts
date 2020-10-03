@@ -45,7 +45,7 @@ export default class Store extends Module {
 
             const $ = cheerio.load(data as string);
 
-            const haveIDs: string[] = [];
+            const haveNames: string[] = [];
 
             const itemsPromises = $('.news-snip').map(async(_, node) => {
                 const $node = $(node);
@@ -60,14 +60,14 @@ export default class Store extends Module {
                 const currency = currencySrc && currencySrc.includes('gems') ? 'gems' : 'crowns';
 
                 const have = storeItems.find(item => {
-                    return item.storeID == storeID && item.price === price;
+                    return item.en == name && item.price === price;
                 });
 
-                if(have || haveIDs.includes(storeID)) {
+                if(have || haveNames.includes(name)) {
                     return false;
                 }
 
-                haveIDs.push(storeID);
+                haveNames.push(name);
 
                 const ruName = (await this.getItem(name, category.category)) || name;
 
