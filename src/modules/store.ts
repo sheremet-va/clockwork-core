@@ -59,11 +59,11 @@ export default class Store extends Module {
                 const currencySrc = $node.find('.icon.crown-details').attr('src');
                 const currency = currencySrc && currencySrc.includes('gems') ? 'gems' : 'crowns';
 
-                const have = storeItems.find(item => {
-                    return item.en == name && item.price === price;
-                });
+                // const have = storeItems.find(item => {
+                //     return item.en == name && item.price === price;
+                // });
 
-                if(have || haveNames.includes(name)) {
+                if(haveNames.includes(name)) {
                     return false;
                 }
 
