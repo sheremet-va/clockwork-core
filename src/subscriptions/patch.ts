@@ -94,7 +94,7 @@ export default class CronPatch extends Patch {
     async sendPatch(storage: 'pts' | 'patch'): Promise<void> {
         const rssCategory = {
             pts: {
-                ru: '•	public-test-server-russian',
+                ru: 'public-test-server-russian',
                 en: 'pts'
             },
             patch: {
