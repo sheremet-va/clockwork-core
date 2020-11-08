@@ -3,88 +3,132 @@ import { Db, Collection } from 'mongodb';
 interface OrderItem {
     name: string;
     link: string;
+    image: string;
+    crown_price: number;
+    gold_price: number;
     amount: number;
-    prices: {
-        crown: number;
-        gold: number;
-    }
 }
 
-type LifecycleState = [
+type Lifecycle = [
     string,
-    null | string,
+    string,
     number
-]; // [status, seller.discordID | null, date]
+]; // [status, seller.discordID, date]
 
-export declare interface Order {
-    items: OrderItem[]
+export type Order = {
+    userID: string;
+    products: OrderItem[];
     conversion: number;
     discount: number;
+    crown_price: string;
+    gold_price: string;
+    name: string;
     guild: string;
-    buyer: {
-        tag: string;
-        ID: string;
-    }
-    seller: {
-        userID: string;
-        discordID: string;
-    }
-    status: string;
-    lifecycle: LifecycleState[];
-
-    // internal
-    source: string;
     message: string;
+    user: string;
+    status: string;
+    seller: null | string;
+    sellerID: null | string;
+    source: string;
+    lifecycle: Lifecycle[];
     orderID: string;
 }
 
 export class SellersController {
-    readonly collection: Collection<Order>;
+    readonly orders: Collection<Order>;
+    readonly config: Collection;
 
-    readonly COLLECTION_NAME = 'sellers';
+    readonly COLLECTION_ORDERS_NAME = 'sellers_orders';
+    readonly COLLECTION_CONFIG_NAME = 'sellers_config';
 
     constructor(db: Db) {
-        this.collection = db.collection<Order>(this.COLLECTION_NAME);
+        this.orders = db.collection<Order>(this.COLLECTION_ORDERS_NAME);
+        this.config = db.collection(this.COLLECTION_CONFIG_NAME);
     }
 
-    async get(): Promise<Order[]>
-    async get(orderID: string): Promise<Order | null>
-    async get(orderID?: string): Promise<Order | null | Order[]> {
+    async getConfig(key: string) {
+        const config = await this.config.findOne({ key });
+
+        return config.value;
+    }
+
+    setConfig(key: string, value: unknown, path?: string) {
+        const setValue = !path ? { value } : {
+            ['value.' + path]: value
+        };
+
+        return this.config.updateOne({ key }, { $set: setValue });
+    }
+
+    async getOrder(): Promise<Order[]>
+    async getOrder(orderID: string): Promise<Order | null>
+    async getOrder(orderID?: string): Promise<Order | null | Order[]> {
         if(!orderID) {
-            return await this.collection.find().toArray();
+            return await this.orders.find().toArray();
         }
 
-        return this.collection.findOne({ orderID });
+        return this.orders.findOne({ orderID });
     }
 
-    find(name: string): Promise<Order[]> {
-        return this.collection.find<Order>({ $text: { $search: name } }, { projection: { _id: 0 } }).toArray();
+    async getOrdersByUserID(userID: string, filter?: { status: string }): Promise<Order[]> {
+        const filters: Record<string, string> = {};
+
+        if(filter && filter.status) {
+            filters.status = filter.status;
+        }
+
+        console.log({ userID, ...filters });
+
+        return this.orders.find({ userID, ...filters }).toArray();
     }
 
-    async create(item: Order): Promise<Order> {
-        await this.collection
-            .updateOne({ orderID: item.orderID }, {
-                $set: item
-            }, { upsert: false });
+    // find(name: string): Promise<Order[]> {
+    //     return this.orders.find<Order>({ $text: { $search: name } }, { projection: { _id: 0 } }).toArray();
+    // }
+
+    async createOrder(item: Order): Promise<Order> {
+        await this.orders.insertOne(item);
 
         return item;
     }
 
-    async pushState(orderID: string, state: LifecycleState): Promise<boolean> {
-        await this.collection
+    async updateOrder(item: Partial<Order> & { orderID: string }, state: Lifecycle): Promise<Order> {
+        const order = await this.getOrder(item.orderID);
+
+        if(!order) {
+            throw new Error(`Заказа с ID ${item.orderID} не существует.`);
+        }
+
+        console.log(order);
+
+        await this.orders
+            .updateOne(
+                { orderID: item.orderID },
+                {
+                    $set: { ...item, status: state[0] },
+                    $push: { lifecycle: state }
+                },
+                { upsert: true });
+
+        return order;
+    }
+
+    async updateOrderState(orderID: string, state: Lifecycle): Promise<boolean> {
+        await this.orders
             .updateOne(
                 { orderID },
                 {
-                    $push: state
+                    $set: { status: state[0] },
+                    $push: { lifecycle: state }
                 }
             );
 
         return true;
     }
 
-    async write(items: Order[]): Promise<boolean> {
+    async bulkAddOrders(items: Order[]): Promise<boolean> {
         try {
-            await this.collection.insertMany(items);
+            await this.orders.insertMany(items);
 
             return true;
         } catch (err) {
