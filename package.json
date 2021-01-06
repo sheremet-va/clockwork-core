@@ -40,7 +40,7 @@
         "ts-node": "^8.10.2"
     },
     "devDependencies": {
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "eslint": "^7.7.0",
         "fastify-cors": "^4.1.0",
         "rimraf": "^3.0.2",
