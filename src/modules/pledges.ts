@@ -60,24 +60,26 @@ export default class Pledges extends Module {
         ];
 
         const pledgesUrgarlag = [
-            /*  0 */ 'Cradle of Shadows',
-            /*  1 */ 'Bloodroot Forge',
-            /*  2 */ 'Falkreath Hold',
-            /*  3 */ 'Fang Lair',
-            /*  4 */ 'Scalecaller Peak',
-            /*  5 */ 'Moon Hunter Keep',
-            /*  6 */ 'March of Sacrifices',
-            /*  7 */ 'Depths of Malatar',
-            /*  8 */ 'Frostvault',
-            /*  9 */ 'Moongrave Fane',
-            /* 10 */ 'Lair of Maarselok',
-            /* 11 */ 'Icereach',
-            /* 12 */ 'Unhallowed Grave',
-            /* 13 */ 'Stone Garden',
-            /* 14 */ 'Castle Thorn',
-            /* 15 */ 'Imperial City Prison',
-            /* 16 */ 'Ruins of Mazzatun',
-            /* 17 */ 'White-Gold Tower',
+            /*  0 */ 'Scalecaller Peak',
+            /*  1 */ 'Moon Hunter Keep',
+            /*  2 */ 'March of Sacrifices',
+            /*  3 */ 'Depths of Malatar',
+            /*  4 */ 'Frostvault',
+            /*  5 */ 'Moongrave Fane',
+            /*  6 */ 'Lair of Maarselok',
+            /*  7 */ 'Icereach',
+            /*  8 */ 'Unhallowed Grave',
+            /*  9 */ 'Stone Garden',
+            /* 10 */ 'Castle Thorn',
+            /* 11 */ 'Black Drake Villa',
+            /* 12 */ 'The Cauldron',
+            /* 13 */ 'Imperial City Prison',
+            /* 14 */ 'Ruins of Mazzatun',
+            /* 15 */ 'White-Gold Tower',
+            /* 16 */ 'Cradle of Shadows',
+            /* 17 */ 'Bloodroot Forge',
+            /* 18 */ 'Falkreath Hold',
+            /* 19 */ 'Fang Lair',
         ];
 
         const knownDate = moment([2019, 2, 12]);
@@ -144,7 +146,9 @@ export default class Pledges extends Module {
             'Icereach': 'Mother Ciannait',
             'Unhallowed Grave': 'Kjalnar\'s Nightmare',
             'Stone Garden': 'Stone Husk',
-            'Castle Thorn': 'Lady Thorn'
+            'Castle Thorn': 'Lady Thorn',
+            'Black Drake Villa': 'Encratis\'s Behemoth',
+            'The Cauldron': 'Baron Zaudrus'
         };
 
         const name = pledge as keyof typeof masks;
