@@ -71,7 +71,7 @@ export default class SettingsModule extends SettingsBase {
             }
         }, 'settings', translateType);
 
-        const cleanConfig = type === 'language' ? this.cleanSettings(settings, project) : settings;
+        const cleanConfig = type === 'language' ? this.cleanSettings(settings, project, value as language) : settings;
 
         void this.core.setSettings(project, cleanConfig, { id, type, value: zone || value });
 
@@ -147,8 +147,13 @@ export default class SettingsModule extends SettingsBase {
             .join(', ');
     };
 
-    cleanSettings = (settings: Settings, project: project): Settings => {
-        const { pledgesLang, merchantsLang } = this.core.settings.config.defaults[project];
+    cleanSettings = (settings: Settings, project: project, lang: language): Settings => {
+        let { pledgesLang, merchantsLang } = this.core.settings.config.defaults[project];
+
+        if(lang === 'en') {
+            pledgesLang = 'en';
+            merchantsLang = 'en';
+        }
 
         return {
             ...settings,
