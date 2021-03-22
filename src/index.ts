@@ -28,7 +28,6 @@ const init = async (core: Core): Promise<void> => {
         request: CoreRequest | FastifyRequest,
         reply: CoreReply | FastifyReply<RawServerBase>
     ): Promise<void> => {
-        console.log('tut');
         if (err instanceof CoreError && 'error' in reply) {
             reply.error(err.message, err.renderObject);
 

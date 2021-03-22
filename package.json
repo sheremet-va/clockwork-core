@@ -6,7 +6,8 @@
         "start": "npm run build && node dist/index.js",
         "start:watch": "nodemon",
         "build": "rimraf ./dist && tsc && npm run copy",
-        "copy": "copyfiles -u 1 src/**/**/*.jpg src/**/**/*.png dist"
+        "copy": "copyfiles -u 1 src/**/**/*.jpg src/**/**/*.png dist",
+        "prestart": "node tools/create_folders.js"
     },
     "repository": {
         "type": "git",
