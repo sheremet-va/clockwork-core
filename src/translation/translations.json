@@ -160,8 +160,8 @@
         "ru": "Примечания"
       },
       "notice_description": {
-        "en": "Tune in for at least 5 mins to receive a drop and don't forget to [link](https://help.elderscrollsonline.com/app/answers/detail/a_id/41809) your ESO and Twitch accounts!",
-        "ru": "Смотрите трансляцию не менее 5 минут и не забудьте [связать](https://vk.com/wall-145918036_253477) учётные записи ESO и Twitch!"
+        "en": "Tune in for at least 30 minutes to receive a drop and don't forget to [link](https://help.elderscrollsonline.com/app/answers/detail/a_id/41809) your ESO and Twitch accounts!",
+        "ru": "Смотрите трансляцию не менее 30 минут и не забудьте [связать](https://vk.com/wall-145918036_253477) учётные записи ESO и Twitch!"
       }
     },
     "weekly": {
@@ -514,8 +514,8 @@
     },
     "drops": {
       "duration": {
-        "en": "at least 5 mins",
-        "ru": "не меньше 5 минут"
+        "en": "at least 30 mins",
+        "ru": "не меньше 30 минут"
       },
       "where": {
         "en": "Where to watch",
