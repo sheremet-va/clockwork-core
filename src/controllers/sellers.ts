@@ -77,8 +77,6 @@ export class SellersController {
             filters.status = filter.status;
         }
 
-        console.log({ userID, ...filters });
-
         return this.orders.find({ userID, ...filters }).toArray();
     }
 
@@ -98,8 +96,6 @@ export class SellersController {
         if(!order) {
             throw new Error(`Заказа с ID ${item.orderID} не существует.`);
         }
-
-        console.log(order);
 
         await this.orders
             .updateOne(

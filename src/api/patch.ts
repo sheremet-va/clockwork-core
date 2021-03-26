@@ -39,8 +39,6 @@ export default class ApiPatch extends Patch {
         const translations = this.core.translate(lang, 'commands', 'patch');
         const translated = this.translate(patch, lang);
 
-        console.log(translated);
-
         return { translations, data: translated };
     };
 }
