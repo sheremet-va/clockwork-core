@@ -32,7 +32,7 @@ export default class Merchants {
 
         const $ = cheerio.load(body, { xmlMode: true });
 
-        return $('item').map((_, item) => {
+        return ($('item').map((_, item) => {
             const $item = $(item);
             const title = $item.find('title').text();
 
@@ -59,7 +59,7 @@ export default class Merchants {
             }
 
             return { link, date, type };
-        }).get().filter(e => e !== NOT_ELIGIBLE);
+        }).get() as (Item | string)[]).filter((e): e is Item => e !== NOT_ELIGIBLE);
     };
 
     send = async (): Promise<void> => {

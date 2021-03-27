@@ -19,6 +19,8 @@ type Item = {
     type: 'luxury' | 'golden';
 }
 
+type WebLuxuryItem = { name: string; isNew: boolean; price: string };
+
 export default class Luxury extends Module {
     name = 'luxury';
 
@@ -109,11 +111,13 @@ export default class Luxury extends Module {
         }
     }
 
-    items = async (body: string): Promise<({ name: string; isNew: boolean; price: string })[]> => {
+    items = async (body: string): Promise<WebLuxuryItem[]> => {
         const $ = cheerio.load(body);
 
-        return $('.entry-content ul').first().children().map((i, el) => {
+        return ($('.entry-content > ul').first().children().map((i, el) => {
             const fullName = $(el).text().replace(/’/g, '\'').trim();
+
+            console.log(fullName);
 
             if (!/([^\d]+)/.test(fullName) || fullName.includes('http')) {
                 return 'URL';
@@ -134,7 +138,9 @@ export default class Luxury extends Module {
                 price: Number(price.replace(/g|,/g, '')),
                 isNew
             };
-        }).get().filter((e: LuxuryItem & { icon: string } | 'URL') => e !== 'URL');
+        })
+            .get() as (WebLuxuryItem | 'URL')[])
+            .filter((e): e is WebLuxuryItem => e !== 'URL');
     };
 
     downloadIcon = async (icon: string): Promise<string> => {
