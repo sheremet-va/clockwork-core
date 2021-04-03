@@ -160,7 +160,7 @@ export default class Store extends Module {
             .replace('#', '%23')
             .replace('#', '%24');
 
-        const apiUrl = 'http://ruesoportal.elderscrolls.net/ESOBase/searchservlet/?searchtext=' + encoded;
+        const apiUrl = 'http://ruesoportal.elderscrolls.net/searchservlet?searchtext=' + encoded;
 
         const { data } = await axios.get<string>(apiUrl);
 
@@ -170,7 +170,7 @@ export default class Store extends Module {
 
         const entry = result.find(({ tableName }) => tables.includes(tableName));
 
-        return entry ? entry.textRuOff + (count ? (' (' + count) : '') : origName;
+        return entry ? entry.textRuOff + (count ? (' (' + count + ')') : '') : origName;
     }
 
     request(url: string) {

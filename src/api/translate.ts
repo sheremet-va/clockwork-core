@@ -101,7 +101,7 @@ export default class TranslateModule extends Translate {
 
         const encodedSearch = encodeURI(query).replace('&', '%26').replace('#', '%23').replace('#', '%24');
 
-        const apiUrl = `http://ruesoportal.elderscrolls.net/ESOBase/searchservlet/?searchtext=${encodedSearch}`;
+        const apiUrl = `http://ruesoportal.elderscrolls.net/searchservlet?searchtext=${encodedSearch}`;
 
         // try catch
         const { data } = await axios.get<string>(apiUrl);
@@ -120,7 +120,7 @@ export default class TranslateModule extends Translate {
         const found: string[] = [];
 
         const translations = result.reduce((acc, { tableName, textRuOff, textEn }) => {
-            if (!tableName || skip.includes(tableName) || !(tableName in this.tables)) {
+            if (!tableName || skip.includes(tableName) || !(tableName in acc)) {
                 return acc;
             }
 
@@ -133,16 +133,12 @@ export default class TranslateModule extends Translate {
 
             found.push(cleanedRu);
 
-            return {
-                ...acc,
-                [tableName]: {
-                    ...acc[tableName],
-                    results: [...acc[tableName].results, {
-                        ru: cleanedRu,
-                        en: cleanedEn
-                    }]
-                }
-            };
+            acc[tableName].results.push({
+                ru: cleanedRu,
+                en: cleanedEn
+            });
+
+            return acc;
         }, { ...this.tables });
 
         if (this.isEmpty(translations)) {
