@@ -58,6 +58,58 @@
         "ru": "Теперь вы отписаны от рассылки «{{ sub }}»."
       }
     },
+    "settings": {
+      "language": {
+        "en": "Language",
+        "ru": "Язык бота"
+      },
+      "pledgesLang": {
+        "en": "Pledges Language",
+        "ru": "Язык обетов"
+      },
+      "merchantsLang": {
+        "en": "Luxury and Golden Vendor Language",
+        "ru": "Язык торговцев Занила и Адазаби"
+      },
+      "timezone": {
+        "en": "Timezone",
+        "ru": "Часовой пояс"
+      },
+      "newsLang": {
+        "en": "News Language",
+        "ru": "Язык новостей"
+      },
+      "patchLang": {
+        "en": "Patches Language",
+        "ru": "Язык описаний обновлений"
+      }
+    },
+    "update_settings": {
+      "settings_update": {
+        "en": "What setting whould you like to update?",
+        "ru": "Какую настройку вы хотите обновить?"
+      },
+      "choose_language": {
+        "en": "Choose Language",
+        "ru": "Выберите язык"
+      },
+      "ru": {
+        "en": "Russian",
+        "ru": "Русский"
+      },
+      "en": {
+        "en": "English",
+        "ru": "Английский"
+      },
+      "back": {
+        "en": "Back",
+        "ru": "Назад"
+      },
+      "current": {
+        "en": "Current Settings",
+        "ru": "Текущие настройки"
+      }
+    },
     "patch": {
       "title": {
         "en": "Patch Notes",
