@@ -1,4 +1,21 @@
-import * as translations from './translations.json';
+import * as fs from 'fs';
+import * as Path from 'path';
+
+const parseTranslations = (): AllTranslations => {
+    const jsonPath = Path.resolve('translations.json');
+
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf-8')) as AllTranslations;
+};
+
+let translations = parseTranslations();
+
+const jsonPath = Path.resolve('translations.json');
+
+fs.watchFile(jsonPath, () => {
+    console.log('Translations updated');
+
+    translations = parseTranslations();
+});
 
 const errors = translations.errors;
 const NOT_FOUND = {
