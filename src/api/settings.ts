@@ -148,15 +148,26 @@ export default class SettingsModule extends SettingsBase {
     };
 
     cleanSettings = (settings: Settings, project: project, lang: language): Settings => {
-        let { pledgesLang, merchantsLang } = this.core.settings.config.defaults[project];
+        let { pledgesLang, merchantsLang, newsLang, patchLang } = this.core.settings.config.defaults[project];
+
+        const ifThen = <T extends string>(value: T, is: language, then: language) => value === is ? then : value;
 
         if(lang === 'en') {
             pledgesLang = 'en';
             merchantsLang = 'en';
+            newsLang = 'en';
+            patchLang = 'en';
+        } else if(lang === 'ru') {
+            pledgesLang = ifThen(settings.pledgesLang, 'en', 'ru');
+            merchantsLang = ifThen(settings.merchantsLang, 'en', 'ru');
+            newsLang = 'ru';
+            patchLang = 'ru';
         }
 
         return {
             ...settings,
+            patchLang,
+            newsLang,
             pledgesLang,
             merchantsLang
         };
