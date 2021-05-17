@@ -152,7 +152,7 @@ export default class CronStatus extends Status {
                 'PlayStation': 'ps'
             };
 
-            return message.reduce((acc, body) => {
+            return message.filter(Boolean).reduce((acc, body) => {
                 const matchName = Object.keys(codes).find(inf => body.search(inf) !== -1) as keyof typeof codes;
 
                 if (!matchName || /(Over|не будет)/i.test(body)) {
@@ -165,11 +165,10 @@ export default class CronStatus extends Status {
                     return acc;
                 }
 
-                return {
-                    ...acc,
-                    [codes[matchName]]: this.core.dates.RFC(body)
-                };
-            }, {}) as Maintenance;
+                acc[codes[matchName]] = rfc;
+
+                return acc;
+            }, {} as Maintenance);
         } catch (err) {
             console.log( err );
             this.core.logger.error('CoreInternalError', err );
