@@ -69,9 +69,10 @@ export class DropsManager {
             };
         }).get();
 
-        Promise.allSettled(drops).then(drops => {
+        void Promise.allSettled(drops).then(drops => {
             drops.forEach(result => {
                 if (result.status !== 'fulfilled') {
+                    void this.core.logger.error('CoreDropsError', result.reason);
                     return;
                 }
 
@@ -83,7 +84,7 @@ export class DropsManager {
 
                 this.core.logger.service(`Drops added to db: start ${drop.startDate}, end ${drop.endDate}`);
 
-                this.drops.set(drop);
+                void this.drops.set(drop);
             });
         });
     };
