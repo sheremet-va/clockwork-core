@@ -15,7 +15,9 @@ const root = Path.resolve(homedir, '.clockwork');
 createIfNonExistant(root);
 
 const projects = [
-    'assistant'
+    'assistant',
+    'apostile',
+    'elder'
 ];
 
 projects.forEach(name => {
