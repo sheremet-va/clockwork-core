@@ -103,8 +103,8 @@ export class DropsManager {
             this.core.logger.service('No drops were removed.');
         }
 
-        const promises = over.map(({ startDate, endDate }) => {
-            this.drops.remove(startDate, endDate);
+        const promises = over.map(async ({ startDate, endDate }) => {
+            await this.drops.remove(startDate, endDate);
 
             return { startDate, endDate };
         });
