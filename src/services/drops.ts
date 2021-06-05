@@ -51,7 +51,7 @@ export class DropsManager {
                 return 'skip';
             }
 
-            const { sendingDate, sending } = this.getSending(dates[3].trim());
+            const { sendingDate, sending } = this.getSending((dates[3] || '').trim());
 
             const details = $drop.find('.events-details').text();
             const { where, info, url, details: description } = this.buildDetails(details);
